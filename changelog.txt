@@ -1,0 +1,61 @@
+Retrotranslator Changelog
+=================================
+
+0.9.6 (2006-01-05)
+---------------------------------
+  - Dynamic discovery of backported classes.
+  - Full support for generics reflection.
+  - Improved java.lang.Enum support.
+  - Support for all methods in java.lang.Class.
+  - Support for BigDecimal(int), BigDecimal(long).
+  - Iterable is distinct from Collection, but even Iterable arrays can hold Collections.
+  - Patch 1392759 - build patch to create maven repository deployment units.
+
+0.9.5 (2005-12-28)
+---------------------------------
+  - Support for EnumSet.
+  - Support for methods in Arrays.
+  - Partial support for generics reflection.
+  - Patch 1392096 - easier integration to Maven 2.
+  - Patch 1391894 - fix for bug 1391863.
+  - Patch 1391842 - build patch for Mac OS X.
+  - ASM 2.1 replaced with ASM 3.0 beta.
+
+0.9.4 (2005-12-19)
+---------------------------------
+  - Support for methods in LinkedList: element, offer, peek, poll, remove.
+  - Support for methods in Package: isAnnotationPresent, getAnnotation, getAnnotations, getDeclaredAnnotations.
+  - A variable or field of type Queue is assignable from LinkedList.
+  - A variable or field of type AnnotatedElement is assignable from Package, Class, Constructor, Field, or Method.
+  - Bug fix: IOException when JIT Retrotranslator runs jar file with dependencies.
+
+0.9.3 (2005-12-13)
+---------------------------------
+  - JIT Retrotranslator for Sun JVM 1.4 added. You may launch your application from
+    net.sf.retrotranslator.transformer.JITRetrotranslator or simply
+    call JITRetrotranslator.install() before loading Java 5.0 classes.
+  - java.lang.Iterable is now replaced with java.util.Collection during translation.
+  - Bug fix: Class.isAnnotation and Class.isEnum didn't work.
+
+0.9.2 (2005-12-09)
+---------------------------------
+  - Support for methods: String.contains, String.contentEquals, String.replace, Matcher.quoteReplacement,
+    Class.isAnnotation, Class.isEnum, Collections.checkedMap, Class.checkedSortedMap.
+  - New option -stripsign to strip signature information used by Java 5.0 compiler.
+  - Bug fix: the verifier didn't deal with abstract classes and arrays of primitives correctly.
+
+0.9.1 (2005-12-08)
+---------------------------------
+  - A reference verifier to show warnings when references to unknown classes, methods, or fields are found.
+  - An integrated Ant task.
+  - Command line syntax changed:
+     replaced: -source by -srcdir;
+     added: -destdir, -verify, -classpath;
+     removed: -target
+  - Support for methods: Boolean.parseBoolean, Class.getEnumConstants, Class.cast, Class.asSubclass.
+  - Support for new methods in Collections: checkedCollection, checkedSet, checkedSortedSet,
+  checkedList, emptySet, emptyList, emptyMap, reverseOrder, frequency, disjoint, addAll.
+
+0.9.0 (2005-11-28)
+---------------------------------
+Initial release

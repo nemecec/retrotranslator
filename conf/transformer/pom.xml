@@ -1,0 +1,35 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>net.sf.retrotranslator</groupId>
+    <artifactId>retrotranslator-transformer</artifactId>
+    <packaging>jar</packaging>
+    <version>@version@</version>
+    <name>Retrotranslator transformer</name>
+    <url>http://retrotranslator.sourceforge.net/</url>
+    <description>Java 5.0 to Java 1.4 bytecode transformer</description>
+    <scm>
+        <url>http://cvs.sourceforge.net/viewcvs.py/retrotranslator/</url>
+    </scm>
+    <dependencies>
+        <dependency>
+            <groupId>asm</groupId>
+            <artifactId>asm</artifactId>
+            <version>3.0-beta</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>backport-util-concurrent</groupId>
+            <artifactId>backport-util-concurrent</artifactId>
+            <version>2.0_01_pd</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>3.8.1</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>
