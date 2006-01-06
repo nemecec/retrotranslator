@@ -31,27 +31,68 @@
  */
 package net.sf.retrotranslator.transformer;
 
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Type;
+
 import java.io.File;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 /**
  * @author Taras Puchko
  */
-public class JITRetrotranslator extends sun.misc.ClassFileTransformer {
+public class JITRetrotranslator {
 
     private static boolean installed;
-    private ClassTransformer transformer = new ClassTransformer(true);
+
+    public static class JITTransformer {
+        private ClassTransformer transformer = new ClassTransformer(true);
+
+        public byte[] transform(byte[] filecontent, int offset, int length) {
+            return transformer.transform(filecontent, offset, length);
+        }
+    }
+
+    private static class JITCreator extends GenericClassVisitor {
+        public JITCreator(final ClassVisitor cv) {
+            super(cv);
+        }
+
+        protected String visitInternalName(String name) {
+            if (name.equals(Type.getInternalName(Object.class))) {
+                return "sun/misc/ClassFileTransformer";
+            }
+            if (name.equals(Type.getInternalName(JITTransformer.class))) {
+                return Type.getInternalName(JITTransformer.class) + "$";
+            }
+            return name;
+        }
+    }
 
     private JITRetrotranslator() {
     }
 
-    public byte[] transform(byte[] filecontent, int offset, int length) {
-        return transformer.transform(filecontent, offset, length);
-    }
-
-    public static void install() {
+    public static synchronized void install() {
         if (installed) return;
-        add(new JITRetrotranslator());
-        installed = true;
+        try {
+            Class transformerClass = Class.forName("sun.misc.ClassFileTransformer");
+            Class unsafeClass = Class.forName("sun.misc.Unsafe");
+            Field theUnsafe = unsafeClass.getDeclaredField("theUnsafe");
+            theUnsafe.setAccessible(true);
+            Method method = unsafeClass.getMethod("defineClass", String.class, byte[].class, int.class, int.class);
+            ClassReader reader = new ClassReader(JITTransformer.class.getName());
+            ClassWriter writer = new ClassWriter(0);
+            reader.accept(new JITCreator(writer), 0);
+            byte[] bytes = writer.toByteArray();
+            Class jitClass = (Class) method.invoke(theUnsafe.get(null),
+                    JITTransformer.class.getName() + "$", bytes, 0, bytes.length);
+            transformerClass.getMethod("add", transformerClass).invoke(null, jitClass.newInstance());
+            installed = true;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static void main(String[] args) throws Exception {
@@ -94,10 +135,14 @@ public class JITRetrotranslator extends sun.misc.ClassFileTransformer {
     }
 
     private static void printUsageAndExit() {
-        System.out.println("Usage: java -cp retrotranslator-transformer.jar" + File.pathSeparator + "<classpath>" +
-                " net.sf.retrotranslator.transformer.JITRetrotranslator <class> [<args...>]\n" +
-                "   or  java -cp retrotranslator-transformer.jar" +
-                " net.sf.retrotranslator.transformer.JITRetrotranslator -jar <jarfile> [<args...>]");
+        String version = JITRetrotranslator.class.getPackage().getImplementationVersion();
+        String ext = version == null ? "" : "-" + version;
+        StringBuilder builder = new StringBuilder("Usage: java -cp retrotranslator-transformer").append(ext);
+        builder.append(".jar").append(File.pathSeparator);
+        builder.append("<classpath> net.sf.retrotranslator.transformer.JITRetrotranslator <class> [<args...>]\n");
+        builder.append("   or  java -cp retrotranslator-transformer").append(ext);
+        builder.append(".jar net.sf.retrotranslator.transformer.JITRetrotranslator -jar <jarfile> [<args...>]");
+        System.out.println(builder);
         System.exit(1);
     }
 
