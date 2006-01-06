@@ -136,11 +136,11 @@ public class JITRetrotranslator {
 
     private static void printUsageAndExit() {
         String version = JITRetrotranslator.class.getPackage().getImplementationVersion();
-        String ext = version == null ? "" : "-" + version;
-        StringBuilder builder = new StringBuilder("Usage: java -cp retrotranslator-transformer").append(ext);
+        String suffix = (version == null) ? "" : "-" + version;
+        StringBuilder builder = new StringBuilder("Usage: java -cp retrotranslator-transformer").append(suffix);
         builder.append(".jar").append(File.pathSeparator);
         builder.append("<classpath> net.sf.retrotranslator.transformer.JITRetrotranslator <class> [<args...>]\n");
-        builder.append("   or  java -cp retrotranslator-transformer").append(ext);
+        builder.append("   or  java -cp retrotranslator-transformer").append(suffix);
         builder.append(".jar net.sf.retrotranslator.transformer.JITRetrotranslator -jar <jarfile> [<args...>]");
         System.out.println(builder);
         System.exit(1);
