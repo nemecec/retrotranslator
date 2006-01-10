@@ -94,7 +94,9 @@ public class Retrotranslator implements MessageLogger {
     }
 
     private static void printUsage() {
-        System.out.println("Usage: java -jar retrotranslator-transformer.jar" +
+        String version = Retrotranslator.class.getPackage().getImplementationVersion();
+        String suffix = (version == null) ? "" : "-" + version;
+        System.out.println("Usage: java -jar retrotranslator-transformer" + suffix + ".jar" +
                 " -srcdir <path> [-destdir <path>] [-verbose] [-verify] [-classpath <classpath>]");
     }
 
