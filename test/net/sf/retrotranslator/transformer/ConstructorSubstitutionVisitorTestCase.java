@@ -43,5 +43,33 @@ public class ConstructorSubstitutionVisitorTestCase extends TestCase {
     public void testBigDecimal() throws Exception {
         assertEquals(10L, new BigDecimal(10L).longValue());
         assertEquals(20, new BigDecimal(20).intValue());
+        class MyDecimal extends BigDecimal {
+            public MyDecimal(int val) {
+                super(val);
+            }
+
+            public MyDecimal(long val) {
+                super(val);
+            }
+        }
+        assertEquals(10L, new MyDecimal(10L).longValue());
+        assertEquals(20, new MyDecimal(20).intValue());
     }
+
+    public void testIllegalStateException() throws Exception {
+        IllegalStateException exception = new IllegalStateException("abc", new ClassNotFoundException("123"));
+        assertEquals("abc", exception.getMessage());
+        Throwable cause = exception.getCause();
+        assertTrue(cause instanceof ClassNotFoundException);
+        assertEquals("123", cause.getMessage());
+        class Ex extends IllegalStateException {
+            public Ex(String message, Throwable cause) {
+                super(message, cause);
+            }
+        }
+        Ex ex = new Ex("qwerty", new IllegalArgumentException());
+        assertEquals("qwerty", ex.getMessage());
+        assertTrue(ex.getCause() instanceof IllegalArgumentException);
+    }
+
 }

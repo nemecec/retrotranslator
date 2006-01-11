@@ -31,9 +31,9 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import net.sf.retrotranslator.runtime.impl.TypeTools;
-import org.objectweb.asm.*;
+import static net.sf.retrotranslator.runtime.impl.TypeTools.CONSTRUCTOR_NAME;
 import static org.objectweb.asm.Opcodes.*;
+import org.objectweb.asm.*;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -43,28 +43,59 @@ import java.math.BigInteger;
  */
 public class ConstructorSubstitutionVisitor extends ClassAdapter {
 
-    private static final String BIG_DECIMAL_NAME = Type.getInternalName(BigDecimal.class);
-    private static final String BIG_INTEGER_NAME = Type.getInternalName(BigInteger.class);
-    private static final String BIG_INTEGER_DESCRIPTOR = Type.getDescriptor(BigInteger.class);
+    private static final String BIG_DECIMAL = Type.getInternalName(BigDecimal.class);
+    private static final String ILLEGAL_STATE_EXCEPTION = Type.getInternalName(IllegalStateException.class);
 
     public ConstructorSubstitutionVisitor(final ClassVisitor cv) {
         super(cv);
     }
 
-    public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature, final String[] exceptions) {
+    public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         return new MethodAdapter(super.visitMethod(access, name, desc, signature, exceptions)) {
-            public void visitMethodInsn(final int opcode, final String owner, final String name, String desc) {
-                if (opcode == INVOKESPECIAL && owner.equals(BIG_DECIMAL_NAME) && name.equals(TypeTools.CONSTRUCTOR_NAME)) {
-                    if (desc.equals("(J)V") || desc.equals("(I)V")) {
-                        if (desc.equals("(I)V")) {
-                            mv.visitInsn(I2L);
-                        }
-                        mv.visitMethodInsn(INVOKESTATIC, BIG_INTEGER_NAME, "valueOf", "(J)" + BIG_INTEGER_DESCRIPTOR);
-                        desc = "(" + BIG_INTEGER_DESCRIPTOR + ")V";
-                    }
+
+            public void visitMethodInsn(final int opcode, final String owner, final String name, final String desc) {
+                if (opcode == INVOKESPECIAL && name.equals(CONSTRUCTOR_NAME)) {
+                    if (owner.equals(BIG_DECIMAL) && initBigDecimal(desc)) return;
+                    if (owner.equals(ILLEGAL_STATE_EXCEPTION) && initIllegalStateException(desc)) return;
                 }
                 super.visitMethodInsn(opcode, owner, name, desc);
             }
+
+            private boolean initBigDecimal(String desc) {
+                boolean longParameter = desc.equals(descriptor(void.class, long.class));
+                boolean intParameter = desc.equals(descriptor(void.class, int.class));
+                if (!longParameter && !intParameter) return false;
+                if (intParameter) mv.visitInsn(I2L);
+                mv.visitMethodInsn(INVOKESTATIC, Type.getInternalName(BigInteger.class),
+                        "valueOf", descriptor(BigInteger.class, long.class));
+                mv.visitMethodInsn(INVOKESPECIAL, BIG_DECIMAL,
+                        CONSTRUCTOR_NAME, descriptor(void.class, BigInteger.class));
+                return true;
+            }
+
+            private boolean initIllegalStateException(String desc) {
+                if (!desc.equals(descriptor(void.class, String.class, Throwable.class))) return false;
+                mv.visitInsn(DUP_X2);
+                mv.visitInsn(POP);
+                mv.visitInsn(SWAP);
+                mv.visitInsn(DUP_X2);
+                mv.visitInsn(SWAP);
+                mv.visitMethodInsn(INVOKESPECIAL, ILLEGAL_STATE_EXCEPTION,
+                        CONSTRUCTOR_NAME, descriptor(void.class, String.class));
+                mv.visitMethodInsn(INVOKEVIRTUAL, ILLEGAL_STATE_EXCEPTION,
+                        "initCause", descriptor(Throwable.class, Throwable.class));
+                mv.visitInsn(POP);
+                return true;
+            }
+
         };
+    }
+
+    private static String descriptor(Class returnType, Class... parameterTypes) {
+        Type[] argumentTypes = new Type[parameterTypes.length];
+        for (int i = 0; i < argumentTypes.length; i++) {
+            argumentTypes[i] = Type.getType(parameterTypes[i]);
+        }
+        return Type.getMethodDescriptor(Type.getType(returnType), argumentTypes);
     }
 }
