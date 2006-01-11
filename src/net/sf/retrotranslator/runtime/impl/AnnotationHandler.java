@@ -65,7 +65,7 @@ public class AnnotationHandler implements InvocationHandler {
         if (name.equals("toString")) return asString;
         if (name.equals("annotationType")) return annotationType;
         Object value = values.get(name);
-        if (value != null) return TypeTools.cloneNonEmptyArray(value);
+        if (value != null) return RuntimeTools.cloneNonEmptyArray(value);
         throw new IncompleteAnnotationException(annotationType, name);
     }
 }

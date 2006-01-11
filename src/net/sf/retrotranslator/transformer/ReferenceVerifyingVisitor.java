@@ -32,7 +32,7 @@
 package net.sf.retrotranslator.transformer;
 
 import net.sf.retrotranslator.runtime.impl.EmptyVisitor;
-import net.sf.retrotranslator.runtime.impl.TypeTools;
+import net.sf.retrotranslator.runtime.impl.RuntimeTools;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
@@ -82,8 +82,12 @@ public class ReferenceVerifyingVisitor extends GenericClassVisitor {
     protected void visitFieldRef(int opcode, String owner, String name, String desc) {
         boolean stat = (opcode == Opcodes.GETSTATIC || opcode == Opcodes.PUTSTATIC);
         try {
-            if (new MemberFinder(factory, false, stat, name, desc).findIn(owner, null)) return;
-            println(getFieldInfo(owner, stat, name, desc, " not found"));
+            int found = new MemberFinder(factory, false, stat, name, desc).findIn(owner, null);
+            if (found == 0) {
+                println(getFieldInfo(owner, stat, name, desc, "not found"));
+            } else if (found > 1) {
+                println(getFieldInfo(owner, stat, name, desc, "duplicated"));
+            }
         } catch (ClassNotFoundException e) {
             cannotVerify(getFieldInfo(owner, stat, name, desc, "not verified"), e);
         }
@@ -93,8 +97,12 @@ public class ReferenceVerifyingVisitor extends GenericClassVisitor {
         if (owner.startsWith("[")) return;
         boolean stat = (opcode == Opcodes.INVOKESTATIC);
         try {
-            if (new MemberFinder(factory, true, stat, name, desc).findIn(owner, null)) return;
-            println(getMethodInfo(owner, stat, name, desc, "not found"));
+            int found = new MemberFinder(factory, true, stat, name, desc).findIn(owner, null);
+            if (found == 0) {
+                println(getMethodInfo(owner, stat, name, desc, "not found"));
+            } else if (found > 1) {
+                println(getMethodInfo(owner, stat, name, desc, "duplicated"));
+            }
         } catch (ClassNotFoundException e) {
             cannotVerify(getMethodInfo(owner, stat, name, desc, "not verified"), e);
         }
@@ -127,7 +135,7 @@ public class ReferenceVerifyingVisitor extends GenericClassVisitor {
 
     private static String getMethodInfo(String owner, boolean stat, String name, String desc, String message) {
         StringBuffer buffer = new StringBuffer();
-        if (name.equals(TypeTools.CONSTRUCTOR_NAME)) {
+        if (name.equals(RuntimeTools.CONSTRUCTOR_NAME)) {
             buffer.append("Constructor ").append(message).append(": ");
             buffer.append(getClassInfo(owner));
         } else {

@@ -31,11 +31,12 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import net.sf.retrotranslator.runtime.impl.TypeTools;
 import org.objectweb.asm.*;
 import static org.objectweb.asm.Opcodes.*;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -43,14 +44,10 @@ import java.util.Set;
  */
 public class ClassLiteralVisitor extends ClassAdapter {
 
-    private static final String LOADER_NAME = "class$";
-    private static final String FOR_NAME_METHOD_NAME = "forName";
-    private static final String CLASS_DESCRIPTOR = Type.getDescriptor(Class.class);
-    private static final String FOR_NAME_DESCRIPTOR = Type.getMethodDescriptor(Type.getType(Class.class), new Type[]{Type.getType(String.class)});
-    private static final String GET_MESSAGE_DESCRIPTOR = Type.getMethodDescriptor(Type.getType(String.class), new Type[0]);
-    private static final String INIT_DESCRIPTOR = Type.getMethodDescriptor(Type.VOID_TYPE, new Type[]{Type.getType(String.class)});
+    private static final Map<Integer, Integer> primitiveTypes = getPrimitiveTypes();
 
-    private Set<String> syntheticVars = new HashSet<String>();
+    private Set<String> currentFieldNames = new HashSet<String>();
+    private Set<String> syntheticFieldNames = new HashSet<String>();
     private String currentClassName;
     private boolean isInterface;
 
@@ -64,118 +61,101 @@ public class ClassLiteralVisitor extends ClassAdapter {
         super.visit(version, access, name, signature, superName, interfaces);
     }
 
-    public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature, final String[] exceptions) {
-        MethodVisitor methodVisitor = super.visitMethod(access, name, desc, signature, exceptions);
-        return methodVisitor == null ? null : new ClassLiteralMethodVisitor(methodVisitor);
-    }
-
     public void visitEnd() {
-        if (!syntheticVars.isEmpty()) addSynthetics();
+        for (String fieldName : syntheticFieldNames) {
+            if (!currentFieldNames.contains(fieldName)) {
+                cv.visitField(ACC_STATIC + ACC_SYNTHETIC, fieldName, Type.getDescriptor(Class.class), null, null).visitEnd();
+            }
+        }
         super.visitEnd();
     }
 
-    private void addSynthetics() {
-        for (String syntheticVar : syntheticVars) {
-            visitField(ACC_STATIC + ACC_SYNTHETIC, syntheticVar, CLASS_DESCRIPTOR, null, null).visitEnd();
-        }
-        addClassLoader();
+    public FieldVisitor visitField(final int access, final String name, final String desc, final String signature, final Object value) {
+        currentFieldNames.add(name);
+        return super.visitField(access, name, desc, signature, value);
     }
 
-    private void addClassLoader() {
-        MethodVisitor mv = visitMethod(ACC_STATIC + ACC_SYNTHETIC, LOADER_NAME, FOR_NAME_DESCRIPTOR, null, null);
-        mv.visitCode();
+    public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature, final String[] exceptions) {
+        return new MethodAdapter(super.visitMethod(access, name, desc, signature, exceptions)) {
 
-        Label startTryLabel = new Label();
-        mv.visitLabel(startTryLabel);
-        mv.visitVarInsn(ALOAD, 0);
-        mv.visitMethodInsn(INVOKESTATIC, Type.getInternalName(Class.class), FOR_NAME_METHOD_NAME, FOR_NAME_DESCRIPTOR);
-        Label endTryLabel = new Label();
-        mv.visitLabel(endTryLabel);
-        mv.visitInsn(ARETURN);
-        generateClassNotFoundHandler(mv, startTryLabel, endTryLabel);
-        mv.visitMaxs(3, 2);
-        mv.visitEnd();
+            public void visitLdcInsn(final Object cst) {
+                if (cst instanceof Type) {
+                    visitClassLiteral((Type) cst);
+                } else {
+                    super.visitLdcInsn(cst);
+                }
+            }
+
+            private void visitClassLiteral(Type type) {
+                if (isInterface) {
+                    loadClassLiteral(type);
+                    return;
+                }
+                String fieldName = getFieldName(type);
+                syntheticFieldNames.add(fieldName);
+                mv.visitFieldInsn(GETSTATIC, currentClassName, fieldName, Type.getDescriptor(Class.class));
+                mv.visitInsn(DUP);
+                Label label = new Label();
+                visitJumpInsn(IFNONNULL, label);
+                mv.visitInsn(POP);
+                loadClassLiteral(type);
+                mv.visitInsn(DUP);
+                visitFieldInsn(PUTSTATIC, currentClassName, fieldName, Type.getDescriptor(Class.class));
+                visitLabel(label);
+            }
+
+            private void loadClassLiteral(Type type) {
+                mv.visitInsn(ICONST_0);
+                visitNewArray(type);
+                mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(Object.class),
+                        "getClass", TransformerTools.descriptor(Class.class));
+                if (type.getSort() != Type.ARRAY) {
+                    mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(Class.class),
+                            "getComponentType", TransformerTools.descriptor(Class.class));
+                }
+            }
+
+            private void visitNewArray(Type type) {
+                if (type.getSort() != Type.ARRAY) {
+                    mv.visitTypeInsn(ANEWARRAY, type.getInternalName());
+                } else if (type.getDimensions() != 1) {
+                    mv.visitTypeInsn(ANEWARRAY, type.toString().substring(1));
+                } else {
+                    Type elementType = type.getElementType();
+                    if (elementType.getSort() == Type.OBJECT) {
+                        mv.visitTypeInsn(ANEWARRAY, elementType.getInternalName());
+                    } else {
+                        mv.visitIntInsn(NEWARRAY, primitiveTypes.get(elementType.getSort()));
+                    }
+                }
+            }
+
+        };
     }
 
-    private void generateClassNotFoundHandler(MethodVisitor mv, Label startTryLabel, Label endTryLabel) {
-        Label handlerLabel = new Label();
-        mv.visitLabel(handlerLabel);
-        int var = isInterface ? 0 : 1;
-        mv.visitVarInsn(ASTORE, var);
-        mv.visitTypeInsn(NEW, Type.getInternalName(NoClassDefFoundError.class));
-        mv.visitInsn(DUP);
-        mv.visitVarInsn(ALOAD, var);
-        mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(ClassNotFoundException.class), "getMessage", GET_MESSAGE_DESCRIPTOR);
-        mv.visitMethodInsn(INVOKESPECIAL, Type.getInternalName(NoClassDefFoundError.class), TypeTools.CONSTRUCTOR_NAME, INIT_DESCRIPTOR);
-        mv.visitInsn(ATHROW);
-        mv.visitTryCatchBlock(startTryLabel, endTryLabel, handlerLabel, Type.getInternalName(ClassNotFoundException.class));
+    private static String getFieldName(Type type) {
+        String var = type.getDescriptor();
+        if (var.startsWith("L")) {
+            var = "class$" + var.substring(1);
+        } else if (var.startsWith("[")) {
+            var = "array$" + var.substring(1);
+        }
+        if (var.endsWith(";")) {
+            var = var.substring(0, var.length() - 1);
+        }
+        return var.replace('[', '$').replace('/', '$');
     }
 
-    private class ClassLiteralMethodVisitor extends MethodAdapter {
-
-        public ClassLiteralMethodVisitor(final MethodVisitor mv) {
-            super(mv);
-        }
-
-        public void visitLdcInsn(final Object cst) {
-            if (cst instanceof Type) {
-                loadClassLiteral((Type) cst);
-            } else {
-                super.visitLdcInsn(cst);
-            }
-        }
-
-        private void loadClassLiteral(Type type) {
-            if (isInterface) {
-                loadClassLiteralInInterface(type);
-            } else {
-                loadClassLiteralInClass(type);
-            }
-        }
-
-        private void loadClassLiteralInInterface(Type type) {
-            Label startTryLabel = new Label();
-            mv.visitLabel(startTryLabel);
-            visitLdcInsn(TypeTools.getClassName(type));
-            mv.visitMethodInsn(INVOKESTATIC, Type.getInternalName(Class.class), FOR_NAME_METHOD_NAME, FOR_NAME_DESCRIPTOR);
-            Label endTryLabel = new Label();
-            mv.visitLabel(endTryLabel);
-            Label successLabel = new Label();
-            visitJumpInsn(GOTO, successLabel);
-            generateClassNotFoundHandler(mv, startTryLabel, endTryLabel);
-            visitLabel(successLabel);
-        }
-
-        private void loadClassLiteralInClass(Type type) {
-            String var = getVar(type);
-            syntheticVars.add(var);
-            visitFieldInsn(GETSTATIC, currentClassName, var, CLASS_DESCRIPTOR);
-            Label notNullLabel = new Label();
-            visitJumpInsn(IFNONNULL, notNullLabel);
-
-            visitLdcInsn(TypeTools.getClassName(type));
-            visitMethodInsn(INVOKESTATIC, currentClassName, LOADER_NAME, FOR_NAME_DESCRIPTOR);
-            visitInsn(DUP);
-            visitFieldInsn(PUTSTATIC, currentClassName, var, CLASS_DESCRIPTOR);
-            Label returnLabel = new Label();
-            visitJumpInsn(GOTO, returnLabel);
-
-            visitLabel(notNullLabel);
-            visitFieldInsn(GETSTATIC, currentClassName, var, CLASS_DESCRIPTOR);
-            visitLabel(returnLabel);
-        }
-
-        private String getVar(Type type) {
-            String var = type.getDescriptor();
-            if (var.startsWith("L")) {
-                var = "class$" + var.substring(1);
-            } else if (var.startsWith("[")) {
-                var = "array$" + var.substring(1);
-            }
-            if (var.endsWith(";")) {
-                var = var.substring(0, var.length() - 1);
-            }
-            return var.replace('[', '$').replace('/', '$');
-        }
+    private static Map<Integer, Integer> getPrimitiveTypes() {
+        Map<Integer, Integer> types = new HashMap<Integer, Integer>();
+        types.put(Type.BOOLEAN, Opcodes.T_BOOLEAN);
+        types.put(Type.CHAR, Opcodes.T_CHAR);
+        types.put(Type.FLOAT, Opcodes.T_FLOAT);
+        types.put(Type.DOUBLE, Opcodes.T_DOUBLE);
+        types.put(Type.BYTE, Opcodes.T_BYTE);
+        types.put(Type.SHORT, Opcodes.T_SHORT);
+        types.put(Type.INT, Opcodes.T_INT);
+        types.put(Type.LONG, Opcodes.T_LONG);
+        return types;
     }
 }

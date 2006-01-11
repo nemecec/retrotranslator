@@ -52,7 +52,7 @@ public class ClassVerifier {
         ReferenceVerifyingVisitor visitor = new ReferenceVerifyingVisitor(factory, logger);
         for (String fileName : fileNames) {
             logger.verbose(fileName);
-            byte[] data = IOTools.readFileToByteArray(new File(dir, fileName));
+            byte[] data = TransformerTools.readFileToByteArray(new File(dir, fileName));
             new ClassReader(data).accept(visitor, ClassReader.SKIP_DEBUG);
         }
         int warningCount = visitor.getWarningCount();

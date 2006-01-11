@@ -70,14 +70,14 @@ public class ClassTransformer {
         for (int i = 0; i < fileNames.size(); i++) {
             String fileName = fileNames.get(i);
             logger.verbose(fileName);
-            byte[] sourceData = IOTools.readFileToByteArray(new File(srcdir, fileName));
+            byte[] sourceData = TransformerTools.readFileToByteArray(new File(srcdir, fileName));
             byte[] resultData = transform(sourceData, 0, sourceData.length);
             String fixedName = ClassSubstitutionVisitor.fixIdentifier(fileName);
             if (!fixedName.equals(fileName)) {
                 fileNames.set(i, fixedName);
                 new File(destdir, fileName).delete();
             }
-            IOTools.writeByteArrayToFile(new File(destdir, fixedName), resultData);
+            TransformerTools.writeByteArrayToFile(new File(destdir, fixedName), resultData);
         }
         logger.info("Transformation of " + fileNames.size() + " file(s) completed successfully.");
     }

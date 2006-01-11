@@ -39,18 +39,10 @@ import java.lang.reflect.Constructor;
 /**
  * @author Taras Puchko
  */
-public class TypeTools {
+public class RuntimeTools {
 
     public static final String CONSTRUCTOR_NAME = "<init>";
     public static final String STATIC_NAME = "<clinit>";
-
-    public static String getClassName(Type type) {
-        if (type.getSort() != Type.ARRAY) {
-            return type.getClassName();
-        } else {
-            return type.getDescriptor().replace('/', '.');
-        }
-    }
 
     public static Class getBaseClass(char type) {
         return getBaseClass(Type.getType(new String(new char[]{type})));
@@ -87,10 +79,6 @@ public class TypeTools {
             buf.append(Type.getDescriptor(parameter));
         }
         return buf.append(")V").toString();
-    }
-
-    public static Type getTypeByInternalName(String name) {
-        return Type.getType("L" + name + ";");
     }
 
     public static Object cloneNonEmptyArray(Object value) {

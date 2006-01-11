@@ -81,7 +81,7 @@ public class ParameterizedTypeImpl implements ParameterizedType {
     public String toString() {
         StringBuilder builder = new StringBuilder();
         if (ownerType != null) {
-            builder.append(TypeTools.getString(ownerType)).append('.');
+            builder.append(RuntimeTools.getString(ownerType)).append('.');
         }
         String rawName = rawType.getName();
         if (ownerType instanceof ParameterizedTypeImpl) {
@@ -92,7 +92,7 @@ public class ParameterizedTypeImpl implements ParameterizedType {
             builder.append('<');
             for (int i = 0; i < actualTypeArguments.length; i++) {
                 if (i > 0) builder.append(", ");
-                builder.append(TypeTools.getString(actualTypeArguments[i]));
+                builder.append(RuntimeTools.getString(actualTypeArguments[i]));
             }
             builder.append('>');
         }

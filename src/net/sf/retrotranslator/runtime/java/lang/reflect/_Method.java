@@ -32,7 +32,7 @@
 package net.sf.retrotranslator.runtime.java.lang.reflect;
 
 import net.sf.retrotranslator.runtime.impl.MethodDescriptor;
-import net.sf.retrotranslator.runtime.impl.TypeTools;
+import net.sf.retrotranslator.runtime.impl.RuntimeTools;
 import org.objectweb.asm.Opcodes;
 
 import java.lang.annotation.Annotation;
@@ -116,14 +116,14 @@ public class _Method {
         }
         TypeVariable[] typeParameters = getTypeParameters(method);
         if (typeParameters.length > 0) {
-            TypeTools.append(builder.append('<'), typeParameters).append("> ");
+            RuntimeTools.append(builder.append('<'), typeParameters).append("> ");
         }
-        builder.append(TypeTools.getString(getGenericReturnType(method))).append(' ');
-        builder.append(TypeTools.getString(method.getDeclaringClass())).append('.').append(method.getName());
-        TypeTools.append(builder.append('('), getGenericParameterTypes(method)).append(')');
+        builder.append(RuntimeTools.getString(getGenericReturnType(method))).append(' ');
+        builder.append(RuntimeTools.getString(method.getDeclaringClass())).append('.').append(method.getName());
+        RuntimeTools.append(builder.append('('), getGenericParameterTypes(method)).append(')');
         Type[] exceptionTypes = getGenericExceptionTypes(method);
         if (exceptionTypes.length > 0) {
-            TypeTools.append(builder.append(" throws "), exceptionTypes);
+            RuntimeTools.append(builder.append(" throws "), exceptionTypes);
         }
         return builder.toString();
     }

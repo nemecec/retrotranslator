@@ -31,7 +31,8 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import net.sf.retrotranslator.runtime.impl.TypeTools;
+import static org.objectweb.asm.Opcodes.*;
+import net.sf.retrotranslator.runtime.impl.RuntimeTools;
 import net.sf.retrotranslator.runtime.java.lang.Enum_;
 import org.objectweb.asm.*;
 
@@ -39,6 +40,11 @@ import org.objectweb.asm.*;
  * @author Taras Puchko
  */
 public class EnumVisitor extends ClassAdapter {
+
+    private static final String ENUM_NAME = Type.getInternalName(Enum_.class);
+    private static final String SET_ENUM_CONSTANTS_NAME = "setEnumConstants";
+    private static final String SET_ENUM_CONSTANTS_DESC =
+            TransformerTools.descriptor(void.class, Class.class, Enum_[].class);
 
     private Type type;
 
@@ -49,23 +55,32 @@ public class EnumVisitor extends ClassAdapter {
     public void visit(final int version, final int access, final String name,
                       final String signature, final String superName, final String[] interfaces) {
         super.visit(version, access, name, signature, superName, interfaces);
-        if ((access & Opcodes.ACC_ENUM) != 0 && Type.getInternalName(Enum_.class).equals(superName)) {
-            type = TypeTools.getTypeByInternalName(name);
+        if ((access & ACC_ENUM) != 0 && ENUM_NAME.equals(superName)) {
+            type = TransformerTools.getTypeByInternalName(name);
         }
     }
 
     public MethodVisitor visitMethod(final int access, final String name,
                                      final String desc, final String signature, final String[] exceptions) {
         MethodVisitor methodVisitor = super.visitMethod(access, name, desc, signature, exceptions);
-        if (type == null || !name.equals(TypeTools.STATIC_NAME)) return methodVisitor;
+        if (type == null || !name.equals(RuntimeTools.STATIC_NAME)) return methodVisitor;
         return new MethodAdapter(methodVisitor) {
+
+            private boolean alreadyProcessed;
+
+            public void visitMethodInsn(final int opcode, final String owner, final String name, final String desc) {
+                if (opcode == INVOKESTATIC && owner.equals(ENUM_NAME) &&
+                        name.equals(SET_ENUM_CONSTANTS_NAME) && desc.equals(SET_ENUM_CONSTANTS_DESC)) {
+                    alreadyProcessed = true;
+                }
+                super.visitMethodInsn(opcode, owner, name, desc);
+            }
+
             public void visitInsn(final int opcode) {
-                if (opcode == Opcodes.RETURN) {
+                if (opcode == RETURN && !alreadyProcessed) {
                     mv.visitLdcInsn(type);
-                    mv.visitMethodInsn(Opcodes.INVOKESTATIC, type.getInternalName(), "values",
-                            "()[" + type.getDescriptor());
-                    mv.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(Enum_.class), "setEnumConstants",
-                            "(" + Type.getDescriptor(Class.class) + Type.getDescriptor(Enum_[].class) + ")V");
+                    mv.visitMethodInsn(INVOKESTATIC, type.getInternalName(), "values", "()[" + type.getDescriptor());
+                    mv.visitMethodInsn(INVOKESTATIC, ENUM_NAME, SET_ENUM_CONSTANTS_NAME, SET_ENUM_CONSTANTS_DESC);
                 }
                 super.visitInsn(opcode);
             }

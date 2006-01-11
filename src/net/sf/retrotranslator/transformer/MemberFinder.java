@@ -50,7 +50,7 @@ public class MemberFinder extends EmptyVisitor {
 
     private String superName;
     private String[] interfaces;
-    private boolean found;
+    private int found;
 
     public MemberFinder(ClassReaderFactory factory, boolean method, boolean stat, String name, String desc) {
         this.factory = factory;
@@ -60,18 +60,18 @@ public class MemberFinder extends EmptyVisitor {
         this.desc = desc;
     }
 
-    public boolean findIn(String className, String location) throws ClassNotFoundException {
-        if (className == null) return false;
+    public int findIn(String className, String location) throws ClassNotFoundException {
+        if (className == null) return 0;
         try {
             factory.getClassReader(className).accept(this, ClassReader.SKIP_DEBUG);
         } catch (ClassNotFoundException e) {
             if (location == null) throw e;
             throw new ClassNotFoundException(e.getMessage() + ", location: " + location, e);
         }
-        if (found) return true;
+        if (found > 0) return found;
         String superClassName = superName;
         for (String interfaceName : interfaces) {
-            if (findIn(interfaceName, className)) return true;
+            if (findIn(interfaceName, className) > 0) return found;
         }
         return findIn(superClassName, className);
     }
@@ -79,7 +79,6 @@ public class MemberFinder extends EmptyVisitor {
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
         this.superName = superName;
         this.interfaces = interfaces;
-        this.found = false;
     }
 
     public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
@@ -93,6 +92,6 @@ public class MemberFinder extends EmptyVisitor {
     }
 
     private void check(int access, String name, String desc) {
-        found |= name.equals(this.name) && desc.equals(this.desc) && stat == ((access & Opcodes.ACC_STATIC) != 0);
+        if (name.equals(this.name) && desc.equals(this.desc) && stat == ((access & Opcodes.ACC_STATIC) != 0)) found++;
     }
 }

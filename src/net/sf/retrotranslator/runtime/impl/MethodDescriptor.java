@@ -64,9 +64,9 @@ public class MethodDescriptor extends GenericDeclarationDescriptor {
         this.desc = desc;
         if (signature != null) new SignatureReader(signature).accept(this);
         this.returnType = createReturnType();
-        if (name.equals(TypeTools.CONSTRUCTOR_NAME)) {
+        if (name.equals(RuntimeTools.CONSTRUCTOR_NAME)) {
             this.constructor = createConstructor();
-        } else if (!name.equals(TypeTools.STATIC_NAME)) {
+        } else if (!name.equals(RuntimeTools.STATIC_NAME)) {
             this.method = createMethod();
         }
         parameterAnnotations = createParameterAnnotations();
@@ -84,7 +84,7 @@ public class MethodDescriptor extends GenericDeclarationDescriptor {
         return new LazyValue<Class, Constructor>(classDescriptor.getTarget()) {
             protected Constructor resolve(Class input) {
                 for (Constructor constructor : input.getDeclaredConstructors()) {
-                    if (TypeTools.getConstructorDescriptor(constructor).equals(desc)) return constructor;
+                    if (RuntimeTools.getConstructorDescriptor(constructor).equals(desc)) return constructor;
                 }
                 return null;
             }
@@ -112,7 +112,7 @@ public class MethodDescriptor extends GenericDeclarationDescriptor {
     }
 
     public Object getDefaultValue() {
-        return defaultValue == null ? null : TypeTools.cloneNonEmptyArray(defaultValue.get());
+        return defaultValue == null ? null : RuntimeTools.cloneNonEmptyArray(defaultValue.get());
     }
 
     public static MethodDescriptor getInstance(Method method) {
@@ -123,7 +123,7 @@ public class MethodDescriptor extends GenericDeclarationDescriptor {
     }
 
     public static MethodDescriptor getInstance(Constructor constructor) {
-        String key = TypeTools.CONSTRUCTOR_NAME + TypeTools.getConstructorDescriptor(constructor);
+        String key = RuntimeTools.CONSTRUCTOR_NAME + RuntimeTools.getConstructorDescriptor(constructor);
         MethodDescriptor descriptor = ClassDescriptor.getInstance(constructor.getDeclaringClass()).getMethodDescriptor(key);
         descriptor.constructor.provide(constructor);
         return descriptor;

@@ -131,7 +131,7 @@ public abstract class AnnotatedElementDescriptor extends EmptyVisitor {
     }
 
     protected Class getClassByType(org.objectweb.asm.Type type) {
-        Class baseClass = TypeTools.getBaseClass(type);
+        Class baseClass = RuntimeTools.getBaseClass(type);
         if (baseClass != null) return baseClass;
         return getClassByInternalName(type.getSort() == Type.ARRAY ? type.getDescriptor() : type.getInternalName());
     }
@@ -162,7 +162,7 @@ public abstract class AnnotatedElementDescriptor extends EmptyVisitor {
         if (elements != null) {
             return createClassType(elements.toArray(new ClassTypeElement[elements.size()]));
         }
-        return TypeTools.getBaseClass(descriptor.baseType);
+        return RuntimeTools.getBaseClass(descriptor.baseType);
     }
 
     private java.lang.reflect.Type createClassType(ClassTypeElement[] typeElements) {

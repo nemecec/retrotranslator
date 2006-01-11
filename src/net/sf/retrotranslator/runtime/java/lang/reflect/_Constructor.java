@@ -32,7 +32,7 @@
 package net.sf.retrotranslator.runtime.java.lang.reflect;
 
 import net.sf.retrotranslator.runtime.impl.MethodDescriptor;
-import net.sf.retrotranslator.runtime.impl.TypeTools;
+import net.sf.retrotranslator.runtime.impl.RuntimeTools;
 import org.objectweb.asm.Opcodes;
 
 import java.lang.annotation.Annotation;
@@ -103,13 +103,13 @@ public class _Constructor {
         }
         TypeVariable[] typeParameters = getTypeParameters(constructor);
         if (typeParameters.length > 0) {
-            TypeTools.append(builder.append('<'), typeParameters).append("> ");
+            RuntimeTools.append(builder.append('<'), typeParameters).append("> ");
         }
-        builder.append(TypeTools.getString(constructor.getDeclaringClass()));
-        TypeTools.append(builder.append('('), getGenericParameterTypes(constructor)).append(')');
+        builder.append(RuntimeTools.getString(constructor.getDeclaringClass()));
+        RuntimeTools.append(builder.append('('), getGenericParameterTypes(constructor)).append(')');
         Type[] exceptionTypes = getGenericExceptionTypes(constructor);
         if (exceptionTypes.length > 0) {
-            TypeTools.append(builder.append(" throws "), exceptionTypes);
+            RuntimeTools.append(builder.append(" throws "), exceptionTypes);
         }
         return builder.toString();
     }

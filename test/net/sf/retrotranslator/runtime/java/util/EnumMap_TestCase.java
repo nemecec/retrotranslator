@@ -33,8 +33,8 @@ package net.sf.retrotranslator.runtime.java.util;
 
 import junit.framework.TestCase;
 
-import java.util.*;
 import java.lang.annotation.ElementType;
+import java.util.*;
 
 /**
  * @author Taras Puchko

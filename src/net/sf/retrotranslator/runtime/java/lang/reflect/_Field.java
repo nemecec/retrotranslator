@@ -32,7 +32,7 @@
 package net.sf.retrotranslator.runtime.java.lang.reflect;
 
 import net.sf.retrotranslator.runtime.impl.FieldDescriptor;
-import net.sf.retrotranslator.runtime.impl.TypeTools;
+import net.sf.retrotranslator.runtime.impl.RuntimeTools;
 import org.objectweb.asm.Opcodes;
 
 import java.lang.annotation.Annotation;
@@ -79,8 +79,8 @@ public class _Field {
         if (field.getModifiers() != 0) {
             builder.append(Modifier.toString(field.getModifiers())).append(' ');
         }
-        builder.append(TypeTools.getString(getGenericType(field))).append(' ');
-        builder.append(TypeTools.getString(field.getDeclaringClass())).append('.');
+        builder.append(RuntimeTools.getString(getGenericType(field))).append(' ');
+        builder.append(RuntimeTools.getString(field.getDeclaringClass())).append('.');
         return builder.append(field.getName()).toString();
     }
 }

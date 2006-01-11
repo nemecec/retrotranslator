@@ -31,6 +31,8 @@
  */
 package net.sf.retrotranslator.transformer;
 
+import org.objectweb.asm.Type;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -39,7 +41,7 @@ import java.io.IOException;
 /**
  * @author Taras Puchko
  */
-public class IOTools {
+public class TransformerTools {
 
     public static byte[] readFileToByteArray(File file) {
         int len = (int) file.length();
@@ -71,5 +73,17 @@ public class IOTools {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static String descriptor(Class returnType, Class... parameterTypes) {
+        Type[] argumentTypes = new Type[parameterTypes.length];
+        for (int i = 0; i < argumentTypes.length; i++) {
+            argumentTypes[i] = Type.getType(parameterTypes[i]);
+        }
+        return Type.getMethodDescriptor(Type.getType(returnType), argumentTypes);
+    }
+
+    public static Type getTypeByInternalName(String name) {
+        return Type.getType("L" + name + ";");
     }
 }

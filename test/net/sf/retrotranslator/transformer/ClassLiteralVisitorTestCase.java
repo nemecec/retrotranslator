@@ -54,6 +54,14 @@ public class ClassLiteralVisitorTestCase extends TestCase {
     public static class MyConstantsImpl implements MyConstants {
     }
 
+    public void testClasses() {
+        assertEquals(ClassLiteralVisitorTestCase.class, ClassLiteralVisitorTestCase[].class.getComponentType());
+        assertEquals(InterfaceInClass.class, InterfaceInClass[].class.getComponentType());
+        assertEquals(StaticClassInClass.class, StaticClassInClass[].class.getComponentType());
+        assertEquals(ClassInClass.class, ClassInClass[].class.getComponentType());
+        assertEquals(MyConstantsImpl.class, MyConstantsImpl[].class.getComponentType());
+    }
+
     public void testConst() {
         assertNotNull(CONST);
         assertNotNull(InterfaceInClass.CONST);
@@ -66,11 +74,19 @@ public class ClassLiteralVisitorTestCase extends TestCase {
     }
 
     public void testArrays() {
-        assertNotNull(Integer.class);
-        assertNotNull(Integer[].class);
-        assertNotNull(Integer[][].class);
-        assertNotNull(boolean.class);
-        assertNotNull(boolean[].class);
-        assertNotNull(boolean[][].class);
+        assertEquals(Integer.class, Integer[].class.getComponentType());
+        assertEquals(Integer[].class, Integer[][].class.getComponentType());
+        assertEquals(Integer[][].class, Integer[][][].class.getComponentType());
+        assertEquals(boolean.class, boolean[].class.getComponentType());
+        assertEquals(boolean[].class, boolean[][].class.getComponentType());
+        assertEquals(boolean[][].class, boolean[][][].class.getComponentType());
+
+        assertEquals(char[].class, char[][].class.getComponentType());
+        assertEquals(float[].class, float[][].class.getComponentType());
+        assertEquals(double[].class, double[][].class.getComponentType());
+        assertEquals(byte[].class, byte[][].class.getComponentType());
+        assertEquals(short[].class, short[][].class.getComponentType());
+        assertEquals(int[].class, int[][].class.getComponentType());
+        assertEquals(long[].class, long[][].class.getComponentType());
     }
 }
