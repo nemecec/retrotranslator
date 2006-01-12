@@ -74,12 +74,29 @@ public class ConstructorSubstitutionVisitor extends ClassAdapter {
             }
 
             private boolean initIllegalStateException(String desc) {
-                if (!desc.equals(TransformerTools.descriptor(void.class, String.class, Throwable.class))) return false;
-                mv.visitInsn(DUP_X2);
-                mv.visitInsn(POP);
-                mv.visitInsn(SWAP);
-                mv.visitInsn(DUP_X2);
-                mv.visitInsn(SWAP);
+                boolean oneParameter = desc.equals(TransformerTools.descriptor(void.class, Throwable.class));
+                boolean twoParameters = desc.equals(TransformerTools.descriptor(void.class, String.class, Throwable.class));
+                if (!oneParameter && !twoParameters) return false;
+                if (oneParameter) {
+                    Label toStringLabel = new Label();
+                    Label continueLabel = new Label();
+                    mv.visitInsn(DUP2);
+                    mv.visitInsn(DUP);
+                    mv.visitJumpInsn(IFNONNULL, toStringLabel);
+                    mv.visitInsn(POP);
+                    mv.visitInsn(ACONST_NULL);
+                    mv.visitJumpInsn(GOTO, continueLabel);
+                    mv.visitLabel(toStringLabel);
+                    mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(Throwable.class),
+                            "toString", TransformerTools.descriptor(String.class));
+                    mv.visitLabel(continueLabel);
+                } else {
+                    mv.visitInsn(DUP_X2);
+                    mv.visitInsn(POP);
+                    mv.visitInsn(SWAP);
+                    mv.visitInsn(DUP_X2);
+                    mv.visitInsn(SWAP);
+                }
                 mv.visitMethodInsn(INVOKESPECIAL, ILLEGAL_STATE_EXCEPTION,
                         RuntimeTools.CONSTRUCTOR_NAME, TransformerTools.descriptor(void.class, String.class));
                 mv.visitMethodInsn(INVOKEVIRTUAL, ILLEGAL_STATE_EXCEPTION,

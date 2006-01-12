@@ -34,6 +34,8 @@ package net.sf.retrotranslator.runtime.java.io;
 import junit.framework.*;
 
 import java.io.*;
+import java.util.List;
+import java.util.Arrays;
 
 /**
  * @author Taras Puchko
@@ -44,7 +46,8 @@ public class _CloseableTestCase extends TestCase {
         File tempFile = File.createTempFile("closeable", "test");
         tempFile.deleteOnExit();
         RandomAccessFile randomAccessFile = new RandomAccessFile(tempFile, "r");
-        Closeable[] closeables = new Closeable[] {
+
+        List<Closeable> closeables = Arrays.asList(new Closeable[] {
                 new ByteArrayInputStream("abc".getBytes()),
                 new ByteArrayOutputStream(),
                 new StringReader("abc"),
@@ -55,7 +58,8 @@ public class _CloseableTestCase extends TestCase {
                     public void close() throws IOException {
                     }
                 }
-        };
+        });
+
         for (Closeable closeable : closeables) {
             closeable.close();
         }

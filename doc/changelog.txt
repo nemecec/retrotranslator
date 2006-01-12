@@ -1,6 +1,13 @@
 Retrotranslator Changelog
 =================================
 
+0.9.7 (2006-01-12)
+---------------------------------
+  - Support for EnumMap, Closeable, IllegalStateException(String, Throwable), IllegalStateException(Throwable).
+  - Class literal expression (Classname.class) caused class initialization, fixed.
+  - A private copy of ASM was put into retrotranslator-runtime-0.9.7.jar to prevent ASM versions conflict.
+  - JITRetrotranslator does not require sun.misc.* classes to compile.
+
 0.9.6 (2006-01-05)
 ---------------------------------
   - Dynamic discovery of backported classes.

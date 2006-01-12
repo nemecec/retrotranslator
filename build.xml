@@ -1,6 +1,6 @@
 <project name="retrotranslator" default="build" basedir=".">
 
-	<property name="version" value="0.9.6"/>
+	<property name="version" value="0.9.7"/>
 
 	<property file="build.properties"/>
 
