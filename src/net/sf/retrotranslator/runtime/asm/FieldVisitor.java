@@ -1,8 +1,6 @@
 /***
- * Retrotranslator: a Java bytecode transformer that translates Java classes
- * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * ASM: a very small and fast Java bytecode manipulation framework
+ * Copyright (c) 2000-2005 INRIA, France Telecom
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,35 +27,40 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.transformer;
+package net.sf.retrotranslator.runtime.asm;
 
-import net.sf.retrotranslator.runtime.asm.ClassReader;
-
-import java.io.File;
-import java.util.List;
+import net.sf.retrotranslator.runtime.asm.AnnotationVisitor;
+import net.sf.retrotranslator.runtime.asm.Attribute;
 
 /**
- * @author Taras Puchko
+ * A visitor to visit a Java field. The methods of this interface must be called
+ * in the following order: ( <tt>visitAnnotation</tt> |
+ * <tt>visitAttribute</tt> )* <tt>visitEnd</tt>.
+ * 
+ * @author Eric Bruneton
  */
-public class ClassVerifier {
+public interface FieldVisitor {
 
-    private ClassReaderFactory factory;
+    /**
+     * Visits an annotation of the field.
+     * 
+     * @param desc the class descriptor of the annotation class.
+     * @param visible <tt>true</tt> if the annotation is visible at runtime.
+     * @return a non null visitor to visit the annotation values.
+     */
+    AnnotationVisitor visitAnnotation(String desc, boolean visible);
 
-    public ClassVerifier(ClassReaderFactory factory) {
-        this.factory = factory;
-    }
+    /**
+     * Visits a non standard attribute of the field.
+     * 
+     * @param attr an attribute.
+     */
+    void visitAttribute(Attribute attr);
 
-    public boolean verify(File dir, List<String> fileNames, MessageLogger logger) {
-        logger.info("Verifying " + fileNames.size() + " file(s) in " + dir + ".");
-        ReferenceVerifyingVisitor visitor = new ReferenceVerifyingVisitor(factory, logger);
-        for (String fileName : fileNames) {
-            logger.verbose(fileName);
-            byte[] data = TransformerTools.readFileToByteArray(new File(dir, fileName));
-            new ClassReader(data).accept(visitor, true);
-        }
-        int warningCount = visitor.getWarningCount();
-        logger.info("Verification of " + fileNames.size() + " file(s) completed" +
-                (warningCount != 0 ? " with " + warningCount + " warning(s)." : " successfully."));
-        return warningCount == 0;
-    }
+    /**
+     * Visits the end of the field. This method, which is the last one to be
+     * called, is used to inform the visitor that all the annotations and
+     * attributes of the field have been visited.
+     */
+    void visitEnd();
 }

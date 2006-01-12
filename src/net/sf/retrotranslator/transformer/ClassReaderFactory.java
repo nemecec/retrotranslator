@@ -31,7 +31,7 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import org.objectweb.asm.ClassReader;
+import net.sf.retrotranslator.runtime.asm.ClassReader;
 
 import java.io.*;
 import java.lang.ref.SoftReference;

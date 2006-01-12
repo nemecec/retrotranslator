@@ -33,8 +33,8 @@ package net.sf.retrotranslator.transformer;
 
 import net.sf.retrotranslator.runtime.impl.EmptyVisitor;
 import net.sf.retrotranslator.runtime.impl.RuntimeTools;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
+import net.sf.retrotranslator.runtime.asm.Opcodes;
+import net.sf.retrotranslator.runtime.asm.Type;
 
 import java.util.LinkedHashSet;
 import java.util.Set;

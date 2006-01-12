@@ -31,9 +31,9 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.ClassWriter;
+import net.sf.retrotranslator.runtime.asm.ClassReader;
+import net.sf.retrotranslator.runtime.asm.ClassVisitor;
+import net.sf.retrotranslator.runtime.asm.ClassWriter;
 
 import java.io.File;
 import java.util.List;
@@ -51,14 +51,14 @@ public class ClassTransformer {
 
     public byte[] transform(byte[] fileContent, int offset, int length) {
         ClassReader classReader = new ClassReader(fileContent);
-        ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        ClassWriter classWriter = new ClassWriter(true);
         ClassVisitor visitor = new VersionVisitor(new ClassSubstitutionVisitor(
                 new MemberSubstitutionVisitor(new ConstructorSubstitutionVisitor(
                         new InheritanceVisitor(new EnumVisitor(new ClassLiteralVisitor(classWriter)))))));
         if (stripsign) {
             visitor = new SignatureStrippingVisitor(visitor);
         }
-        classReader.accept(visitor, 0);
+        classReader.accept(visitor, true);
         return classWriter.toByteArray();
     }
 

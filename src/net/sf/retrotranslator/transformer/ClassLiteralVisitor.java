@@ -31,13 +31,14 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import org.objectweb.asm.*;
-import static org.objectweb.asm.Opcodes.*;
+import static net.sf.retrotranslator.runtime.asm.Opcodes.*;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import net.sf.retrotranslator.runtime.asm.*;
 
 /**
  * @author Taras Puchko

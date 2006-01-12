@@ -14,9 +14,9 @@
     </scm>
     <dependencies>
         <dependency>
-            <groupId>asm</groupId>
-            <artifactId>asm</artifactId>
-            <version>3.0-beta</version>
+            <groupId>net.sf.retrotranslator</groupId>
+            <artifactId>retrotranslator-runtime</artifactId>
+            <version>@version@</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

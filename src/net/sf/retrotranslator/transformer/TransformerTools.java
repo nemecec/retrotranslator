@@ -31,7 +31,7 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import org.objectweb.asm.Type;
+import net.sf.retrotranslator.runtime.asm.Type;
 
 import java.io.File;
 import java.io.FileInputStream;

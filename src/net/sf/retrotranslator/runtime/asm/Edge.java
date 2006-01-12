@@ -1,8 +1,6 @@
 /***
- * Retrotranslator: a Java bytecode transformer that translates Java classes
- * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * ASM: a very small and fast Java bytecode manipulation framework
+ * Copyright (c) 2000-2005 INRIA, France Telecom
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,35 +27,31 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.transformer;
-
-import net.sf.retrotranslator.runtime.asm.ClassReader;
-
-import java.io.File;
-import java.util.List;
+package net.sf.retrotranslator.runtime.asm;
 
 /**
- * @author Taras Puchko
+ * An edge in the control flow graph of a method body. See {@link Label Label}.
+ * 
+ * @author Eric Bruneton
  */
-public class ClassVerifier {
+class Edge {
 
-    private ClassReaderFactory factory;
+    /**
+     * The (relative) stack size in the basic block from which this edge
+     * originates. This size is equal to the stack size at the "jump"
+     * instruction to which this edge corresponds, relatively to the stack size
+     * at the beginning of the originating basic block.
+     */
+    int stackSize;
 
-    public ClassVerifier(ClassReaderFactory factory) {
-        this.factory = factory;
-    }
+    /**
+     * The successor block of the basic block from which this edge originates.
+     */
+    Label successor;
 
-    public boolean verify(File dir, List<String> fileNames, MessageLogger logger) {
-        logger.info("Verifying " + fileNames.size() + " file(s) in " + dir + ".");
-        ReferenceVerifyingVisitor visitor = new ReferenceVerifyingVisitor(factory, logger);
-        for (String fileName : fileNames) {
-            logger.verbose(fileName);
-            byte[] data = TransformerTools.readFileToByteArray(new File(dir, fileName));
-            new ClassReader(data).accept(visitor, true);
-        }
-        int warningCount = visitor.getWarningCount();
-        logger.info("Verification of " + fileNames.size() + " file(s) completed" +
-                (warningCount != 0 ? " with " + warningCount + " warning(s)." : " successfully."));
-        return warningCount == 0;
-    }
+    /**
+     * The next edge in the list of successors of the originating basic block.
+     * See {@link Label#successors successors}.
+     */
+    Edge next;
 }

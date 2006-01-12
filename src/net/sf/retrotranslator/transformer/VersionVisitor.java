@@ -31,8 +31,8 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import org.objectweb.asm.ClassAdapter;
-import org.objectweb.asm.ClassVisitor;
+import net.sf.retrotranslator.runtime.asm.ClassAdapter;
+import net.sf.retrotranslator.runtime.asm.ClassVisitor;
 
 /**
  * @author Taras Puchko

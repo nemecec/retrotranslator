@@ -34,7 +34,7 @@ package net.sf.retrotranslator.transformer;
 import edu.emory.mathcs.backport.java.util.AbstractQueue;
 import edu.emory.mathcs.backport.java.util.PriorityQueue;
 import edu.emory.mathcs.backport.java.util.Queue;
-import org.objectweb.asm.ClassVisitor;
+import net.sf.retrotranslator.runtime.asm.ClassVisitor;
 
 import java.util.HashMap;
 import java.util.Map;

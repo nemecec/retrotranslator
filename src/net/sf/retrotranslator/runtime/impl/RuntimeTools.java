@@ -31,7 +31,7 @@
  */
 package net.sf.retrotranslator.runtime.impl;
 
-import org.objectweb.asm.Type;
+import net.sf.retrotranslator.runtime.asm.Type;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;

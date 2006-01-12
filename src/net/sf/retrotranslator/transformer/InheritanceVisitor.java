@@ -36,8 +36,8 @@ import net.sf.retrotranslator.runtime.java.lang.Iterable_;
 import net.sf.retrotranslator.runtime.java.lang.reflect.AnnotatedElement_;
 import net.sf.retrotranslator.runtime.java.lang.reflect.GenericDeclaration_;
 import net.sf.retrotranslator.runtime.java.lang.reflect.Type_;
-import org.objectweb.asm.*;
-import static org.objectweb.asm.Opcodes.*;
+import net.sf.retrotranslator.runtime.asm.*;
+import static net.sf.retrotranslator.runtime.asm.Opcodes.*;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;

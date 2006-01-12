@@ -31,8 +31,8 @@
  */
 package net.sf.retrotranslator.runtime.impl;
 
-import org.objectweb.asm.AnnotationVisitor;
-import org.objectweb.asm.Type;
+import net.sf.retrotranslator.runtime.asm.AnnotationVisitor;
+import net.sf.retrotranslator.runtime.asm.Type;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.AnnotationTypeMismatchException;
@@ -130,14 +130,14 @@ public abstract class AnnotatedElementDescriptor extends EmptyVisitor {
         }
     }
 
-    protected Class getClassByType(org.objectweb.asm.Type type) {
+    protected Class getClassByType(net.sf.retrotranslator.runtime.asm.Type type) {
         Class baseClass = RuntimeTools.getBaseClass(type);
         if (baseClass != null) return baseClass;
         return getClassByInternalName(type.getSort() == Type.ARRAY ? type.getDescriptor() : type.getInternalName());
     }
 
     private Class getClassByDesc(String desc) {
-        return getClassByType(org.objectweb.asm.Type.getType(desc));
+        return getClassByType(net.sf.retrotranslator.runtime.asm.Type.getType(desc));
     }
 
     public java.lang.reflect.Type[] createTypes(List<TypeDescriptor> descriptors) {
@@ -232,8 +232,8 @@ public abstract class AnnotatedElementDescriptor extends EmptyVisitor {
 
     protected Object resolveValue(Object value, Class type, MethodDescriptor descriptor) {
         if (value == null) return null;
-        if (value instanceof org.objectweb.asm.Type) {
-            value = getClassByType((org.objectweb.asm.Type) value);
+        if (value instanceof net.sf.retrotranslator.runtime.asm.Type) {
+            value = getClassByType((net.sf.retrotranslator.runtime.asm.Type) value);
         } else if (value instanceof EnumValue) {
             EnumValue enumValue = (EnumValue) value;
             value = Enum.valueOf(getClassByDesc(enumValue.getDescriptor()), enumValue.getValue());

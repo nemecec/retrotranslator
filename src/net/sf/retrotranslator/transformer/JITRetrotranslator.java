@@ -31,10 +31,9 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Type;
+import net.sf.retrotranslator.runtime.asm.ClassWriter;
+import net.sf.retrotranslator.runtime.asm.*;
+import net.sf.retrotranslator.runtime.asm.Type;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -83,8 +82,8 @@ public class JITRetrotranslator {
             theUnsafe.setAccessible(true);
             Method method = unsafeClass.getMethod("defineClass", String.class, byte[].class, int.class, int.class);
             ClassReader reader = new ClassReader(JITTransformer.class.getName());
-            ClassWriter writer = new ClassWriter(0);
-            reader.accept(new JITCreator(writer), 0);
+            ClassWriter writer = new ClassWriter(false);
+            reader.accept(new JITCreator(writer), true);
             byte[] bytes = writer.toByteArray();
             Class jitClass = (Class) method.invoke(theUnsafe.get(null),
                     JITTransformer.class.getName() + "$", bytes, 0, bytes.length);

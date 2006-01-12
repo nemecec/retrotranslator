@@ -33,7 +33,7 @@ package net.sf.retrotranslator.runtime.java.lang.reflect;
 
 import net.sf.retrotranslator.runtime.impl.MethodDescriptor;
 import net.sf.retrotranslator.runtime.impl.RuntimeTools;
-import org.objectweb.asm.Opcodes;
+import net.sf.retrotranslator.runtime.asm.Opcodes;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;

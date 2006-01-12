@@ -31,7 +31,7 @@
  */
 package net.sf.retrotranslator.runtime.impl;
 
-import org.objectweb.asm.signature.SignatureVisitor;
+import net.sf.retrotranslator.runtime.asm.signature.SignatureVisitor;
 
 import java.lang.reflect.GenericDeclaration;
 import java.lang.reflect.TypeVariable;

@@ -60,9 +60,8 @@ Retrotranslator is a free, open-source software.
         <code>java -jar retrotranslator-transformer-<i>n.n.n</i>.jar -srcdir myclasses</code>
     </li>
     <li>
-        When running your application include the following files into your classpath:<br>
-        <code>retrotranslator-runtime-<i>n.n.n</i>.jar</code>, <code>asm-3.0_beta.jar</code>,
-        <code>backport-util-concurrent.jar</code>
+        When running your application include <code>retrotranslator-runtime-<i>n.n.n</i>.jar</code>
+        and <code>backport-util-concurrent.jar</code> into your classpath.<br>
     </li>
 </ol>
 
@@ -206,6 +205,7 @@ Retrotranslator is a free, open-source software.
     <tr><td><code>Double</code></td><td><code>valueOf(double)</code></td><td>&nbsp;</td></tr>
     <tr><td><code>Enum</code></td><td>All methods</td><td>&nbsp;</td></tr>
     <tr><td><code>Float</code></td><td><code>valueOf(float)</code></td><td>&nbsp;</td></tr>
+    <tr><td><code>IllegalStateException</code></td><td><code>IllegalStateException(String, Throwable)</code></td><td>&nbsp;</td></tr>
     <tr><td><code>Integer</code></td><td><code>valueOf(int)</code></td><td>&nbsp;</td></tr>
     <tr><td><code>Iterable</code></td><td>All methods</td><td>
         <code>new Iterable[...]</code> is replaced with <code>new Object[...]</code>
@@ -245,6 +245,7 @@ Retrotranslator is a free, open-source software.
         &nbsp;</td></tr>
     <tr><td><code>Arrays</code></td><td>All methods (21 new!)</td><td>&nbsp;</td></tr>
     <tr><td><code>Collections</code></td><td>All methods (13 new!)</td><td>&nbsp;</td></tr>
+    <tr><td><code>EnumMap</code></td><td>All methods</td><td>&nbsp;</td></tr>
     <tr><td><code>EnumSet</code></td><td>All methods</td><td>&nbsp;</td></tr>
     <tr><td><code>LinkedList</code></td><td>All methods (5 new!)</td><td>&nbsp;</td></tr>
     <tr><td><code>PriorityQueue</code></td><td>All methods</td><td>&nbsp;</td></tr>

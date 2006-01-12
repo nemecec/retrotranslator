@@ -30,7 +30,7 @@
 		</java>
 		<jar destfile="build/retrotranslator-runtime-${version}.jar">
 			<fileset dir="build/classes14" includes="net/sf/retrotranslator/runtime/**"/>
-			<fileset file="LICENSE.txt"/>
+			<fileset file="doc/LICENSE.txt"/>
 			<manifest>
 				<attribute name="Implementation-Title" value="Retrotranslator runtime"/>
 				<attribute name="Implementation-Version" value="${version}"/>
@@ -38,12 +38,13 @@
 		</jar>
 		<jar destfile="build/retrotranslator-transformer-${version}.jar">
 			<fileset dir="build/classes14" includes="net/sf/retrotranslator/transformer/**"/>
-			<fileset file="LICENSE.txt"/>
+			<fileset file="doc/LICENSE.txt"/>
+			<fileset file="doc/ASM-LICENSE.txt"/>
 			<manifest>
 				<attribute name="Implementation-Title" value="Retrotranslator transformer"/>
 				<attribute name="Implementation-Version" value="${version}"/>
 				<attribute name="Class-Path"
-                           value="retrotranslator-runtime-${version}.jar asm-3.0_beta.jar backport-util-concurrent.jar"/>
+                           value="retrotranslator-runtime-${version}.jar backport-util-concurrent.jar"/>
 				<attribute name="Main-Class" value="net.sf.retrotranslator.transformer.Retrotranslator"/>
 			</manifest>
 		</jar>
@@ -88,18 +89,12 @@
 		<mkdir dir="dist"/>
         <property name="bin.name" value="Retrotranslator-${version}-bin" />
         <zip destfile="dist/${bin.name}.zip">
-            <zipfileset prefix="${bin.name}" dir=".">
-                <include name="LICENSE.txt"/>
-                <include name="readme.html"/>
-                <include name="changelog.txt"/>
-            </zipfileset>
+            <zipfileset prefix="${bin.name}" dir="doc" />
             <zipfileset prefix="${bin.name}" dir="build">
                 <include name="retrotranslator-runtime-${version}.jar"/>
                 <include name="retrotranslator-transformer-${version}.jar"/>
             </zipfileset>
             <zipfileset prefix="${bin.name}" dir="lib">
-                <include name="asm-license.txt"/>
-                <include name="asm-3.0_beta.jar"/>
                 <include name="backport-util-concurrent-legal.txt"/>
                 <include name="backport-util-concurrent.jar"/>
             </zipfileset>
@@ -112,12 +107,10 @@
         <zip destfile="dist/${src.name}.zip">
             <zipfileset prefix="${src.name}" dir=".">
                 <include name="conf/**"/>
+                <include name="doc/**"/>
                 <include name="lib/**"/>
                 <include name="src/**"/>
                 <include name="test/**"/>
-                <include name="LICENSE.txt"/>
-                <include name="readme.html"/>
-                <include name="changelog.txt"/>
                 <include name="build.xml"/>
                 <include name="build_macosx.properties"/>
                 <include name="build_windows.properties"/>
@@ -132,7 +125,7 @@
         <mkdir dir="build/maven/runtime"/>
         <copy todir="build/maven/runtime" file="conf/runtime/pom.xml" filtering="on"/>
 		<jar destfile="dist/maven/retrotranslator-runtime-bin-${version}.jar">
-            <fileset file="LICENSE.txt"/>
+            <fileset file="doc/LICENSE.txt"/>
             <fileset file="build/maven/runtime/pom.xml"/>
             <fileset file="build/retrotranslator-runtime-${version}.jar"/>
         </jar>
@@ -140,7 +133,7 @@
 		<mkdir dir="build/maven/transformer"/>
 		<copy todir="build/maven/transformer" file="conf/transformer/pom.xml" filtering="on"/>
         <jar destfile="dist/maven/retrotranslator-transformer-bin-${version}.jar">
-            <fileset file="LICENSE.txt"/>
+            <fileset file="doc/LICENSE.txt"/>
             <fileset file="build/maven/transformer/pom.xml"/>
             <fileset file="build/retrotranslator-transformer-${version}.jar"/>
         </jar>

@@ -31,8 +31,8 @@
  */
 package net.sf.retrotranslator.runtime.impl;
 
-import org.objectweb.asm.*;
-import org.objectweb.asm.signature.SignatureVisitor;
+import net.sf.retrotranslator.runtime.asm.signature.SignatureVisitor;
+import net.sf.retrotranslator.runtime.asm.*;
 
 /**
  * @author Taras Puchko
@@ -143,9 +143,6 @@ public class EmptyVisitor implements ClassVisitor, FieldVisitor, MethodVisitor, 
 
     public AnnotationVisitor visitArray(String name) {
         return this;
-    }
-
-    public void visitFrame(int type, int nLocal, Object[] local, int nStack, Object[] stack) {
     }
 
     public void visitFormalTypeParameter(String name) {

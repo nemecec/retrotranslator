@@ -31,10 +31,10 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import static org.objectweb.asm.Opcodes.*;
+import static net.sf.retrotranslator.runtime.asm.Opcodes.*;
 import net.sf.retrotranslator.runtime.impl.RuntimeTools;
 import net.sf.retrotranslator.runtime.java.lang.Enum_;
-import org.objectweb.asm.*;
+import net.sf.retrotranslator.runtime.asm.*;
 
 /**
  * @author Taras Puchko

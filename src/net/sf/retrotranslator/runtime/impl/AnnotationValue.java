@@ -31,7 +31,7 @@
  */
 package net.sf.retrotranslator.runtime.impl;
 
-import org.objectweb.asm.AnnotationVisitor;
+import net.sf.retrotranslator.runtime.asm.AnnotationVisitor;
 
 import java.util.HashMap;
 import java.util.Map;

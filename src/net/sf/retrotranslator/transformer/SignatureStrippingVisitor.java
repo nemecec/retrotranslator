@@ -31,7 +31,7 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import org.objectweb.asm.*;
+import net.sf.retrotranslator.runtime.asm.*;
 
 /**
  * @author Taras Puchko

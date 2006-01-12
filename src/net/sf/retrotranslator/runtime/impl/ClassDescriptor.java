@@ -31,12 +31,12 @@
  */
 package net.sf.retrotranslator.runtime.impl;
 
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.signature.SignatureReader;
-import org.objectweb.asm.signature.SignatureVisitor;
+import net.sf.retrotranslator.runtime.asm.ClassReader;
+import net.sf.retrotranslator.runtime.asm.FieldVisitor;
+import net.sf.retrotranslator.runtime.asm.MethodVisitor;
+import net.sf.retrotranslator.runtime.asm.Opcodes;
+import net.sf.retrotranslator.runtime.asm.signature.SignatureReader;
+import net.sf.retrotranslator.runtime.asm.signature.SignatureVisitor;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -83,7 +83,7 @@ public class ClassDescriptor extends GenericDeclarationDescriptor {
         String simpleName = index < 0 ? targetName : targetName.substring(index + 1);
         InputStream stream = target.getResourceAsStream(simpleName + ".class");
         try {
-            new ClassReader(stream).accept(this, ClassReader.SKIP_DEBUG);
+            new ClassReader(stream).accept(this, true);
         } finally {
             stream.close();
         }

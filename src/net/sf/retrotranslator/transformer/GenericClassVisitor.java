@@ -31,10 +31,10 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import org.objectweb.asm.*;
-import org.objectweb.asm.signature.SignatureReader;
-import org.objectweb.asm.signature.SignatureVisitor;
-import org.objectweb.asm.signature.SignatureWriter;
+import net.sf.retrotranslator.runtime.asm.signature.SignatureReader;
+import net.sf.retrotranslator.runtime.asm.signature.SignatureVisitor;
+import net.sf.retrotranslator.runtime.asm.signature.SignatureWriter;
+import net.sf.retrotranslator.runtime.asm.*;
 
 /**
  * @author Taras Puchko
@@ -313,10 +313,6 @@ public abstract class GenericClassVisitor implements ClassVisitor {
 
         public void visitEnd() {
             methodVisitor.visitEnd();
-        }
-
-        public void visitFrame(int type, int nLocal, Object[] local, int nStack, Object[] stack) {
-            //discard frame information
         }
     }
 

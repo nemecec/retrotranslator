@@ -31,9 +31,9 @@
  */
 package net.sf.retrotranslator.runtime.impl;
 
-import org.objectweb.asm.AnnotationVisitor;
-import org.objectweb.asm.signature.SignatureReader;
-import org.objectweb.asm.signature.SignatureVisitor;
+import net.sf.retrotranslator.runtime.asm.AnnotationVisitor;
+import net.sf.retrotranslator.runtime.asm.signature.SignatureReader;
+import net.sf.retrotranslator.runtime.asm.signature.SignatureVisitor;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
@@ -75,7 +75,7 @@ public class MethodDescriptor extends GenericDeclarationDescriptor {
     private LazyValue<String, Class> createReturnType() {
         return new LazyValue<String, Class>(desc) {
             protected Class resolve(String input) {
-                return getClassByType(org.objectweb.asm.Type.getReturnType(input));
+                return getClassByType(net.sf.retrotranslator.runtime.asm.Type.getReturnType(input));
             }
         };
     }
@@ -96,7 +96,7 @@ public class MethodDescriptor extends GenericDeclarationDescriptor {
             protected Method resolve(Class input) {
                 for (Method method : input.getDeclaredMethods()) {
                     if (method.getName().equals(name) &&
-                            org.objectweb.asm.Type.getMethodDescriptor(method).equals(desc)) return method;
+                            net.sf.retrotranslator.runtime.asm.Type.getMethodDescriptor(method).equals(desc)) return method;
                 }
                 return null;
             }
@@ -116,7 +116,7 @@ public class MethodDescriptor extends GenericDeclarationDescriptor {
     }
 
     public static MethodDescriptor getInstance(Method method) {
-        String key = method.getName() + org.objectweb.asm.Type.getMethodDescriptor(method);
+        String key = method.getName() + net.sf.retrotranslator.runtime.asm.Type.getMethodDescriptor(method);
         MethodDescriptor descriptor = ClassDescriptor.getInstance(method.getDeclaringClass()).getMethodDescriptor(key);
         descriptor.method.provide(method);
         return descriptor;
@@ -161,7 +161,7 @@ public class MethodDescriptor extends GenericDeclarationDescriptor {
             }
 
             protected Annotation[][] newArray(int size) {
-                return new Annotation[org.objectweb.asm.Type.getArgumentTypes(desc).length][];
+                return new Annotation[net.sf.retrotranslator.runtime.asm.Type.getArgumentTypes(desc).length][];
             }
         };
     }

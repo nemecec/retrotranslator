@@ -32,6 +32,8 @@
 package net.sf.retrotranslator.runtime.java.lang;
 
 import java.lang.annotation.Annotation;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -76,15 +78,19 @@ public class _Package {
     }
 
     private static Set<ClassLoader> getClassLoaders() {
-        Set<ClassLoader> result = new LinkedHashSet<ClassLoader>();
-        try {
-            for (Class aClass : new ExecutionContext().getClassContext()) {
-                result.add(aClass.getClassLoader());
+        return AccessController.doPrivileged(new PrivilegedAction<Set<ClassLoader>>() {
+            public Set<ClassLoader> run() {
+                Set<ClassLoader> result = new LinkedHashSet<ClassLoader>();
+                try {
+                    for (Class aClass : new ExecutionContext().getClassContext()) {
+                        result.add(aClass.getClassLoader());
+                    }
+                } catch (SecurityException e) {
+                    //ignore
+                }
+                return result;
             }
-        } catch (SecurityException e) {
-            //ignore
-        }
-        return result;
+        });
     }
 
     public static class ExecutionContext extends SecurityManager {

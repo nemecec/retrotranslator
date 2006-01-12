@@ -32,10 +32,9 @@
 package net.sf.retrotranslator.transformer;
 
 import net.sf.retrotranslator.runtime.impl.EmptyVisitor;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
+import net.sf.retrotranslator.runtime.asm.FieldVisitor;
+import net.sf.retrotranslator.runtime.asm.MethodVisitor;
+import net.sf.retrotranslator.runtime.asm.Opcodes;
 
 /**
  * @author Taras Puchko
@@ -63,7 +62,7 @@ public class MemberFinder extends EmptyVisitor {
     public int findIn(String className, String location) throws ClassNotFoundException {
         if (className == null) return 0;
         try {
-            factory.getClassReader(className).accept(this, ClassReader.SKIP_DEBUG);
+            factory.getClassReader(className).accept(this, true);
         } catch (ClassNotFoundException e) {
             if (location == null) throw e;
             throw new ClassNotFoundException(e.getMessage() + ", location: " + location, e);

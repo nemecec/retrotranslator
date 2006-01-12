@@ -1,8 +1,6 @@
 /***
- * Retrotranslator: a Java bytecode transformer that translates Java classes
- * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * ASM: a very small and fast Java bytecode manipulation framework
+ * Copyright (c) 2000-2005 INRIA, France Telecom
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,35 +27,44 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.transformer;
-
-import net.sf.retrotranslator.runtime.asm.ClassReader;
-
-import java.io.File;
-import java.util.List;
+package net.sf.retrotranslator.runtime.asm;
 
 /**
- * @author Taras Puchko
+ * Information about an exception handler block.
+ * 
+ * @author Eric Bruneton
  */
-public class ClassVerifier {
+class Handler {
 
-    private ClassReaderFactory factory;
+    /**
+     * Beginning of the exception handler's scope (inclusive).
+     */
+    Label start;
 
-    public ClassVerifier(ClassReaderFactory factory) {
-        this.factory = factory;
-    }
+    /**
+     * End of the exception handler's scope (exclusive).
+     */
+    Label end;
 
-    public boolean verify(File dir, List<String> fileNames, MessageLogger logger) {
-        logger.info("Verifying " + fileNames.size() + " file(s) in " + dir + ".");
-        ReferenceVerifyingVisitor visitor = new ReferenceVerifyingVisitor(factory, logger);
-        for (String fileName : fileNames) {
-            logger.verbose(fileName);
-            byte[] data = TransformerTools.readFileToByteArray(new File(dir, fileName));
-            new ClassReader(data).accept(visitor, true);
-        }
-        int warningCount = visitor.getWarningCount();
-        logger.info("Verification of " + fileNames.size() + " file(s) completed" +
-                (warningCount != 0 ? " with " + warningCount + " warning(s)." : " successfully."));
-        return warningCount == 0;
-    }
+    /**
+     * Beginning of the exception handler's code.
+     */
+    Label handler;
+
+    /**
+     * Internal name of the type of exceptions handled by this handler, or
+     * <tt>null</tt> to catch any exceptions.
+     */
+    String desc;
+
+    /**
+     * Constant pool index of the internal name of the type of exceptions
+     * handled by this handler, or 0 to catch any exceptions.
+     */
+    int type;
+
+    /**
+     * Next exception handler block info.
+     */
+    Handler next;
 }

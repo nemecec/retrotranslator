@@ -32,8 +32,8 @@
 package net.sf.retrotranslator.transformer;
 
 import net.sf.retrotranslator.runtime.impl.RuntimeTools;
-import org.objectweb.asm.*;
-import static org.objectweb.asm.Opcodes.*;
+import net.sf.retrotranslator.runtime.asm.*;
+import static net.sf.retrotranslator.runtime.asm.Opcodes.*;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;

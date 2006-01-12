@@ -34,8 +34,8 @@ package net.sf.retrotranslator.transformer;
 import edu.emory.mathcs.backport.java.util.Queue;
 import net.sf.retrotranslator.runtime.impl.EmptyVisitor;
 import net.sf.retrotranslator.runtime.java.util._Queue;
-import org.objectweb.asm.*;
-import static org.objectweb.asm.Opcodes.*;
+import net.sf.retrotranslator.runtime.asm.*;
+import static net.sf.retrotranslator.runtime.asm.Opcodes.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -98,7 +98,7 @@ public class MemberSubstitutionVisitor extends ClassAdapter {
         try {
             try {
                 MemberCollector memberCollector = new MemberCollector(TransformerTools.getTypeByInternalName(originalName));
-                new ClassReader(stream).accept(memberCollector, ClassReader.SKIP_DEBUG);
+                new ClassReader(stream).accept(memberCollector, true);
                 return true;
             } finally {
                 stream.close();

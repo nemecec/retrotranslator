@@ -31,7 +31,7 @@
  */
 package net.sf.retrotranslator.runtime.impl;
 
-import org.objectweb.asm.signature.SignatureReader;
+import net.sf.retrotranslator.runtime.asm.signature.SignatureReader;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
