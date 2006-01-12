@@ -196,7 +196,10 @@ Retrotranslator is a free, open-source software.
         <td><a href="http://www.mathcs.emory.edu/dcl/util/backport-util-concurrent/">Java 1.4 backport of JSR 166</a>
             is used
         </td></tr>
-    <tr><td rowspan="17"><code>java.lang</code></td><td><code>Boolean</code></td><td><code>parseBoolean(String)</code>
+    <tr><td><code>java.io</code></td><td><code>Closeable</code></td><td><code>All methods</code></td><td>
+            <code>new Closeable[...]</code> is replaced with <code>new Object[...]</code>
+        </td></tr>
+    <tr><td rowspan="18"><code>java.lang</code></td><td><code>Boolean</code></td><td><code>parseBoolean(String)</code>
     </td><td>&nbsp;</td></tr>
     <tr><td><code>Byte</code></td><td><code>valueOf(byte)</code></td><td>&nbsp;</td></tr>
     <tr><td><code>Character</code></td><td><code>valueOf(char)</code></td><td>&nbsp;</td></tr>
@@ -241,7 +244,7 @@ Retrotranslator is a free, open-source software.
     <tr><td ><code>java.math</code></td><td><code>BigDecimal</code></td><td>
         <code>BigDecimal(int), BigDecimal(long)</code></td><td>&nbsp;</td></tr>
 
-    <tr><td rowspan="7"><code>java.util</code></td><td><code>AbstractQueue</code></td><td>All methods</td><td>
+    <tr><td rowspan="8"><code>java.util</code></td><td><code>AbstractQueue</code></td><td>All methods</td><td>
         &nbsp;</td></tr>
     <tr><td><code>Arrays</code></td><td>All methods (21 new!)</td><td>&nbsp;</td></tr>
     <tr><td><code>Collections</code></td><td>All methods (13 new!)</td><td>&nbsp;</td></tr>
