@@ -34,6 +34,7 @@ package net.sf.retrotranslator.runtime.java.util;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.TreeMap;
+import java.io.Serializable;
 
 /**
  * @author Taras Puchko
@@ -45,7 +46,7 @@ public class EnumMap_<K extends Enum<K>, V> extends TreeMap<K, V> {
     private final Class<K> keyType;
 
     public EnumMap_(Class<K> keyType) {
-        super(ENUM_COMPARATOR);
+        super(new EnumComparator());
         if (!keyType.isEnum()) {
             throw new NullPointerException();
         }
@@ -90,12 +91,13 @@ public class EnumMap_<K extends Enum<K>, V> extends TreeMap<K, V> {
         return map.keySet().iterator().next().getDeclaringClass();
     }
 
-    private static final Comparator<Object> ENUM_COMPARATOR = new Comparator() {
+    private static class EnumComparator implements Comparator, Serializable {
         public int compare(Object o1, Object o2) {
-            if (o1 instanceof Enum && o2 instanceof Enum) {
-                return ((Enum) o1).ordinal() - ((Enum) o2).ordinal();
+            if (o1 instanceof Enum) {
+                return o2 instanceof Enum ? ((Enum) o1).ordinal() - ((Enum) o2).ordinal() : 1;
+            } else {
+                return o2 instanceof Enum ? -1 : 0;
             }
-            return (o1 == null ? 0 : o1.hashCode()) - (o2 == null ? 0 : o2.hashCode());
         }
-    };
+    }
 }

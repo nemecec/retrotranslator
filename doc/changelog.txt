@@ -1,6 +1,8 @@
 Retrotranslator Changelog
 =================================
 
+  - Limited support for Thread.getStackTrace()
+
 0.9.7 (2006-01-12)
 ---------------------------------
   - Support for EnumMap, Closeable, IllegalStateException(String, Throwable), IllegalStateException(Throwable).
