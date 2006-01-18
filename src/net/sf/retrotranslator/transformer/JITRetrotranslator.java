@@ -89,6 +89,8 @@ public class JITRetrotranslator {
                     JITTransformer.class.getName() + "$", bytes, 0, bytes.length);
             transformerClass.getMethod("add", transformerClass).invoke(null, jitClass.newInstance());
             installed = true;
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -99,7 +101,13 @@ public class JITRetrotranslator {
         if (args.length == 0 || jar && args.length == 1) {
             printUsageAndExit();
         }
-        install();
+        if (System.getProperty("java.version").startsWith("1.4")) {
+            try {
+                install();
+            } catch (RuntimeException e) {
+                System.err.println("Cannot install JIT Retrotranslator: " + e.getMessage());
+            }
+        }
         if (jar) {
             File file = new File(args[1]);
             if (!file.isFile()) printErrorAndExit("Unable to access jarfile " + file);
