@@ -1,8 +1,11 @@
 Retrotranslator Changelog
 =================================
 
+  - Bug fixed: Retrotranslator didn't work on JRE 1.4.1-b21 where only "java.lang.Object" may be used
+    as qualifying type for array cloning. See http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4750641
   - Limited support for Thread.getStackTrace()
-  - Array.clone() replaced with Object.clone() - workaround for the bug 4750641 in JRE 1.4.1-b21
+  - Support for StringBuffer(CharSequence) and for StringBuffer methods: append(CharSequence),
+    append(CharSequence, int, int), insert(int, CharSequence), insert(int, CharSequence, int, int)
 
 0.9.7 (2006-01-12)
 ---------------------------------
