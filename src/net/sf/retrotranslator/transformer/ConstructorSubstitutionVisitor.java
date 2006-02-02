@@ -45,6 +45,7 @@ public class ConstructorSubstitutionVisitor extends ClassAdapter {
 
     private static final String BIG_DECIMAL = Type.getInternalName(BigDecimal.class);
     private static final String ILLEGAL_STATE_EXCEPTION = Type.getInternalName(IllegalStateException.class);
+    private static final String STRING_BUFFER = Type.getInternalName(StringBuffer.class);
 
     public ConstructorSubstitutionVisitor(final ClassVisitor cv) {
         super(cv);
@@ -57,6 +58,7 @@ public class ConstructorSubstitutionVisitor extends ClassAdapter {
                 if (opcode == INVOKESPECIAL && name.equals(RuntimeTools.CONSTRUCTOR_NAME)) {
                     if (owner.equals(BIG_DECIMAL) && initBigDecimal(desc)) return;
                     if (owner.equals(ILLEGAL_STATE_EXCEPTION) && initIllegalStateException(desc)) return;
+                    if (owner.equals(STRING_BUFFER) && initStringBuffer(desc)) return;
                 }
                 super.visitMethodInsn(opcode, owner, name, desc);
             }
@@ -105,6 +107,15 @@ public class ConstructorSubstitutionVisitor extends ClassAdapter {
                 return true;
             }
 
+
+            private boolean initStringBuffer(String desc) {
+                if (!desc.equals(TransformerTools.descriptor(void.class, CharSequence.class))) return false;
+                mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(Object.class),
+                        "toString", TransformerTools.descriptor(String.class));
+                mv.visitMethodInsn(INVOKESPECIAL, STRING_BUFFER,
+                        RuntimeTools.CONSTRUCTOR_NAME, TransformerTools.descriptor(void.class, String.class));
+                return true;
+            }
         };
     }
 

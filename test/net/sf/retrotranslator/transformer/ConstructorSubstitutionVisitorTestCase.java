@@ -98,10 +98,16 @@ public class ConstructorSubstitutionVisitorTestCase extends TestCase {
         assertTrue(ex.getCause() instanceof IllegalArgumentException);
     }
 
-    public void t() {
-        Throwable cause = new IllegalArgumentException();
-        Throwable ex = new Throwable(cause == null ? null : cause.toString());
-        ex.initCause(cause);
+    public void testStringBuffer() {
+        CharSequence sequence = "abc";
+        assertEquals("abc", new StringBuffer(sequence).toString());
+        sequence = null;
+        try {
+            new StringBuffer(sequence);
+            fail();
+        } catch (NullPointerException e) {
+            //ok
+        }
     }
 
 }
