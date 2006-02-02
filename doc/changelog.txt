@@ -2,6 +2,7 @@ Retrotranslator Changelog
 =================================
 
   - Limited support for Thread.getStackTrace()
+  - Array.clone() replaced with Object.clone() - workaround for the bug 4750641 in JRE 1.4.1-b21
 
 0.9.7 (2006-01-12)
 ---------------------------------
