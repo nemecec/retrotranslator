@@ -70,7 +70,23 @@
 			<classpath refid="classpath"/>
 		</retrotranslator>
 
-		<junit printsummary="withOutAndErr" fork="yes" failureproperty="test.failed" jvm="${java14_home}/bin/java">
+        <echo message="Running tests on ${java14_home}"/>
+        <junit printsummary="withOutAndErr" fork="yes" failureproperty="test.failed" jvm="${java14_home}/bin/java">
+			<jvmarg value="-Xfuture"/>
+			<classpath>
+				<path refid="classpath"/>
+				<pathelement location="build/retrotranslator-runtime-${version}.jar"/>
+				<pathelement location="build/test-classes"/>
+			</classpath>
+			<formatter type="brief" usefile="false"/>
+			<batchtest>
+				<fileset dir="build/test-classes" includes="**/*TestCase.class" excludes="**/BaseTestCase.class"/>
+			</batchtest>
+		</junit>
+		<fail if="test.failed">Unit tests failed.</fail>
+
+        <echo message="Running tests on ${java15_home}"/>
+		<junit printsummary="withOutAndErr" fork="yes" failureproperty="test.failed" jvm="${java15_home}/bin/java">
 			<jvmarg value="-Xfuture"/>
 			<classpath>
 				<path refid="classpath"/>

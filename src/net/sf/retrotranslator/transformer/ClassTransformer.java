@@ -53,8 +53,8 @@ public class ClassTransformer {
         ClassReader classReader = new ClassReader(fileContent);
         ClassWriter classWriter = new ClassWriter(true);
         ClassVisitor visitor = new VersionVisitor(new ClassSubstitutionVisitor(
-                new MemberSubstitutionVisitor(new ConstructorSubstitutionVisitor(
-                        new InheritanceVisitor(new EnumVisitor(new ClassLiteralVisitor(classWriter)))))));
+                new MemberSubstitutionVisitor(new ConstructorSubstitutionVisitor(new InheritanceVisitor(
+                                new EnumVisitor(new ClassLiteralVisitor(new ArrayCloningVisitor(classWriter))))))));
         if (stripsign) {
             visitor = new SignatureStrippingVisitor(visitor);
         }
