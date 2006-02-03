@@ -61,24 +61,4 @@ public class ClassTransformer {
         classReader.accept(visitor, true);
         return classWriter.toByteArray();
     }
-
-    public void transform(File srcdir, File destdir, List<String> fileNames, MessageLogger logger) {
-        logger.info("Transforming " + fileNames.size() + " file(s)" + ((destdir.equals(srcdir))
-                ? " in " + srcdir + "."
-                : " from " + srcdir + " to " + destdir + "."));
-
-        for (int i = 0; i < fileNames.size(); i++) {
-            String fileName = fileNames.get(i);
-            logger.verbose(fileName);
-            byte[] sourceData = TransformerTools.readFileToByteArray(new File(srcdir, fileName));
-            byte[] resultData = transform(sourceData, 0, sourceData.length);
-            String fixedName = ClassSubstitutionVisitor.fixIdentifier(fileName);
-            if (!fixedName.equals(fileName)) {
-                fileNames.set(i, fixedName);
-                new File(destdir, fileName).delete();
-            }
-            TransformerTools.writeByteArrayToFile(new File(destdir, fixedName), resultData);
-        }
-        logger.info("Transformation of " + fileNames.size() + " file(s) completed successfully.");
-    }
 }

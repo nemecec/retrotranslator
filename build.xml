@@ -1,6 +1,6 @@
 <project name="retrotranslator" default="build" basedir=".">
 
-	<property name="version" value="0.9.7"/>
+	<property name="version" value="0.9.8"/>
 
 	<property file="build.properties"/>
 
@@ -27,6 +27,7 @@
 			<arg value="-destdir"/>
 			<arg value="build/classes14"/>
 			<arg value="-stripsign"/>
+			<arg value="-lazy"/>
 		</java>
 		<jar destfile="build/retrotranslator-runtime-${version}.jar">
 			<fileset dir="build/classes14" includes="net/sf/retrotranslator/runtime/**"/>
@@ -64,7 +65,7 @@
                fork="yes" debug="true" executable="${java15_home}/bin/javac"
                classpathref="classpath" classpath="build/classes15"/>
 
-		<retrotranslator srcdir="build/test-classes" verify="true">
+		<retrotranslator srcdir="build/test-classes" verify="true" lazy="true">
 			<classpath location="${java14_rt_jar}"/>
 			<classpath location="build/retrotranslator-runtime-${version}.jar"/>
 			<classpath refid="classpath"/>
@@ -72,21 +73,6 @@
 
         <echo message="Running tests on ${java14_home}"/>
         <junit printsummary="withOutAndErr" fork="yes" failureproperty="test.failed" jvm="${java14_home}/bin/java">
-			<jvmarg value="-Xfuture"/>
-			<classpath>
-				<path refid="classpath"/>
-				<pathelement location="build/retrotranslator-runtime-${version}.jar"/>
-				<pathelement location="build/test-classes"/>
-			</classpath>
-			<formatter type="brief" usefile="false"/>
-			<batchtest>
-				<fileset dir="build/test-classes" includes="**/*TestCase.class" excludes="**/BaseTestCase.class"/>
-			</batchtest>
-		</junit>
-		<fail if="test.failed">Unit tests failed.</fail>
-
-        <echo message="Running tests on ${java15_home}"/>
-		<junit printsummary="withOutAndErr" fork="yes" failureproperty="test.failed" jvm="${java15_home}/bin/java">
 			<jvmarg value="-Xfuture"/>
 			<classpath>
 				<path refid="classpath"/>
@@ -111,7 +97,6 @@
                 <include name="retrotranslator-transformer-${version}.jar"/>
             </zipfileset>
             <zipfileset prefix="${bin.name}" dir="lib">
-                <include name="backport-util-concurrent-legal.txt"/>
                 <include name="backport-util-concurrent.jar"/>
             </zipfileset>
         </zip>

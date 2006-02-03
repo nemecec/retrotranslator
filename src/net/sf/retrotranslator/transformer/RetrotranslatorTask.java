@@ -33,30 +33,27 @@ package net.sf.retrotranslator.transformer;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
-import org.apache.tools.ant.taskdefs.MatchingTask;
+import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.types.Reference;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * @author Taras Puchko
  */
-public class RetrotranslatorTask extends MatchingTask implements MessageLogger {
+public class RetrotranslatorTask extends Task implements MessageLogger {
 
     private Path src;
     private File destdir;
     private boolean verbose;
     private boolean stripsign;
+    private boolean lazy;
     private boolean verify;
     private boolean failonwarning = true;
     private Path classpath;
 
     public RetrotranslatorTask() {
-        setIncludes("**/*.class");
     }
 
     public void setSrcdir(Path srcdir) {
@@ -88,6 +85,10 @@ public class RetrotranslatorTask extends MatchingTask implements MessageLogger {
         this.verify = verify;
     }
 
+    public void setLazy(boolean lazy) {
+        this.lazy = lazy;
+    }
+
     public void setFailonwarning(boolean failonwarning) {
         this.failonwarning = failonwarning;
     }
@@ -109,68 +110,6 @@ public class RetrotranslatorTask extends MatchingTask implements MessageLogger {
         return classpath.createPath();
     }
 
-    public void execute() throws BuildException {
-        if (destdir != null) {
-            if (!destdir.exists()) throw new BuildException(destdir + " not found.");
-            if (!destdir.isDirectory()) throw new BuildException(destdir + " is not a directory.");
-        }
-        List<FileCollection> fileCollections = getFileCollection();
-        ClassTransformer transformer = new ClassTransformer(stripsign);
-        for (FileCollection fileCollection : fileCollections) {
-            transformer.transform(fileCollection.dir, getDestDir(fileCollection), fileCollection.fileNames, this);
-        }
-        if (verify) {
-            verifyAll(fileCollections);
-        }
-    }
-
-    private void verifyAll(List<FileCollection> fileCollections) {
-        ClassReaderFactory factory = new ClassReaderFactory(classpath == null);
-        try {
-            if (classpath != null) {
-                for (String fileName : classpath.list()) {
-                    factory.appendPath(getProject().resolveFile(fileName));
-                }
-            }
-            new Path(getProject()).concatSystemClasspath();
-
-            if (destdir != null) {
-                factory.appendPath(destdir);
-            } else {
-                for (FileCollection fileCollection : fileCollections) {
-                    factory.appendPath(fileCollection.dir);
-                }
-            }
-            ClassVerifier verifier = new ClassVerifier(factory);
-            boolean verified = true;
-            for (FileCollection fileCollection : fileCollections) {
-                verified &= verifier.verify(getDestDir(fileCollection), fileCollection.fileNames, this);
-            }
-            if (!verified && failonwarning) throw new BuildException("Verification failed.", getLocation());
-        } finally {
-            factory.close();
-        }
-    }
-
-    private File getDestDir(FileCollection fileCollection) {
-        return destdir != null ? destdir : fileCollection.dir;
-    }
-
-    private List<FileCollection> getFileCollection() {
-        List<FileCollection> result = new ArrayList<FileCollection>();
-        if (src != null) {
-            for (String srcDir : src.list()) {
-                File dir = getProject().resolveFile(srcDir);
-                String[] files = getDirectoryScanner(dir).getIncludedFiles();
-                result.add(new FileCollection(dir, Arrays.asList(files)));
-            }
-        }
-        if (result.isEmpty()) {
-            throw new BuildException("Source directory is not set.");
-        }
-        return result;
-    }
-
     public void verbose(String message) {
         if (verbose) log(message, Project.MSG_INFO);
     }
@@ -183,13 +122,27 @@ public class RetrotranslatorTask extends MatchingTask implements MessageLogger {
         log(message, Project.MSG_WARN);
     }
 
-    private static class FileCollection {
-        public final File dir;
-        public final List<String> fileNames;
-
-        public FileCollection(File dir, List<String> fileNames) {
-            this.dir = dir;
-            this.fileNames = fileNames;
+    public void execute() throws BuildException {
+        Retrotranslator retrotranslator = new Retrotranslator();
+        if (src != null) {
+            for (String srcdir : src.list()) {
+                retrotranslator.addSrcdir(getProject().resolveFile(srcdir));
+            }
         }
+        if (destdir != null) {
+            retrotranslator.setDestdir(destdir);
+        }
+        retrotranslator.setVerbose(verbose);
+        retrotranslator.setStripsign(stripsign);
+        retrotranslator.setLazy(lazy);
+        retrotranslator.setVerify(verify);
+        if (classpath != null) {
+            for (String fileName : classpath.list()) {
+                retrotranslator.addClasspathElement(getProject().resolveFile(fileName));
+            }
+        }
+        retrotranslator.setLogger(this);
+        boolean verified = retrotranslator.run();
+        if (!verified && failonwarning) throw new BuildException("Verification failed.", getLocation());
     }
 }

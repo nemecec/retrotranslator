@@ -41,24 +41,31 @@ import java.util.List;
 public class FolderScanner {
 
     private File baseDir;
+    private List<String> fileNames;
 
     public FolderScanner(File baseDir) {
         this.baseDir = baseDir;
     }
 
-    public List<String> getFileNames() {
-        List<String> result = new ArrayList<String>();
-        addFileNames(baseDir, result);
-        return result;
+    public File getBaseDir() {
+        return baseDir;
     }
 
-    private void addFileNames(File dir, List<String> result) {
+    public List<String> getFileNames() {
+        if (fileNames == null) {
+            fileNames = new ArrayList<String>();
+            addFileNames(baseDir);
+        }
+        return fileNames;
+    }
+
+    private void addFileNames(File dir) {
         for (File file : dir.listFiles()) {
             if (file.isDirectory()) {
-                addFileNames(file, result);
+                addFileNames(file);
             } else if (file.getName().endsWith(".class")) {
                 if (!file.getPath().startsWith(baseDir.getPath())) throw new IllegalStateException();
-                result.add(file.getPath().substring(baseDir.getPath().length() + 1));
+                fileNames.add(file.getPath().substring(baseDir.getPath().length() + 1));
             }
         }
     }

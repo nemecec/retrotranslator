@@ -31,7 +31,10 @@
  */
 package net.sf.retrotranslator.transformer;
 
+import net.sf.retrotranslator.runtime.asm.ClassReader;
+
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -40,85 +43,66 @@ import java.util.StringTokenizer;
  */
 public class Retrotranslator implements MessageLogger {
 
-    private File srcdir;
+    private List<File> src = new ArrayList<File>();
     private File destdir;
-    private String classpath;
-    private boolean verify;
     private boolean stripsign;
     private boolean verbose;
+    private boolean lazy;
+    private boolean verify;
+    private List<File> classpath = new ArrayList<File>();
+    private MessageLogger logger = this;
+
+    public Retrotranslator() {
+    }
 
     public Retrotranslator(File srcdir, File destdir, String classpath, boolean verify, boolean stripsign, boolean verbose) {
-        this.srcdir = srcdir;
+        addSrcdir(srcdir);
+        setDestdir(destdir);
+        addClasspath(classpath);
+        setVerify(verify);
+        setStripsign(stripsign);
+        setVerbose(verbose);
+    }
+
+    public void addSrcdir(File srcdir) {
+        if (!srcdir.isDirectory()) throw new IllegalArgumentException("Invalid srcdir: " + srcdir);
+        this.src.add(srcdir);
+    }
+
+    public void setDestdir(File destdir) {
+        if (!destdir.isDirectory()) throw new IllegalArgumentException("Invalid destdir: " + destdir);
         this.destdir = destdir;
-        this.classpath = classpath;
-        this.verify = verify;
+    }
+
+    public void setStripsign(boolean stripsign) {
         this.stripsign = stripsign;
+    }
+
+    public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
-    public Retrotranslator(String[] args) throws IllegalArgumentException {
-        int i = 0;
-        while (i < args.length) {
-            String string = args[i++];
-            if (string.equals("-srcdir") && i < args.length) {
-                srcdir = checkDir(args[i++]);
-            } else if (string.equals("-destdir") && i < args.length) {
-                destdir = checkDir(args[i++]);
-            } else if (string.equals("-stripsign")) {
-                stripsign = true;
-            } else if (string.equals("-verbose")) {
-                verbose = true;
-            } else if (string.equals("-verify")) {
-                verify = true;
-            } else if (string.equals("-classpath") && i < args.length) {
-                classpath = args[i++];
-            } else {
-                throw new IllegalArgumentException("Unknown option: " + string);
-            }
+    public void setLazy(boolean lazy) {
+        this.lazy = lazy;
+    }
+
+    public void setVerify(boolean verify) {
+        this.verify = verify;
+    }
+
+    public void addClasspathElement(File classpathElement) {
+        this.classpath.add(classpathElement);
+    }
+
+    public void addClasspath(String classpath) {
+        StringTokenizer tokenizer = new StringTokenizer(classpath, File.pathSeparator);
+        while (tokenizer.hasMoreTokens()) {
+            addClasspathElement(new File(tokenizer.nextToken()));
         }
     }
 
-    public static void main(String[] args) {
-        if (args.length == 0) {
-            printUsage();
-            return;
-        }
-        try {
-            Retrotranslator retrotranslator = new Retrotranslator(args);
-            if (!retrotranslator.run()) System.exit(2);
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-            printUsage();
-            System.exit(1);
-        }
-    }
-
-    private static void printUsage() {
-        String version = Retrotranslator.class.getPackage().getImplementationVersion();
-        String suffix = (version == null) ? "" : "-" + version;
-        System.out.println("Usage: java -jar retrotranslator-transformer" + suffix + ".jar" +
-                " -srcdir <path> [-destdir <path>] [-verbose] [-verify] [-classpath <classpath>]");
-    }
-
-    public boolean run() {
-        if (srcdir == null) throw new IllegalArgumentException("Source directory is not set.");
-        if (destdir == null) destdir = srcdir;
-        List<String> fileNames = new FolderScanner(srcdir).getFileNames();
-        new ClassTransformer(stripsign).transform(srcdir, destdir, fileNames, this);
-        if (!verify) return true;
-        ClassReaderFactory factory = new ClassReaderFactory(classpath == null);
-        try {
-            if (classpath != null) {
-                StringTokenizer tokenizer = new StringTokenizer(classpath, File.pathSeparator);
-                while (tokenizer.hasMoreTokens()) {
-                    factory.appendPath(new File(tokenizer.nextToken()));
-                }
-            }
-            factory.appendPath(destdir);
-            return new ClassVerifier(factory).verify(destdir, fileNames, this);
-        } finally {
-            factory.close();
-        }
+    public void setLogger(MessageLogger logger) {
+        this.logger = logger;
     }
 
     public void verbose(String message) {
@@ -133,10 +117,125 @@ public class Retrotranslator implements MessageLogger {
         System.out.println(message);
     }
 
-    private static File checkDir(String dir) throws IllegalArgumentException {
-        File file = new File(dir);
-        if (!file.exists()) throw new IllegalArgumentException(dir + " not found.");
-        if (!file.isDirectory()) throw new IllegalArgumentException(dir + " is not a directory.");
-        return file;
+    public boolean run() {
+        if (src.isEmpty()) throw new IllegalArgumentException("Source directory is not set.");
+        ClassTransformer transformer = new ClassTransformer(stripsign);
+        List<FolderScanner> scanners = new ArrayList<FolderScanner>();
+        for (File srcdir : src) {
+            FolderScanner scanner = new FolderScanner(srcdir);
+            scanners.add(scanner);
+            transform(transformer, scanner);
+        }
+        if (!verify) return true;
+        ClassReaderFactory factory = new ClassReaderFactory(classpath.isEmpty());
+        try {
+            for (File file : classpath) {
+                factory.appendPath(file);
+            }
+            if (destdir != null) {
+                factory.appendPath(destdir);
+            } else {
+                for (FolderScanner scanner : scanners) {
+                    factory.appendPath(scanner.getBaseDir());
+                }
+            }
+            boolean verified = true;
+            for (FolderScanner scanner : scanners) {
+                verified &= verify(factory, scanner);
+            }
+            return verified;
+        } finally {
+            factory.close();
+        }
+    }
+
+    private void transform(ClassTransformer transformer, FolderScanner scanner) {
+        File src = scanner.getBaseDir();
+        File dest = destdir != null ? destdir : src;
+        List<String> fileNames = scanner.getFileNames();
+        logger.info("Transforming " + fileNames.size() + " file(s)" +
+                (dest.equals(src) ? " in " + src + "." : " from " + src + " to " + dest + "."));
+        for (int i = 0; i < fileNames.size(); i++) {
+            String fileName = fileNames.get(i);
+            String fixedName = ClassSubstitutionVisitor.fixIdentifier(fileName);
+            byte[] sourceData = TransformerTools.readFileToByteArray(new File(src, fileName));
+            byte[] resultData = sourceData;
+            if (!lazy || !fixedName.equals(fileName) || isByteCode15(sourceData)) {
+                logger.verbose(fileName);
+                fileNames.set(i, fixedName);
+                resultData = transformer.transform(sourceData, 0, sourceData.length);
+            }
+            if (src != dest || sourceData != resultData) {
+                if (src == dest && !fixedName.equals(fileName)) new File(dest, fileName).delete();
+                TransformerTools.writeByteArrayToFile(new File(dest, fixedName), resultData);
+            }
+        }
+        logger.info("Transformation of " + fileNames.size() + " file(s) completed successfully.");
+    }
+
+    private static boolean isByteCode15(byte[] sourceData) {
+        return sourceData[4] == 0 && sourceData[5] == 0 && sourceData[6] == 0 && sourceData[7] == 49;
+    }
+
+    private boolean verify(ClassReaderFactory factory, FolderScanner scanner) {
+        File dir = destdir != null ? destdir : scanner.getBaseDir();
+        List<String> fileNames = scanner.getFileNames();
+        logger.info("Verifying " + fileNames.size() + " file(s) in " + dir + ".");
+        ReferenceVerifyingVisitor visitor = new ReferenceVerifyingVisitor(factory, logger);
+        for (String fileName : fileNames) {
+            logger.verbose(fileName);
+            byte[] data = TransformerTools.readFileToByteArray(new File(dir, fileName));
+            new ClassReader(data).accept(visitor, true);
+        }
+        int warningCount = visitor.getWarningCount();
+        logger.info("Verification of " + fileNames.size() + " file(s) completed" +
+                (warningCount != 0 ? " with " + warningCount + " warning(s)." : " successfully."));
+        return warningCount == 0;
+    }
+
+    private boolean execute(String[] args) {
+        int i = 0;
+        while (i < args.length) {
+            String string = args[i++];
+            if (string.equals("-srcdir") && i < args.length) {
+                addSrcdir(new File(args[i++]));
+            } else if (string.equals("-destdir") && i < args.length) {
+                setDestdir(new File(args[i++]));
+            } else if (string.equals("-stripsign")) {
+                setStripsign(true);
+            } else if (string.equals("-verbose")) {
+                setVerbose(true);
+            } else if (string.equals("-lazy")) {
+                setLazy(true);
+            } else if (string.equals("-verify")) {
+                setVerify(true);
+            } else if (string.equals("-classpath") && i < args.length) {
+                addClasspath(args[i++]);
+            } else {
+                throw new IllegalArgumentException("Unknown option: " + string);
+            }
+        }
+        return run();
+    }
+
+    private static void printUsage() {
+        String version = Retrotranslator.class.getPackage().getImplementationVersion();
+        String suffix = (version == null) ? "" : "-" + version;
+        System.out.println("Usage: java -jar retrotranslator-transformer" + suffix + ".jar" +
+                " -srcdir <path> [-destdir <path>] [-stripsign] [-verbose] [-lazy] [-verify] [-classpath <classpath>]");
+    }
+
+    public static void main(String[] args) {
+        if (args.length == 0) {
+            printUsage();
+            return;
+        }
+        try {
+            if (!new Retrotranslator().execute(args)) System.exit(2);
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+            printUsage();
+            System.exit(1);
+        }
     }
 }

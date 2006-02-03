@@ -30,7 +30,9 @@
 <h4><a name="what">What is Retrotranslator?</a></h4>
 <a href="http://sourceforge.net/projects/retrotranslator">Retrotranslator</a> is a Java bytecode transformer
 that translates Java classes compiled with JDK 5.0 into classes that can be run on JVM 1.4.
-Retrotranslator is a free, open-source software.
+It is a free, open-source tool based on the <a href="http://asm.objectweb.org/">ASM bytecode manipulation framework</a>
+and concurrency utilities
+<a href="http://dcl.mathcs.emory.edu/util/backport-util-concurrent/index.php">backported to Java 1.4</a>.
 
 <h4><a name="features">What Java 5.0 features are supported?</a></h4>
 <ul>
@@ -67,10 +69,10 @@ Retrotranslator is a free, open-source software.
 
 <p>Full command line syntax:<br>
     <code>java -jar retrotranslator-transformer-<i>n.n.n</i>.jar
-        -srcdir &lt;path&gt; [-destdir &lt;path&gt;] [-verbose] [-verify] [-classpath &lt;classpath&gt;]</code>
+        -srcdir &lt;path&gt; [-destdir &lt;path&gt;] [-stripsign] [-verbose] [-lazy] [-verify] [-classpath &lt;classpath&gt;]</code>
     <br>or<br>
     <code>java -cp retrotranslator-transformer-<i>n.n.n</i>.jar net.sf.retrotranslator.transformer.Retrotranslator
-        -srcdir &lt;path&gt; [-destdir &lt;path&gt;] [-verbose] [-verify] [-classpath &lt;classpath&gt;]</code></p>
+        -srcdir &lt;path&gt; [-destdir &lt;path&gt;] [-stripsign] [-verbose] [-lazy] [-verify] [-classpath &lt;classpath&gt;]</code></p>
 <table border="1" cellspacing="0" cellpadding="5">
     <tr><th>Option</th><th>Description</th><th>Required</th><th>Default</th></tr>
     <tr>
@@ -94,6 +96,12 @@ Retrotranslator is a free, open-source software.
     <tr>
         <td>-verbose</td>
         <td>Asks the translator for verbose output.</td>
+        <td>No</td>
+        <td>Off</td>
+    </tr>
+    <tr>
+        <td>-lazy</td>
+        <td>Asks the translator to transform only Java 5.0 classes.</td>
         <td>No</td>
         <td>Off</td>
     </tr>
@@ -143,6 +151,12 @@ Retrotranslator is a free, open-source software.
         <td>Off</td>
     </tr>
     <tr>
+        <td>lazy</td>
+        <td>Asks the translator to transform only Java 5.0 classes.</td>
+        <td>No</td>
+        <td>Off</td>
+    </tr>
+    <tr>
         <td>verify</td>
         <td>Asks the translator for warnings when references to unknown classes, methods, or fields are found.</td>
         <td>No</td>
@@ -167,8 +181,9 @@ Retrotranslator is a free, open-source software.
 <h4><a name="jit">How to use Just-in-Time Retrotranslator?</a></h4>
 
 <p>
-    You do not necessarily need to translate all Java 5.0 classes before running them on Sun JVM 1.4.
-    It is possible to perform translation only when JRE 1.4 is detected at runtime. Just do one of the following:
+    Just-in-Time Retrotranslator performs translation at runtime when it detects Sun J2SE 1.4.x or Mac OS X J2SE 1.4.2,
+    on J2SE 5.0 it is inactive. So you don't necessarily need to translate all Java 5.0 classes before running them
+    on Sun JVM, just do one of the following instead:
 </p>
 <ol>
     <li>
@@ -193,13 +208,14 @@ Retrotranslator is a free, open-source software.
     <tr><td>java.lang.annotation</td><td>All classes</td><td>All methods</td><td>&nbsp;</td></tr>
     <tr><td>java.util.concurrent,<br>java.util.concurrent.atomic,<br>java.util.concurrent.locks</td>
         <td>Almost all classes</td><td>Almost all methods</td>
-        <td><a href="http://www.mathcs.emory.edu/dcl/util/backport-util-concurrent/">Java 1.4 backport of JSR 166</a>
-            is used
+        <td>
+            <a href="http://dcl.mathcs.emory.edu/util/backport-util-concurrent/index.php">
+                Backport of JSR 166 (java.util.concurrent) to Java 1.4</a>
         </td></tr>
     <tr><td><code>java.io</code></td><td><code>Closeable</code></td><td><code>All methods</code></td><td>
             <code>new Closeable[...]</code> is replaced with <code>new Object[...]</code>
         </td></tr>
-    <tr><td rowspan="18"><code>java.lang</code></td><td><code>Boolean</code></td><td><code>parseBoolean(String)</code>
+    <tr><td rowspan="20"><code>java.lang</code></td><td><code>Boolean</code></td><td><code>parseBoolean(String)</code>
     </td><td>&nbsp;</td></tr>
     <tr><td><code>Byte</code></td><td><code>valueOf(byte)</code></td><td>&nbsp;</td></tr>
     <tr><td><code>Character</code></td><td><code>valueOf(char)</code></td><td>&nbsp;</td></tr>
@@ -219,8 +235,15 @@ Retrotranslator is a free, open-source software.
     <tr><td><code>Short</code></td><td><code>valueOf(short)</code></td><td>&nbsp;</td></tr>
     <tr><td><code>String</code></td><td><code>contains(CharSequence),<br> contentEquals(CharSequence),<br>
         replace(CharSequence, CharSequence)</code></td><td>&nbsp;</td></tr>
-    <tr><td><code>StringBuilder</code></td><td>All methods</td><td><code>StringBuilder</code> is replaced with <code>StringBuffer</code></td></tr>
+    <tr><td><code>StringBuffer</code></td><td><code>
+        StringBuffer(CharSequence), append(CharSequence), append(CharSequence, int, int),
+        insert(int, CharSequence), insert(int, CharSequence, int, int)
+    </code></td><td>&nbsp;</td></tr>
+    <tr><td><code>StringBuilder</code></td><td>
+        All methods supported in <code>StringBuffer</code>
+    </td><td><code>StringBuilder</code> is replaced with <code>StringBuffer</code></td></tr>
     <tr><td><code>SuppressWarnings</code></td><td>All methods</td><td>&nbsp;</td></tr>
+    <tr><td><code>Thread</code></td><td><code>getStackTrace()</code></td><td>Non-empty stack trace is returned only for current thread</td></tr>
     <tr><td><code>TypeNotPresentException</code></td><td>All methods</td><td>&nbsp;</td></tr>
 
     <tr><td rowspan="12"><code>java.lang.reflect</code></td><td><code>AnnotatedElement</code></td><td>All methods</td><td>
