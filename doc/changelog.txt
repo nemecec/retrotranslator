@@ -5,7 +5,7 @@ Retrotranslator Changelog
 ---------------------------------
   - Bug fixed: translated classes didn't work on JRE 1.4.1-b21 where only java.lang.Object may be used
     as qualifying type for array cloning. See http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4750641
-  - Limited support for Thread.getStackTrace()
+  - Limited support for Thread.getStackTrace(). Non-empty stack trace is returned only for current thread.
   - Support for StringBuffer(CharSequence) and for StringBuffer methods: append(CharSequence),
     append(CharSequence, int, int), insert(int, CharSequence), insert(int, CharSequence, int, int)
   - Option "-lazy" was added to transform Java 5.0 bytecode only.
