@@ -52,6 +52,8 @@ public class ClassSubstitutionVisitor extends GenericClassVisitor {
 
     static {
         map.put("java/lang/StringBuilder", "java/lang/StringBuffer");
+        map.put("net/sf/retrotranslator/transformer/JITRetrotranslator$ClassFileTransformer",
+                "sun/misc/ClassFileTransformer");
         for (Class type : new Class[]{AbstractQueue.class, PriorityQueue.class, Queue.class}) {
             String name = type.getName().replace('.', '/');
             if (!name.startsWith(BACKPORT)) throw new IllegalArgumentException();

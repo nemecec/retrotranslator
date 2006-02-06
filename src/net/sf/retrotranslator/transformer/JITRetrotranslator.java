@@ -76,7 +76,7 @@ public class JITRetrotranslator {
         if (System.getProperty("java.version").startsWith("1.4")) {
             try {
                 install();
-            } catch (RuntimeException e) {
+            } catch (Throwable e) {
                 System.err.println("Cannot install JIT Retrotranslator: " + e.getMessage());
             }
         }
