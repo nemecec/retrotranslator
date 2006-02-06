@@ -31,13 +31,7 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import net.sf.retrotranslator.runtime.asm.ClassWriter;
-import net.sf.retrotranslator.runtime.asm.*;
-import net.sf.retrotranslator.runtime.asm.Type;
-
 import java.io.File;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 
 /**
  * @author Taras Puchko
@@ -46,27 +40,22 @@ public class JITRetrotranslator {
 
     private static boolean installed;
 
-    public static class JITTransformer {
+    private static class ClassFileTransformer {
+
+        public ClassFileTransformer() {
+        }
+
+        public static void add(ClassFileTransformer transformer) {
+            //stub
+        }
+    }
+
+    private static class JITTransformer extends ClassFileTransformer {
+
         private ClassTransformer transformer = new ClassTransformer(true);
 
         public byte[] transform(byte[] filecontent, int offset, int length) {
             return transformer.transform(filecontent, offset, length);
-        }
-    }
-
-    private static class JITCreator extends GenericClassVisitor {
-        public JITCreator(final ClassVisitor cv) {
-            super(cv);
-        }
-
-        protected String visitInternalName(String name) {
-            if (name.equals(Type.getInternalName(Object.class))) {
-                return "sun/misc/ClassFileTransformer";
-            }
-            if (name.equals(Type.getInternalName(JITTransformer.class))) {
-                return Type.getInternalName(JITTransformer.class) + "$";
-            }
-            return name;
         }
     }
 
@@ -75,25 +64,8 @@ public class JITRetrotranslator {
 
     public static synchronized void install() {
         if (installed) return;
-        try {
-            Class transformerClass = Class.forName("sun.misc.ClassFileTransformer");
-            Class unsafeClass = Class.forName("sun.misc.Unsafe");
-            Field theUnsafe = unsafeClass.getDeclaredField("theUnsafe");
-            theUnsafe.setAccessible(true);
-            Method method = unsafeClass.getMethod("defineClass", String.class, byte[].class, int.class, int.class);
-            ClassReader reader = new ClassReader(JITTransformer.class.getName());
-            ClassWriter writer = new ClassWriter(false);
-            reader.accept(new JITCreator(writer), true);
-            byte[] bytes = writer.toByteArray();
-            Class jitClass = (Class) method.invoke(theUnsafe.get(null),
-                    JITTransformer.class.getName() + "$", bytes, 0, bytes.length);
-            transformerClass.getMethod("add", transformerClass).invoke(null, jitClass.newInstance());
-            installed = true;
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        JITTransformer.add(new JITTransformer());
+        installed = true;
     }
 
     public static void main(String[] args) throws Exception {
