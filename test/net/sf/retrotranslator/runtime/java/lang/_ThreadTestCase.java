@@ -40,8 +40,13 @@ public class _ThreadTestCase extends TestCase {
 
     public void testGetStackTrace() throws Exception {
         StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-        StackTraceElement element = stackTrace[2];
-        assertEquals(this.getClass().getName(), element.getClassName());
+        String className = this.getClass().getName();
+        StackTraceElement element = null;
+        for (int i = 2; i < stackTrace.length; i++) {
+            element = stackTrace[i];
+            if (className.equals(element.getClassName())) break;
+        }
+        assertNotNull(element);
         assertEquals("testGetStackTrace", element.getMethodName());
         for (StackTraceElement stackTraceElement : stackTrace) {
             assertNotNull(stackTraceElement);

@@ -38,6 +38,7 @@ import net.sf.retrotranslator.tests.BaseTestCase;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
+import java.util.Arrays;
 
 /**
  * @author Taras Puchko
@@ -183,8 +184,8 @@ public class _MethodTestCase extends BaseTestCase {
                 return 0;
             }
         }
-        assertTrue(Test.class.getMethod("compareTo", Object.class).isBridge());
-        assertFalse(Test.class.getMethod("compareTo", String.class).isBridge());
+        assertTrue(getDeclaredMethod(Test.class, "compareTo", Object.class).isBridge());
+        assertFalse(getDeclaredMethod(Test.class, "compareTo", String.class).isBridge());
     }
 
     public void testIsSynthetic() throws Exception {
@@ -193,8 +194,22 @@ public class _MethodTestCase extends BaseTestCase {
                 return 0;
             }
         }
-        assertTrue(Test.class.getMethod("compareTo", Object.class).isSynthetic());
-        assertFalse(Test.class.getMethod("compareTo", String.class).isSynthetic());
+        assertTrue(getDeclaredMethod(Test.class, "compareTo", Object.class).isSynthetic());
+        assertFalse(getDeclaredMethod(Test.class, "compareTo", String.class).isSynthetic());
+    }
+
+    /**
+     * jrockit-j2sdk1.4.2_08:
+     * {@link Class#getDeclaredMethod(String, Class...)} throws
+     * {@link NoSuchMethodException} for synthetic methods
+     */
+    public static Method getDeclaredMethod(Class aClass, String name, Class ... parameterTypes)
+            throws NoSuchMethodException {
+        for (Method method : aClass.getDeclaredMethods()) {
+            if (method.getName().equals(name) &&
+                    Arrays.equals(method.getParameterTypes(), parameterTypes)) return method;
+        }
+        throw new NoSuchMethodException(name);
     }
 
     public void testIsVarArgs() throws Exception {
@@ -217,6 +232,6 @@ public class _MethodTestCase extends BaseTestCase {
         assertEquals("public <E> void net.sf.retrotranslator.runtime.java.lang.reflect." +
                 "_MethodTestCase$Test.m(T,E,java.lang.String[])" +
                 " throws RE,java.lang.ClassNotFoundException",
-                Test.class.getMethods()[0].toGenericString());
+                Test.class.getDeclaredMethods()[0].toGenericString());
     }
 }
