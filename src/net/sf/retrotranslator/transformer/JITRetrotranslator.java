@@ -38,34 +38,11 @@ import java.io.File;
  */
 public class JITRetrotranslator {
 
-    private static boolean installed;
-
-    private static class ClassFileTransformer {
-
-        public ClassFileTransformer() {
-        }
-
-        public static void add(ClassFileTransformer transformer) {
-            //stub
-        }
-    }
-
-    private static class JITTransformer extends ClassFileTransformer {
-
-        private ClassTransformer transformer = new ClassTransformer(true);
-
-        public byte[] transform(byte[] filecontent, int offset, int length) {
-            return transformer.transform(filecontent, offset, length);
-        }
-    }
-
     private JITRetrotranslator() {
     }
 
-    public static synchronized void install() {
-        if (installed) return;
-        JITTransformer.add(new JITTransformer());
-        installed = true;
+    public static synchronized boolean install() {
+        return JRockitJITRetrotranslator.install() || SunJITRetrotranslator.install();
     }
 
     public static void main(String[] args) throws Exception {
@@ -74,10 +51,10 @@ public class JITRetrotranslator {
             printUsageAndExit();
         }
         if (System.getProperty("java.version").startsWith("1.4")) {
-            try {
-                install();
-            } catch (Throwable e) {
-                System.err.println("Cannot install JIT Retrotranslator: " + e.getMessage());
+            if (install()) {
+                System.out.println("JIT Retrotranslator installed.");
+            } else {
+                System.out.println("Cannot install JIT Retrotranslator.");
             }
         }
         if (jar) {
@@ -86,6 +63,7 @@ public class JITRetrotranslator {
             JarClassLoader classLoader = new JarClassLoader(file, getClassLoader());
             String mainClass = classLoader.getMainClass();
             if (mainClass == null) printErrorAndExit("Failed to load Main-Class manifest attribute from " + file);
+            Thread.currentThread().setContextClassLoader(classLoader);
             execute(classLoader, mainClass, remove(args, 2));
         } else {
             execute(getClassLoader(), args[0], remove(args, 1));

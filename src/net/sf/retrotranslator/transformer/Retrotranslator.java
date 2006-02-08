@@ -119,7 +119,7 @@ public class Retrotranslator implements MessageLogger {
 
     public boolean run() {
         if (src.isEmpty()) throw new IllegalArgumentException("Source directory is not set.");
-        ClassTransformer transformer = new ClassTransformer(stripsign);
+        ClassTransformer transformer = new ClassTransformer(lazy, stripsign);
         List<FolderScanner> scanners = new ArrayList<FolderScanner>();
         for (File srcdir : src) {
             FolderScanner scanner = new FolderScanner(srcdir);
@@ -157,15 +157,12 @@ public class Retrotranslator implements MessageLogger {
                 (dest.equals(src) ? " in " + src + "." : " from " + src + " to " + dest + "."));
         for (int i = 0; i < fileNames.size(); i++) {
             String fileName = fileNames.get(i);
-            String fixedName = ClassSubstitutionVisitor.fixIdentifier(fileName);
+            logger.verbose(fileName);
             byte[] sourceData = TransformerTools.readFileToByteArray(new File(src, fileName));
-            byte[] resultData = sourceData;
-            if (!lazy || !fixedName.equals(fileName) || isByteCode15(sourceData)) {
-                logger.verbose(fileName);
-                fileNames.set(i, fixedName);
-                resultData = transformer.transform(sourceData, 0, sourceData.length);
-            }
+            byte[] resultData = transformer.transform(sourceData, 0, sourceData.length);
             if (src != dest || sourceData != resultData) {
+                String fixedName = ClassSubstitutionVisitor.fixIdentifier(fileName);
+                fileNames.set(i, fixedName);
                 if (src == dest && !fixedName.equals(fileName)) new File(dest, fileName).delete();
                 TransformerTools.writeByteArrayToFile(new File(dest, fixedName), resultData);
             }
