@@ -33,10 +33,12 @@ package net.sf.retrotranslator.transformer;
 
 import edu.emory.mathcs.backport.java.util.Queue;
 import net.sf.retrotranslator.runtime.java.lang.Iterable_;
+import net.sf.retrotranslator.runtime.java.lang.Appendable_;
 import net.sf.retrotranslator.runtime.java.lang.reflect.AnnotatedElement_;
 import net.sf.retrotranslator.runtime.java.lang.reflect.GenericDeclaration_;
 import net.sf.retrotranslator.runtime.java.lang.reflect.Type_;
 import net.sf.retrotranslator.runtime.java.io.Closeable_;
+import net.sf.retrotranslator.runtime.java.io.Flushable_;
 import net.sf.retrotranslator.runtime.asm.*;
 import static net.sf.retrotranslator.runtime.asm.Opcodes.*;
 
@@ -49,6 +51,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.io.*;
 import java.nio.channels.Channel;
+import java.nio.CharBuffer;
 
 /**
  * @author Taras Puchko
@@ -59,12 +62,14 @@ public class InheritanceVisitor extends ClassAdapter {
 
     static {
         add(AnnotatedElement_.class, Package.class, Class.class, Constructor.class, Field.class, Method.class);
-        add(GenericDeclaration_.class, Class.class, Constructor.class, Method.class);
-        add(Type_.class, Class.class);
-        add(Queue.class, LinkedList.class);
-        add(Iterable_.class, Collection.class);
+        add(Appendable_.class, StringBuffer.class, PrintStream.class, Writer.class, CharBuffer.class);
         add(Closeable_.class, InputStream.class, OutputStream.class,
                 Reader.class, Writer.class, RandomAccessFile.class, Channel.class);
+        add(Flushable_.class, OutputStream.class, Writer.class);
+        add(GenericDeclaration_.class, Class.class, Constructor.class, Method.class);
+        add(Iterable_.class, Collection.class);
+        add(Queue.class, LinkedList.class);
+        add(Type_.class, Class.class);
     }
 
     public InheritanceVisitor(final ClassVisitor cv) {
