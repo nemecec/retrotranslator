@@ -181,9 +181,9 @@ and concurrency utilities
 <h4><a name="jit">How to use Just-in-Time Retrotranslator?</a></h4>
 
 <p>
-    Just-in-Time Retrotranslator performs translation at runtime when it detects Sun J2SE 1.4.x or Mac OS X J2SE 1.4.2,
-    on J2SE 5.0 it is inactive. So you don't necessarily need to translate all Java 5.0 classes before running them
-    on Sun JVM, just do one of the following instead:
+    You may use JIT Retrotranslator to run your Java 5 application on J2SE 1.4. Any Java 5 class loaded with
+    any classloader will be translated at runtime only on J2SE 1.4 from Sun, IBM, BEA, or Apple.
+    When you start JIT Retrotranslator on J2SE 5.0 it will simply call your application.
 </p>
 <ol>
     <li>
@@ -192,7 +192,7 @@ and concurrency utilities
             net.sf.retrotranslator.transformer.JITRetrotranslator -jar &lt;jarfile&gt; [&lt;args...&gt;]</code>
     </li>
     <li>
-        In you want to run a class from your classpath, execute:<br>
+        If you want to run a class from your classpath, execute:<br>
         <code>java -cp retrotranslator-transformer-<i>n.n.n</i>.jar:&lt;classpath&gt;
             net.sf.retrotranslator.transformer.JITRetrotranslator &lt;class&gt; [&lt;args...&gt;]</code>
     </li>
@@ -205,18 +205,31 @@ and concurrency utilities
 <h4><a name="supported">What Java 5.0 classes and methods are supported?</a></h4>
 <table border="1" cellspacing="0" cellpadding="5">
     <tr><th>Package</th><th>Class</th><th>Methods</th><th>Compatibility notes</th></tr>
-    <tr><td>java.lang.annotation</td><td>All classes</td><td>All methods</td><td>&nbsp;</td></tr>
-    <tr><td>java.util.concurrent,<br>java.util.concurrent.atomic,<br>java.util.concurrent.locks</td>
+    <tr><td><code>java.lang.annotation</code></td><td>All classes</td><td>All methods</td><td>&nbsp;</td></tr>
+    <tr><td><code>java.util.concurrent,<br>java.util.concurrent.atomic,<br>java.util.concurrent.locks</code></td>
         <td>Almost all classes</td><td>Almost all methods</td>
         <td>
             <a href="http://dcl.mathcs.emory.edu/util/backport-util-concurrent/index.php">
                 Backport of JSR 166 (java.util.concurrent) to Java 1.4</a>
         </td></tr>
-    <tr><td><code>java.io</code></td><td><code>Closeable</code></td><td><code>All methods</code></td><td>
+    <tr><td rowspan="5"><code>java.io</code></td><td><code>Closeable</code></td><td><code>All methods</code></td><td>
             <code>new Closeable[...]</code> is replaced with <code>new Object[...]</code>
         </td></tr>
-    <tr><td rowspan="20"><code>java.lang</code></td><td><code>Boolean</code></td><td><code>parseBoolean(String)</code>
-    </td><td>&nbsp;</td></tr>
+    <tr><td><code>Flushable</code></td><td><code>All methods</code></td><td>
+            <code>new Flushable[...]</code> is replaced with <code>new Object[...]</code>
+        </td></tr>
+    <tr><td><code>PrintStream</code></td><td>
+        <code>append(CharSequence), append(CharSequence, int, int), append(char)</code>
+        </td><td>&nbsp;</td></tr>
+    <tr><td><code>Reader</code></td><td><code>read(CharBuffer)</code></td><td>&nbsp;</td></tr>
+    <tr><td><code>Writer</code></td><td>
+        <code>append(CharSequence), append(CharSequence, int, int), append(char)</code>
+        </td><td>&nbsp;</td></tr>
+    <tr><td rowspan="22"><code>java.lang</code></td><td><code>Appendable</code></td><td>All methods
+    </td><td>
+        <code>new Appendable[...]</code> is replaced with <code>new Object[...]</code>
+    </td></tr>
+    <tr><td><code>Boolean</code></td><td><code>parseBoolean(String)</code></td><td>&nbsp;</td></tr>
     <tr><td><code>Byte</code></td><td><code>valueOf(byte)</code></td><td>&nbsp;</td></tr>
     <tr><td><code>Character</code></td><td><code>valueOf(char)</code></td><td>&nbsp;</td></tr>
     <tr><td><code>Class</code></td><td>All methods (21 new!)</td><td>&nbsp;</td></tr>
@@ -232,6 +245,9 @@ and concurrency utilities
     </td></tr>
     <tr><td><code>Long</code></td><td><code>valueOf(long)</code></td><td>&nbsp;</td></tr>
     <tr><td><code>Package</code></td><td>All methods (4 new!)</td><td>&nbsp;</td></tr>
+    <tr><td><code>Readable</code></td><td>All methods</td><td>
+        <code>new Readable[...]</code> is replaced with <code>new Object[...]</code>
+    </td></tr>
     <tr><td><code>Short</code></td><td><code>valueOf(short)</code></td><td>&nbsp;</td></tr>
     <tr><td><code>String</code></td><td><code>contains(CharSequence),<br> contentEquals(CharSequence),<br>
         replace(CharSequence, CharSequence)</code></td><td>&nbsp;</td></tr>
@@ -267,6 +283,10 @@ and concurrency utilities
 
     <tr><td ><code>java.math</code></td><td><code>BigDecimal</code></td><td>
         <code>BigDecimal(int), BigDecimal(long)</code></td><td>&nbsp;</td></tr>
+
+    <tr><td><code>java.util.nio</code></td><td><code>CharBuffer</code></td><td>
+        <code>append(CharSequence), append(CharSequence, int, int), append(char), read(CharBuffer)</code>
+        </td><td>&nbsp;</td></tr>
 
     <tr><td rowspan="8"><code>java.util</code></td><td><code>AbstractQueue</code></td><td>All methods</td><td>
         &nbsp;</td></tr>
