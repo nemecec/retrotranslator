@@ -29,43 +29,38 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.runtime.java.nio;
+package net.sf.retrotranslator.transformer;
 
-import java.nio.CharBuffer;
+import junit.framework.*;
+
+import java.util.concurrent.Delayed;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.DelayQueue;
 
 /**
  * @author Taras Puchko
  */
-public class _CharBuffer {
+public class MemberSubstitutionVisitorTestCase extends TestCase {
 
-    public static CharBuffer append(CharBuffer charBuffer, CharSequence csq) {
-        return charBuffer.put(String.valueOf(csq));
-    }
+    public void testDelayQueue() throws Exception {
+        class MyDelayed implements Delayed {
+            public long getDelay(TimeUnit unit) {
+                return 0;
+            }
 
-    public static CharBuffer append(CharBuffer charBuffer, CharSequence csq, int start, int end) {
-        return charBuffer.put(String.valueOf(csq).substring(start, end));
-    }
-
-    public static CharBuffer append(CharBuffer charBuffer, char c) {
-        return charBuffer.put(c);
-    }
-
-    public static int read(CharBuffer source, CharBuffer target) {
-        int sourceRemaining = source.remaining();
-        if (sourceRemaining == 0) return -1;
-        int targetRemaining = target.remaining();
-        if (sourceRemaining <= targetRemaining) {
-            target.put(source);
-            return sourceRemaining;
+            public int compareTo(Delayed o) {
+                return 0;
+            }
         }
-        int sourceLimit = source.limit();
-        try {
-            source.limit(source.position() + targetRemaining);
-            target.put(source);
-        } finally {
-            source.limit(sourceLimit);
-        }
-        return targetRemaining;
+        DelayQueue<MyDelayed> delayQueue = new DelayQueue<MyDelayed>();
+        delayQueue.offer(new MyDelayed());
+        delayQueue.put(new MyDelayed());
+        delayQueue.offer(new MyDelayed(), 0, TimeUnit.SECONDS);
+        delayQueue.add(new MyDelayed());
+        assertNotNull(delayQueue.take());
+        assertNotNull(delayQueue.poll(0, TimeUnit.SECONDS));
+        assertNotNull(delayQueue.poll());
+        assertNotNull(delayQueue.peek());
     }
 
 }

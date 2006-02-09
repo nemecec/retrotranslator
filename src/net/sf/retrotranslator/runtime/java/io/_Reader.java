@@ -29,43 +29,22 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.runtime.java.nio;
+package net.sf.retrotranslator.runtime.java.io;
 
+import java.io.IOException;
+import java.io.Reader;
 import java.nio.CharBuffer;
 
 /**
  * @author Taras Puchko
  */
-public class _CharBuffer {
+public class _Reader {
 
-    public static CharBuffer append(CharBuffer charBuffer, CharSequence csq) {
-        return charBuffer.put(String.valueOf(csq));
-    }
-
-    public static CharBuffer append(CharBuffer charBuffer, CharSequence csq, int start, int end) {
-        return charBuffer.put(String.valueOf(csq).substring(start, end));
-    }
-
-    public static CharBuffer append(CharBuffer charBuffer, char c) {
-        return charBuffer.put(c);
-    }
-
-    public static int read(CharBuffer source, CharBuffer target) {
-        int sourceRemaining = source.remaining();
-        if (sourceRemaining == 0) return -1;
-        int targetRemaining = target.remaining();
-        if (sourceRemaining <= targetRemaining) {
-            target.put(source);
-            return sourceRemaining;
-        }
-        int sourceLimit = source.limit();
-        try {
-            source.limit(source.position() + targetRemaining);
-            target.put(source);
-        } finally {
-            source.limit(sourceLimit);
-        }
-        return targetRemaining;
+    public static int read(Reader reader, CharBuffer target) throws IOException {
+        char[] buffer = new char[target.remaining()];
+        int count = reader.read(buffer);
+        if (count > 0) target.put(buffer, 0, count);
+        return count;
     }
 
 }

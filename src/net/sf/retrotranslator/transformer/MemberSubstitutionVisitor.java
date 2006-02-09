@@ -32,6 +32,8 @@
 package net.sf.retrotranslator.transformer;
 
 import edu.emory.mathcs.backport.java.util.Queue;
+import edu.emory.mathcs.backport.java.util.concurrent.DelayQueue;
+import edu.emory.mathcs.backport.java.util.concurrent.Delayed;
 import net.sf.retrotranslator.runtime.impl.EmptyVisitor;
 import net.sf.retrotranslator.runtime.java.util._Queue;
 import net.sf.retrotranslator.runtime.asm.*;
@@ -49,18 +51,28 @@ import java.util.Map;
 public class MemberSubstitutionVisitor extends ClassAdapter {
 
     private static final String RUNTIME = "net/sf/retrotranslator/runtime/";
+    private static final String DELAY_QUEUE_NAME = Type.getInternalName(DelayQueue.class);
+    private static final String DELAYED_NAME = Type.getInternalName(Delayed.class);
+
     private static final ClassLoader LOADER = MemberSubstitutionVisitor.class.getClassLoader();
 
     private static Map<String, Boolean> classes = new HashMap<String, Boolean>();
     private static Map<ClassMember, ClassMember> methods = new HashMap<ClassMember, ClassMember>();
 
+    private static DescriptorTransformer DELAYED_TRANSFORMER = new DescriptorTransformer() {
+        protected String transformInternalName(String internalName) {
+            return DELAYED_NAME.equals(internalName) ? Type.getInternalName(Object.class) : internalName;
+        }
+    };
+
     private String currentClass;
 
     static {
+        String queueName = Type.getInternalName(Queue.class);
         for (Class aClass : new Class[] {Collection.class, _Queue.class}) {
-            loadBackport(Type.getInternalName(Queue.class), new StringBuilder(Type.getInternalName(aClass)));
+            loadBackport(queueName, new StringBuilder(Type.getInternalName(aClass)));
         }
-        classes.put(Type.getInternalName(Queue.class), true);
+        classes.put(queueName, true);
     }
 
     public MemberSubstitutionVisitor(final ClassVisitor cv) {
@@ -117,6 +129,9 @@ public class MemberSubstitutionVisitor extends ClassAdapter {
                     owner = method.owner;
                     name = method.name;
                     desc = method.desc;
+                }
+                if (owner.equals(DELAY_QUEUE_NAME)) {
+                    desc = DELAYED_TRANSFORMER.transformDescriptor(desc);
                 }
                 super.visitMethodInsn(opcode, owner, name, desc);
             }

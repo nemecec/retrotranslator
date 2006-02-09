@@ -29,43 +29,26 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.runtime.java.nio;
+package net.sf.retrotranslator.runtime.java.io;
+
+import junit.framework.*;
 
 import java.nio.CharBuffer;
+import java.io.StringReader;
+import java.io.Reader;
 
 /**
  * @author Taras Puchko
  */
-public class _CharBuffer {
+public class _ReaderTestCase extends TestCase {
 
-    public static CharBuffer append(CharBuffer charBuffer, CharSequence csq) {
-        return charBuffer.put(String.valueOf(csq));
-    }
-
-    public static CharBuffer append(CharBuffer charBuffer, CharSequence csq, int start, int end) {
-        return charBuffer.put(String.valueOf(csq).substring(start, end));
-    }
-
-    public static CharBuffer append(CharBuffer charBuffer, char c) {
-        return charBuffer.put(c);
-    }
-
-    public static int read(CharBuffer source, CharBuffer target) {
-        int sourceRemaining = source.remaining();
-        if (sourceRemaining == 0) return -1;
-        int targetRemaining = target.remaining();
-        if (sourceRemaining <= targetRemaining) {
-            target.put(source);
-            return sourceRemaining;
-        }
-        int sourceLimit = source.limit();
-        try {
-            source.limit(source.position() + targetRemaining);
-            target.put(source);
-        } finally {
-            source.limit(sourceLimit);
-        }
-        return targetRemaining;
+    public void testRead() throws Exception {
+        CharBuffer buffer = CharBuffer.allocate(10);
+        Reader reader = new StringReader("abc");
+        assertEquals(3, reader.read(buffer));
+        buffer.limit(buffer.position());
+        buffer.position(0);
+        assertEquals("abc", buffer.toString());
     }
 
 }

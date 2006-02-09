@@ -29,43 +29,28 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.runtime.java.nio;
+package net.sf.retrotranslator.runtime.java.lang;
+
+import net.sf.retrotranslator.runtime.java.io._Reader;
+import net.sf.retrotranslator.runtime.java.nio._CharBuffer;
 
 import java.nio.CharBuffer;
+import java.io.IOException;
+import java.io.Reader;
 
 /**
  * @author Taras Puchko
  */
-public class _CharBuffer {
+public class _Readable {
 
-    public static CharBuffer append(CharBuffer charBuffer, CharSequence csq) {
-        return charBuffer.put(String.valueOf(csq));
-    }
-
-    public static CharBuffer append(CharBuffer charBuffer, CharSequence csq, int start, int end) {
-        return charBuffer.put(String.valueOf(csq).substring(start, end));
-    }
-
-    public static CharBuffer append(CharBuffer charBuffer, char c) {
-        return charBuffer.put(c);
-    }
-
-    public static int read(CharBuffer source, CharBuffer target) {
-        int sourceRemaining = source.remaining();
-        if (sourceRemaining == 0) return -1;
-        int targetRemaining = target.remaining();
-        if (sourceRemaining <= targetRemaining) {
-            target.put(source);
-            return sourceRemaining;
+    public static int read(Readable readable, CharBuffer cb) throws IOException {
+        if (readable instanceof Reader) {
+            return _Reader.read((Reader) readable, cb);
         }
-        int sourceLimit = source.limit();
-        try {
-            source.limit(source.position() + targetRemaining);
-            target.put(source);
-        } finally {
-            source.limit(sourceLimit);
+        if (readable instanceof CharBuffer) {
+            return _CharBuffer.read((CharBuffer) readable, cb);
         }
-        return targetRemaining;
+        return readable.read(cb);
     }
 
 }

@@ -34,6 +34,7 @@ package net.sf.retrotranslator.transformer;
 import edu.emory.mathcs.backport.java.util.Queue;
 import net.sf.retrotranslator.runtime.java.lang.Iterable_;
 import net.sf.retrotranslator.runtime.java.lang.Appendable_;
+import net.sf.retrotranslator.runtime.java.lang.Readable_;
 import net.sf.retrotranslator.runtime.java.lang.reflect.AnnotatedElement_;
 import net.sf.retrotranslator.runtime.java.lang.reflect.GenericDeclaration_;
 import net.sf.retrotranslator.runtime.java.lang.reflect.Type_;
@@ -69,6 +70,7 @@ public class InheritanceVisitor extends ClassAdapter {
         add(GenericDeclaration_.class, Class.class, Constructor.class, Method.class);
         add(Iterable_.class, Collection.class);
         add(Queue.class, LinkedList.class);
+        add(Readable_.class, Reader.class, CharBuffer.class);
         add(Type_.class, Class.class);
     }
 

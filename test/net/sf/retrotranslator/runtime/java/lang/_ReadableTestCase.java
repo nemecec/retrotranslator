@@ -29,43 +29,41 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.runtime.java.nio;
+package net.sf.retrotranslator.runtime.java.lang;
 
+import junit.framework.*;
+
+import java.util.List;
+import java.util.Arrays;
+import java.io.StringReader;
+import java.io.IOException;
 import java.nio.CharBuffer;
 
 /**
  * @author Taras Puchko
  */
-public class _CharBuffer {
+public class _ReadableTestCase extends TestCase {
 
-    public static CharBuffer append(CharBuffer charBuffer, CharSequence csq) {
-        return charBuffer.put(String.valueOf(csq));
-    }
-
-    public static CharBuffer append(CharBuffer charBuffer, CharSequence csq, int start, int end) {
-        return charBuffer.put(String.valueOf(csq).substring(start, end));
-    }
-
-    public static CharBuffer append(CharBuffer charBuffer, char c) {
-        return charBuffer.put(c);
-    }
-
-    public static int read(CharBuffer source, CharBuffer target) {
-        int sourceRemaining = source.remaining();
-        if (sourceRemaining == 0) return -1;
-        int targetRemaining = target.remaining();
-        if (sourceRemaining <= targetRemaining) {
-            target.put(source);
-            return sourceRemaining;
+    private static class MyReadable implements Readable {
+        public int read(CharBuffer cb) throws IOException {
+            cb.put("123");
+            return 3;
         }
-        int sourceLimit = source.limit();
-        try {
-            source.limit(source.position() + targetRemaining);
-            target.put(source);
-        } finally {
-            source.limit(sourceLimit);
+    }
+
+    public void testRead() throws Exception {
+        List<Readable> list = Arrays.asList(new Readable[] {
+                new StringReader("abc"),
+                CharBuffer.wrap("xyz"),
+                new MyReadable()
+        });
+        CharBuffer buffer = CharBuffer.allocate(10);
+        for (Readable readable : list) {
+            assertEquals(3, readable.read(buffer));
         }
-        return targetRemaining;
+        buffer.limit(buffer.position());
+        buffer.position(0);
+        assertEquals("abcxyz123", buffer.toString());
     }
 
 }

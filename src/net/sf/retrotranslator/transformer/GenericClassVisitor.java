@@ -43,6 +43,12 @@ public abstract class GenericClassVisitor implements ClassVisitor {
 
     private ClassVisitor classVisitor;
 
+    private DescriptorTransformer transformer = new DescriptorTransformer() {
+        protected String transformInternalName(String internalName) {
+            return internalName(internalName);
+        }
+    };
+
     public GenericClassVisitor(ClassVisitor classVisitor) {
         this.classVisitor = classVisitor;
     }
@@ -82,19 +88,7 @@ public abstract class GenericClassVisitor implements ClassVisitor {
     }
 
     private String descriptor(String descriptor) {
-        if (descriptor == null) return null;
-        int pos = 0;
-        int start;
-        while ((start = descriptor.indexOf('L', pos) + 1) > 0) {
-            int end = descriptor.indexOf(';', start);
-            String name = descriptor.substring(start, end);
-            String fixedName = internalName(name);
-            if (!name.equals(fixedName)) {
-                descriptor = descriptor.substring(0, start) + fixedName + descriptor.substring(end);
-            }
-            pos = start + fixedName.length() + 1;
-        }
-        return descriptor;
+        return transformer.transformDescriptor(descriptor);
     }
 
     private String typeSignature(String signature) {

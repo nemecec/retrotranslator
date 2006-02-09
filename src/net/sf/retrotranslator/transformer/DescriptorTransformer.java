@@ -29,43 +29,28 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.runtime.java.nio;
-
-import java.nio.CharBuffer;
+package net.sf.retrotranslator.transformer;
 
 /**
  * @author Taras Puchko
  */
-public class _CharBuffer {
+public abstract class DescriptorTransformer {
 
-    public static CharBuffer append(CharBuffer charBuffer, CharSequence csq) {
-        return charBuffer.put(String.valueOf(csq));
-    }
-
-    public static CharBuffer append(CharBuffer charBuffer, CharSequence csq, int start, int end) {
-        return charBuffer.put(String.valueOf(csq).substring(start, end));
-    }
-
-    public static CharBuffer append(CharBuffer charBuffer, char c) {
-        return charBuffer.put(c);
-    }
-
-    public static int read(CharBuffer source, CharBuffer target) {
-        int sourceRemaining = source.remaining();
-        if (sourceRemaining == 0) return -1;
-        int targetRemaining = target.remaining();
-        if (sourceRemaining <= targetRemaining) {
-            target.put(source);
-            return sourceRemaining;
+    public String transformDescriptor(String descriptor) {
+        if (descriptor == null) return null;
+        int pos = 0;
+        int start;
+        while ((start = descriptor.indexOf('L', pos) + 1) > 0) {
+            int end = descriptor.indexOf(';', start);
+            String name = descriptor.substring(start, end);
+            String fixedName = transformInternalName(name);
+            if (!name.equals(fixedName)) {
+                descriptor = descriptor.substring(0, start) + fixedName + descriptor.substring(end);
+            }
+            pos = start + fixedName.length() + 1;
         }
-        int sourceLimit = source.limit();
-        try {
-            source.limit(source.position() + targetRemaining);
-            target.put(source);
-        } finally {
-            source.limit(sourceLimit);
-        }
-        return targetRemaining;
+        return descriptor;
     }
 
+    protected abstract String transformInternalName(String internalName);
 }

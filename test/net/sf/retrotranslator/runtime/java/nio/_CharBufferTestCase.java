@@ -31,41 +31,43 @@
  */
 package net.sf.retrotranslator.runtime.java.nio;
 
+import junit.framework.*;
+
 import java.nio.CharBuffer;
 
 /**
  * @author Taras Puchko
  */
-public class _CharBuffer {
+public class _CharBufferTestCase extends TestCase {
 
-    public static CharBuffer append(CharBuffer charBuffer, CharSequence csq) {
-        return charBuffer.put(String.valueOf(csq));
+    public void testReadEmpty() throws Exception {
+        CharBuffer source = CharBuffer.wrap("");
+        assertEquals(-1, source.read(CharBuffer.allocate(10)));
     }
 
-    public static CharBuffer append(CharBuffer charBuffer, CharSequence csq, int start, int end) {
-        return charBuffer.put(String.valueOf(csq).substring(start, end));
+    public void testRead() throws Exception {
+        CharBuffer source = CharBuffer.wrap("abc");
+        CharBuffer target = CharBuffer.allocate(10);
+        assertEquals(3, source.read(target));
+        target.limit(target.position());
+        target.position(0);
+        assertEquals("abc", target.toString());
     }
 
-    public static CharBuffer append(CharBuffer charBuffer, char c) {
-        return charBuffer.put(c);
+    public void testReadLimited() throws Exception {
+        CharBuffer source = CharBuffer.wrap("abcdefgh");
+        CharBuffer target = CharBuffer.allocate(4);
+        assertEquals(4, source.read(target));
+        target.limit(target.position());
+        target.position(0);
+        assertEquals("abcd", target.toString());
     }
 
-    public static int read(CharBuffer source, CharBuffer target) {
-        int sourceRemaining = source.remaining();
-        if (sourceRemaining == 0) return -1;
-        int targetRemaining = target.remaining();
-        if (sourceRemaining <= targetRemaining) {
-            target.put(source);
-            return sourceRemaining;
-        }
-        int sourceLimit = source.limit();
-        try {
-            source.limit(source.position() + targetRemaining);
-            target.put(source);
-        } finally {
-            source.limit(sourceLimit);
-        }
-        return targetRemaining;
+    public void testAppend() throws Exception {
+        CharBuffer buffer = CharBuffer.allocate(10);
+        buffer.append("abc").append("xyz", 1, 2).append('0');
+        buffer.limit(buffer.position());
+        buffer.position(0);
+        assertEquals("abcy0", buffer.toString());
     }
-
 }
