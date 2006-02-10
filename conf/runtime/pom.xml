@@ -17,7 +17,7 @@
             <groupId>backport-util-concurrent</groupId>
             <artifactId>backport-util-concurrent</artifactId>
             <version>2.1</version>
-            <scope>compile</scope>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
