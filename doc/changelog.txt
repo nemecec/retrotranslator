@@ -1,6 +1,10 @@
 Retrotranslator Changelog
 =================================
 
+  - java.util.UUID implemented.
+  - JIT Retrotranslator works on IBM JDK and BEA JRockit JDK.
+  - Bug fixed: several methods of java.util.concurrent.DelayQueue were not translated properly.
+
 0.9.8 (2006-02-03)
 ---------------------------------
   - Bug fixed: translated classes didn't work on JRE 1.4.1-b21 where only java.lang.Object may be used
