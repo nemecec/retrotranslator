@@ -43,7 +43,7 @@ import java.util.StringTokenizer;
  */
 public class Retrotranslator implements MessageLogger {
 
-    private List<File> src = new ArrayList<File>();
+    private List<ClassFileSet> src = new ArrayList<ClassFileSet>();
     private File destdir;
     private boolean stripsign;
     private boolean verbose;
@@ -66,7 +66,12 @@ public class Retrotranslator implements MessageLogger {
 
     public void addSrcdir(File srcdir) {
         if (!srcdir.isDirectory()) throw new IllegalArgumentException("Invalid srcdir: " + srcdir);
-        this.src.add(srcdir);
+        this.src.add(new ClassFileSet(srcdir));
+    }
+
+    public void addSourceFiles(File srcdir, List<String> fileNames) {
+        if (!srcdir.isDirectory()) throw new IllegalArgumentException("Invalid srcdir: " + srcdir);
+        this.src.add(new ClassFileSet(srcdir, fileNames));
     }
 
     public void setDestdir(File destdir) {
@@ -120,12 +125,10 @@ public class Retrotranslator implements MessageLogger {
     public boolean run() {
         if (src.isEmpty()) throw new IllegalArgumentException("Source directory is not set.");
         ClassTransformer transformer = new ClassTransformer(lazy, stripsign);
-        List<FolderScanner> scanners = new ArrayList<FolderScanner>();
-        for (File srcdir : src) {
-            FolderScanner scanner = new FolderScanner(srcdir);
-            scanners.add(scanner);
-            transform(transformer, scanner);
+        for (ClassFileSet fileSet : src) {
+            transform(transformer, fileSet);
         }
+
         if (!verify) return true;
         ClassReaderFactory factory = new ClassReaderFactory(classpath.isEmpty());
         try {
@@ -135,13 +138,13 @@ public class Retrotranslator implements MessageLogger {
             if (destdir != null) {
                 factory.appendPath(destdir);
             } else {
-                for (FolderScanner scanner : scanners) {
-                    factory.appendPath(scanner.getBaseDir());
+                for (ClassFileSet fileSet : src) {
+                    factory.appendPath(fileSet.getBaseDir());
                 }
             }
             boolean verified = true;
-            for (FolderScanner scanner : scanners) {
-                verified &= verify(factory, scanner);
+            for (ClassFileSet fileSet : src) {
+                verified &= verify(factory, fileSet);
             }
             return verified;
         } finally {
@@ -149,10 +152,10 @@ public class Retrotranslator implements MessageLogger {
         }
     }
 
-    private void transform(ClassTransformer transformer, FolderScanner scanner) {
-        File src = scanner.getBaseDir();
+    private void transform(ClassTransformer transformer, ClassFileSet fileSet) {
+        File src = fileSet.getBaseDir();
         File dest = destdir != null ? destdir : src;
-        List<String> fileNames = scanner.getFileNames();
+        List<String> fileNames = fileSet.getFileNames();
         logger.info("Transforming " + fileNames.size() + " file(s)" +
                 (dest.equals(src) ? " in " + src + "." : " from " + src + " to " + dest + "."));
         for (int i = 0; i < fileNames.size(); i++) {
@@ -170,13 +173,9 @@ public class Retrotranslator implements MessageLogger {
         logger.info("Transformation of " + fileNames.size() + " file(s) completed successfully.");
     }
 
-    private static boolean isByteCode15(byte[] sourceData) {
-        return sourceData[4] == 0 && sourceData[5] == 0 && sourceData[6] == 0 && sourceData[7] == 49;
-    }
-
-    private boolean verify(ClassReaderFactory factory, FolderScanner scanner) {
-        File dir = destdir != null ? destdir : scanner.getBaseDir();
-        List<String> fileNames = scanner.getFileNames();
+    private boolean verify(ClassReaderFactory factory, ClassFileSet fileSet) {
+        File dir = destdir != null ? destdir : fileSet.getBaseDir();
+        List<String> fileNames = fileSet.getFileNames();
         logger.info("Verifying " + fileNames.size() + " file(s) in " + dir + ".");
         ReferenceVerifyingVisitor visitor = new ReferenceVerifyingVisitor(factory, logger);
         for (String fileName : fileNames) {

@@ -38,13 +38,18 @@ import java.util.List;
 /**
  * @author Taras Puchko
  */
-public class FolderScanner {
+public class ClassFileSet {
 
     private File baseDir;
     private List<String> fileNames;
 
-    public FolderScanner(File baseDir) {
+    public ClassFileSet(File baseDir) {
         this.baseDir = baseDir;
+    }
+
+    public ClassFileSet(File baseDir, List<String> fileNames) {
+        this.baseDir = baseDir;
+        this.fileNames = fileNames;
     }
 
     public File getBaseDir() {
