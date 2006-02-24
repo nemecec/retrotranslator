@@ -41,7 +41,7 @@ import java.math.BigInteger;
 /**
  * @author Taras Puchko
  */
-public class ConstructorSubstitutionVisitor extends ClassAdapter {
+class ConstructorSubstitutionVisitor extends ClassAdapter {
 
     private static final String BIG_DECIMAL = Type.getInternalName(BigDecimal.class);
     private static final String ILLEGAL_STATE_EXCEPTION = Type.getInternalName(IllegalStateException.class);

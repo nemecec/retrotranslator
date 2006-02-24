@@ -38,7 +38,7 @@ import java.util.List;
 /**
  * @author Taras Puchko
  */
-public class ClassFileSet {
+class ClassFileSet {
 
     private File baseDir;
     private List<String> fileNames;

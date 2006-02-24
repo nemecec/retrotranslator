@@ -39,7 +39,7 @@ import net.sf.retrotranslator.runtime.asm.Opcodes;
 /**
  * @author Taras Puchko
  */
-public class MemberFinder extends EmptyVisitor {
+class MemberFinder extends EmptyVisitor {
 
     private final ClassReaderFactory factory;
     private final boolean method;

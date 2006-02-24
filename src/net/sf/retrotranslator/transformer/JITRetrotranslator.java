@@ -51,9 +51,7 @@ public class JITRetrotranslator {
             printUsageAndExit();
         }
         if (System.getProperty("java.version").startsWith("1.4")) {
-            if (install()) {
-                System.out.println("JIT Retrotranslator installed.");
-            } else {
+            if (!install()) {
                 System.out.println("Cannot install JIT Retrotranslator.");
             }
         }

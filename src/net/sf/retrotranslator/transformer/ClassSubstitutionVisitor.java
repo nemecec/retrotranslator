@@ -42,7 +42,7 @@ import java.util.Map;
 /**
  * @author Taras Puchko
  */
-public class ClassSubstitutionVisitor extends GenericClassVisitor {
+class ClassSubstitutionVisitor extends GenericClassVisitor {
 
     private static final String RUNTIME = "net/sf/retrotranslator/runtime/";
     private static final String BACKPORT = "edu/emory/mathcs/backport/";
@@ -52,10 +52,8 @@ public class ClassSubstitutionVisitor extends GenericClassVisitor {
 
     static {
         map.put("java/lang/StringBuilder", "java/lang/StringBuffer");
-        map.put("net/sf/retrotranslator/transformer/SunJITRetrotranslator$ClassFileTransformer",
-                "sun/misc/ClassFileTransformer");
-        map.put("net/sf/retrotranslator/transformer/JRockitJITRetrotranslator$ClassPreProcessor",
-                "com/bea/jvm/ClassPreProcessor");
+        map.put("net/sf/retrotranslator/transformer/ClassFileTransformer", "sun/misc/ClassFileTransformer");
+        map.put("net/sf/retrotranslator/transformer/ClassPreProcessor", "com/bea/jvm/ClassPreProcessor");
         for (Class type : new Class[]{AbstractQueue.class, PriorityQueue.class, Queue.class}) {
             String name = type.getName().replace('.', '/');
             if (!name.startsWith(BACKPORT)) throw new IllegalArgumentException();

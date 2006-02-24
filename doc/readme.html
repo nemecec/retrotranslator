@@ -20,6 +20,7 @@
     <li><a href="#features">What Java 5.0 features are supported?</a></li>
     <li><a href="#commandline">How to use Retrotranslator from command line?</a></li>
     <li><a href="#ant">How to use Retrotranslator from Apache Ant?</a></li>
+    <li><a href="#idea">How to use Retrotranslator from IntelliJ IDEA?</a></li>
     <li><a href="#jit">How to use Just-in-Time Retrotranslator?</a></li>
     <li><a href="#supported">What Java 5.0 classes and methods are supported?</a></li>
     <li><a href="#extension">How to write an extension for Retrotranslator?</a></li>
@@ -120,10 +121,10 @@ and concurrency utilities
     </tr>
 </table>
 
-<h4><a name="ant">How to use Retrotranslator from <a href="http://ant.apache.org/">Apache Ant</a>?</a></h4>
+<h4><a name="ant">How to use Retrotranslator from Apache Ant?</a></h4>
 
-<p>The distribution contains an integrated Ant task <code>net.sf.retrotranslator.transformer.RetrotranslatorTask</code>.
-    It has the following syntax:</p>
+<p>The distribution contains an integrated <a href="http://ant.apache.org/">Apache Ant</a> task
+    <code>net.sf.retrotranslator.transformer.RetrotranslatorTask</code>. It has the following syntax:</p>
 <table border="1" cellspacing="0" cellpadding="5">
     <tr><th>Attribute</th><th>Description</th><th>Required</th><th>Default</th></tr>
     <tr>
@@ -178,11 +179,18 @@ and concurrency utilities
     </tr>
 </table>
 
+<h4><a name="idea">How to use Retrotranslator from IntelliJ IDEA?</a></h4>
+<p>
+    To automatically translate and verify classes compiled by <a href="http://www.jetbrains.com/idea/">IntelliJ IDEA</a>
+    you may <a href="http://plugins.intellij.net/plugins/view/?id=Retrotranslator%20Integration">download a plugin</a>
+    that generates classes compatible with 1.4 virtual machines from your Java 5 source code.
+</p>
+
 <h4><a name="jit">How to use Just-in-Time Retrotranslator?</a></h4>
 
 <p>
     You may use JIT Retrotranslator to run your Java 5 application on J2SE 1.4. Any Java 5 class loaded with
-    any classloader will be translated at runtime only on J2SE 1.4 from Sun, IBM, BEA, or Apple.
+    any classloader will be translated at runtime on J2SE 1.4 from Sun, IBM, BEA, or Apple.
     When you start JIT Retrotranslator on J2SE 5.0 it will simply call your application.
 </p>
 <ol>
@@ -288,7 +296,7 @@ and concurrency utilities
         <code>append(CharSequence), append(CharSequence, int, int), append(char), read(CharBuffer)</code>
         </td><td>&nbsp;</td></tr>
 
-    <tr><td rowspan="8"><code>java.util</code></td><td><code>AbstractQueue</code></td><td>All methods</td><td>
+    <tr><td rowspan="9"><code>java.util</code></td><td><code>AbstractQueue</code></td><td>All methods</td><td>
         &nbsp;</td></tr>
     <tr><td><code>Arrays</code></td><td>All methods (21 new!)</td><td>&nbsp;</td></tr>
     <tr><td><code>Collections</code></td><td>All methods (13 new!)</td><td>&nbsp;</td></tr>
@@ -299,6 +307,7 @@ and concurrency utilities
     <tr><td><code>Queue</code></td><td>All methods</td><td>
         <code>new Queue[...]</code> is replaced with <code>new Object[...]</code>
     </td></tr>
+    <tr><td><code>UUID</code></td><td>All methods</td><td>&nbsp;</td></tr>
 
     <tr><td><code>java.util.regex</code></td><td><code>Matcher</code></td><td><code>quoteReplacement(String)</code></td>
         <td>&nbsp;</td></tr>
@@ -330,6 +339,9 @@ and concurrency utilities
 
 <h4><a name="license">License</a></h4>
 <pre>
+    Retrotranslator: a Java bytecode transformer that translates Java classes
+    compiled with JDK 5.0 into classes that can be run on JVM 1.4.
+
     Copyright (c) 2005, 2006 Taras Puchko
     All rights reserved.
 
@@ -337,13 +349,13 @@ and concurrency utilities
     modification, are permitted provided that the following conditions
     are met:
     1. Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
+       notice, this list of conditions and the following disclaimer.
     2. Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
+       notice, this list of conditions and the following disclaimer in the
+       documentation and/or other materials provided with the distribution.
     3. Neither the name of the copyright holders nor the names of its
-    contributors may be used to endorse or promote products derived from
-    this software without specific prior written permission.
+       contributors may be used to endorse or promote products derived from
+       this software without specific prior written permission.
 
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
     AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE

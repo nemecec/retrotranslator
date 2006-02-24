@@ -34,23 +34,8 @@ package net.sf.retrotranslator.transformer;
 /**
  * @author Taras Puchko
  */
-abstract class DescriptorTransformer {
+interface ClassPreProcessor {
 
-    public String transformDescriptor(String descriptor) {
-        if (descriptor == null) return null;
-        int pos = 0;
-        int start;
-        while ((start = descriptor.indexOf('L', pos) + 1) > 0) {
-            int end = descriptor.indexOf(';', start);
-            String name = descriptor.substring(start, end);
-            String fixedName = transformInternalName(name);
-            if (!name.equals(fixedName)) {
-                descriptor = descriptor.substring(0, start) + fixedName + descriptor.substring(end);
-            }
-            pos = start + fixedName.length() + 1;
-        }
-        return descriptor;
-    }
+    byte[] preProcess(ClassLoader classLoader, String string, byte[] bytes);
 
-    protected abstract String transformInternalName(String internalName);
 }

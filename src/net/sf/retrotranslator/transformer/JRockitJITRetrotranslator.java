@@ -31,16 +31,10 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import java.lang.reflect.InvocationTargetException;
-
 /**
  * @author Taras Puchko
  */
-public class JRockitJITRetrotranslator {
-
-    private static interface ClassPreProcessor {
-        byte[] preProcess(java.lang.ClassLoader classLoader, java.lang.String string, byte[] bytes);
-    }
+class JRockitJITRetrotranslator {
 
     private static class ClassPreProcessorImpl implements ClassPreProcessor {
 
@@ -57,7 +51,6 @@ public class JRockitJITRetrotranslator {
     }
 
     public static boolean install() {
-        if (System.getProperty("java.vm.name").indexOf("JRockit") < 0) return false;
         try {
             Class jvmFactoryClass = Class.forName("com.bea.jvm.JVMFactory");
             Object jvm = jvmFactoryClass.getMethod("getJVM").invoke(null);
@@ -69,14 +62,8 @@ public class JRockitJITRetrotranslator {
                         ClassPreProcessor.class).invoke(classLibrary, new ClassPreProcessorImpl(preProcessor));
             }
             return true;
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
+        } catch (Throwable e) {
+            return false;
         }
     }
 }

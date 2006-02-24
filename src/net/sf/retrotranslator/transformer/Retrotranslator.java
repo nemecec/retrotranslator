@@ -55,6 +55,9 @@ public class Retrotranslator implements MessageLogger {
     public Retrotranslator() {
     }
 
+    /**
+     * @deprecated Provided for backwards compatibility. Use {@link #Retrotranslator()} instead
+     */
     public Retrotranslator(File srcdir, File destdir, String classpath, boolean verify, boolean stripsign, boolean verbose) {
         addSrcdir(srcdir);
         setDestdir(destdir);

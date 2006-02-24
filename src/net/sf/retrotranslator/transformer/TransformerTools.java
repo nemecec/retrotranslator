@@ -41,7 +41,7 @@ import java.io.IOException;
 /**
  * @author Taras Puchko
  */
-public class TransformerTools {
+class TransformerTools {
 
     public static byte[] readFileToByteArray(File file) {
         int len = (int) file.length();

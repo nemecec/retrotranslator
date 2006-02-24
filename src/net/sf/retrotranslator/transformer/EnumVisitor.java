@@ -39,7 +39,7 @@ import net.sf.retrotranslator.runtime.asm.*;
 /**
  * @author Taras Puchko
  */
-public class EnumVisitor extends ClassAdapter {
+class EnumVisitor extends ClassAdapter {
 
     private static final String ENUM_NAME = Type.getInternalName(Enum_.class);
     private static final String SET_ENUM_CONSTANTS_NAME = "setEnumConstants";

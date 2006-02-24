@@ -57,7 +57,7 @@ import java.nio.CharBuffer;
 /**
  * @author Taras Puchko
  */
-public class InheritanceVisitor extends ClassAdapter {
+class InheritanceVisitor extends ClassAdapter {
 
     private static Map<String, String[]> implementations = new HashMap<String, String[]>();
 

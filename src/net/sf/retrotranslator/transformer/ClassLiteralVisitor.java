@@ -43,7 +43,7 @@ import net.sf.retrotranslator.runtime.asm.*;
 /**
  * @author Taras Puchko
  */
-public class ClassLiteralVisitor extends ClassAdapter {
+class ClassLiteralVisitor extends ClassAdapter {
 
     private static final Map<Integer, Integer> primitiveTypes = getPrimitiveTypes();
 

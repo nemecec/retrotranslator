@@ -44,7 +44,7 @@ import java.util.jar.JarFile;
 /**
  * @author Taras Puchko
  */
-public class JarClassLoader extends URLClassLoader {
+class JarClassLoader extends URLClassLoader {
 
     private File file;
 

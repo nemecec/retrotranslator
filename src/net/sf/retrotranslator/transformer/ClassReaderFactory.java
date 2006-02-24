@@ -45,7 +45,7 @@ import java.util.zip.ZipFile;
 /**
  * @author Taras Puchko
  */
-public class ClassReaderFactory {
+class ClassReaderFactory {
 
     private boolean useClasspath;
     private List<Entry> entries = new ArrayList<Entry>();

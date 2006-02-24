@@ -38,7 +38,7 @@ import net.sf.retrotranslator.runtime.asm.ClassWriter;
 /**
  * @author Taras Puchko
  */
-public class ClassTransformer {
+class ClassTransformer {
 
     private boolean lazy;
     private boolean stripsign;

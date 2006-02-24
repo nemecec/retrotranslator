@@ -34,21 +34,7 @@ package net.sf.retrotranslator.transformer;
 /**
  * @author Taras Puchko
  */
-public class SunJITRetrotranslator {
-
-    private static abstract class ClassFileTransformer {
-
-        public ClassFileTransformer() {
-        }
-
-        public static void add(ClassFileTransformer transformer) {
-            //stub
-        }
-
-        public static java.lang.Object[] getTransformers() {
-            return null; //stub
-        }
-    }
+class SunJITRetrotranslator {
 
     private static class ClassFileTransformerImpl extends ClassFileTransformer {
 

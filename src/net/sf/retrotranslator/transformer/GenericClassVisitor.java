@@ -39,7 +39,7 @@ import net.sf.retrotranslator.runtime.asm.*;
 /**
  * @author Taras Puchko
  */
-public abstract class GenericClassVisitor implements ClassVisitor {
+abstract class GenericClassVisitor implements ClassVisitor {
 
     private ClassVisitor classVisitor;
 

@@ -36,7 +36,7 @@ import net.sf.retrotranslator.runtime.asm.*;
 /**
  * @author Taras Puchko
  */
-public class ArrayCloningVisitor extends ClassAdapter {
+class ArrayCloningVisitor extends ClassAdapter {
 
     public ArrayCloningVisitor(final ClassVisitor cv) {
         super(cv);

@@ -37,7 +37,7 @@ import net.sf.retrotranslator.runtime.asm.ClassVisitor;
 /**
  * @author Taras Puchko
  */
-public class VersionVisitor extends ClassAdapter {
+class VersionVisitor extends ClassAdapter {
 
     public VersionVisitor(final ClassVisitor cv) {
         super(cv);

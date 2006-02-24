@@ -36,7 +36,7 @@ import net.sf.retrotranslator.runtime.asm.*;
 /**
  * @author Taras Puchko
  */
-public class SignatureStrippingVisitor extends ClassAdapter {
+class SignatureStrippingVisitor extends ClassAdapter {
 
     public SignatureStrippingVisitor(final ClassVisitor cv) {
         super(cv);

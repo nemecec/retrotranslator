@@ -42,7 +42,7 @@ import java.util.Set;
 /**
  * @author Taras Puchko
  */
-public class ReferenceVerifyingVisitor extends GenericClassVisitor {
+class ReferenceVerifyingVisitor extends GenericClassVisitor {
 
     private final ClassReaderFactory factory;
     private final MessageLogger logger;

@@ -48,7 +48,7 @@ import java.util.Map;
 /**
  * @author Taras Puchko
  */
-public class MemberSubstitutionVisitor extends ClassAdapter {
+class MemberSubstitutionVisitor extends ClassAdapter {
 
     private static final String RUNTIME = "net/sf/retrotranslator/runtime/";
     private static final String DELAY_QUEUE_NAME = Type.getInternalName(DelayQueue.class);

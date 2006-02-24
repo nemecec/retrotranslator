@@ -19,6 +19,10 @@
 		<mkdir dir="build/classes15"/>
 		<javac fork="yes" srcdir="src" destdir="build/classes15" debug="true"
                classpathref="classpath" executable="${java15_home}/bin/javac"/>
+        <delete>
+            <fileset dir="build/classes15/net/sf/retrotranslator/transformer"
+                     includes="ClassFileTransformer.class ClassPreProcessor.class" />
+        </delete>
 		<mkdir dir="build/classes14"/>
 		<java classname="net.sf.retrotranslator.transformer.Retrotranslator"
               classpathref="classpath" classpath="build/classes15" failonerror="true">
@@ -29,7 +33,7 @@
 			<arg value="-stripsign"/>
 			<arg value="-lazy"/>
 		</java>
-		<jar destfile="build/retrotranslator-runtime-${version}.jar">
+        <jar destfile="build/retrotranslator-runtime-${version}.jar">
 			<fileset dir="build/classes14" includes="net/sf/retrotranslator/runtime/**"/>
 			<fileset file="doc/LICENSE.txt"/>
 			<manifest>
