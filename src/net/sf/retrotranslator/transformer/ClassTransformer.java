@@ -68,7 +68,7 @@ public class ClassTransformer {
         if (stripsign) {
             visitor = new SignatureStrippingVisitor(visitor);
         }
-        classReader.accept(visitor, true);
+        classReader.accept(visitor, false);
         return classWriter.toByteArray();
     }
 }
