@@ -32,6 +32,7 @@
 package net.sf.retrotranslator.runtime.java.lang.reflect;
 
 import net.sf.retrotranslator.runtime.java.lang._Class;
+import net.sf.retrotranslator.runtime.impl.Derived;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.GenericDeclaration;
@@ -41,6 +42,7 @@ import java.lang.reflect.TypeVariable;
 /**
  * @author Taras Puchko
  */
+@Derived({Class.class, Constructor.class, Method.class})
 public class _GenericDeclaration {
 
     public static TypeVariable[] getTypeParameters(GenericDeclaration declaration) {

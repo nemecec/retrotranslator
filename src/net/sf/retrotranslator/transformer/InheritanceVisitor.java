@@ -31,59 +31,16 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import edu.emory.mathcs.backport.java.util.Queue;
-import net.sf.retrotranslator.runtime.java.lang.Iterable_;
-import net.sf.retrotranslator.runtime.java.lang.Appendable_;
-import net.sf.retrotranslator.runtime.java.lang.Readable_;
-import net.sf.retrotranslator.runtime.java.lang.reflect.AnnotatedElement_;
-import net.sf.retrotranslator.runtime.java.lang.reflect.GenericDeclaration_;
-import net.sf.retrotranslator.runtime.java.lang.reflect.Type_;
-import net.sf.retrotranslator.runtime.java.io.Closeable_;
-import net.sf.retrotranslator.runtime.java.io.Flushable_;
 import net.sf.retrotranslator.runtime.asm.*;
 import static net.sf.retrotranslator.runtime.asm.Opcodes.*;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
-import java.io.*;
-import java.nio.channels.Channel;
-import java.nio.CharBuffer;
 
 /**
  * @author Taras Puchko
  */
 class InheritanceVisitor extends ClassAdapter {
 
-    private static Map<String, String[]> implementations = new HashMap<String, String[]>();
-
-    static {
-        add(AnnotatedElement_.class, Package.class, Class.class, Constructor.class, Field.class, Method.class);
-        add(Appendable_.class, StringBuffer.class, PrintStream.class, Writer.class, CharBuffer.class);
-        add(Closeable_.class, InputStream.class, OutputStream.class,
-                Reader.class, Writer.class, RandomAccessFile.class, Channel.class);
-        add(Flushable_.class, OutputStream.class, Writer.class);
-        add(GenericDeclaration_.class, Class.class, Constructor.class, Method.class);
-        add(Iterable_.class, Collection.class);
-        add(Queue.class, LinkedList.class);
-        add(Readable_.class, Reader.class, CharBuffer.class);
-        add(Type_.class, Class.class);
-    }
-
     public InheritanceVisitor(final ClassVisitor cv) {
         super(cv);
-    }
-
-    private static void add(Class superType, Class... subTypes) {
-        String[] names = new String[subTypes.length];
-        for (int i = 0; i < names.length; i++) {
-            names[i] = Type.getInternalName(subTypes[i]);
-        }
-        implementations.put(Type.getInternalName(superType), names);
     }
 
     public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature, final String[] exceptions) {
@@ -107,14 +64,14 @@ class InheritanceVisitor extends ClassAdapter {
 
             private String fixArrayType(String desc) {
                 if (desc.charAt(0) != '[') {
-                    return implementations.containsKey(desc) ? Type.getInternalName(Object.class) : desc;
+                    return BackportFactory.getImplementations(desc) == null ? desc : Type.getInternalName(Object.class);
                 }
                 int first = 1;
                 while (desc.charAt(first) == '[') first++;
                 if (desc.charAt(first) != 'L') return desc;
                 int last = desc.length() - 1;
                 if (desc.charAt(last) != ';') return desc;
-                if (!implementations.containsKey(desc.substring(first + 1, last))) return desc;
+                if (BackportFactory.getImplementations(desc.substring(first + 1, last)) == null) return desc;
                 return desc.substring(0, first) + Type.getDescriptor(Object.class);
             }
 
@@ -123,7 +80,7 @@ class InheritanceVisitor extends ClassAdapter {
                     mv.visitTypeInsn(CHECKCAST, fixArrayType(desc));
                     return;
                 }
-                String[] list = implementations.get(desc);
+                String[] list = BackportFactory.getImplementations(desc);
                 if (list == null) {
                     mv.visitTypeInsn(CHECKCAST, desc);
                     return;
@@ -139,7 +96,7 @@ class InheritanceVisitor extends ClassAdapter {
             }
 
             private void visitInstanceOf(String desc) {
-                String[] list = implementations.get(desc);
+                String[] list = BackportFactory.getImplementations(desc);
                 if (list == null) {
                     mv.visitTypeInsn(INSTANCEOF, desc);
                     return;
@@ -165,4 +122,5 @@ class InheritanceVisitor extends ClassAdapter {
 
         };
     }
+
 }

@@ -29,41 +29,18 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.runtime.java.lang;
+package net.sf.retrotranslator.runtime.impl;
 
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.lang.annotation.Target;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.ElementType;
 
 /**
  * @author Taras Puchko
  */
-public class _Thread {
-
-    private static final StackTraceElement[] EMPTY_STACK_TRACE = new StackTraceElement[0];
-    private static final Map<Thread, Long> identifiers = new WeakHashMap<Thread, Long>();
-    private static long idSequence;
-
-    public static StackTraceElement[] getStackTrace(Thread thread) {
-        if (thread != Thread.currentThread() || !thread.isAlive()) {
-            return EMPTY_STACK_TRACE;
-        }
-        StackTraceElement[] stackTrace = new Throwable().getStackTrace();
-        if (stackTrace.length < 2) return EMPTY_STACK_TRACE;
-        StackTraceElement[] result = new StackTraceElement[stackTrace.length + 1];
-        System.arraycopy(stackTrace, 0, result, 1, stackTrace.length);
-        result[0] = result[1];
-        return result;
-    }
-
-    public static long getId(Thread thread) {
-        synchronized(identifiers) {
-            Long id = identifiers.get(thread);
-            if (id == null) {
-                id = ++idSequence;
-                identifiers.put(thread, id);
-            }
-            return id;
-        }
-    }
-
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Derived {
+    Class[] value();
 }

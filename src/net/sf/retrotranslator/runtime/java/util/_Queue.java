@@ -31,12 +31,15 @@
  */
 package net.sf.retrotranslator.runtime.java.util;
 
+import net.sf.retrotranslator.runtime.impl.Derived;
+
 import java.util.LinkedList;
 import java.util.Queue;
 
 /**
  * @author Taras Puchko
  */
+@Derived(LinkedList.class)
 public class _Queue {
 
     public static Object element(Queue queue) {

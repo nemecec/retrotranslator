@@ -107,6 +107,10 @@ public class MethodDescriptor extends GenericDeclarationDescriptor {
         return name;
     }
 
+    public String getDesc() {
+        return desc;
+    }
+
     public Class getReturnType() {
         return returnType.get();
     }

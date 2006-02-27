@@ -33,6 +33,7 @@ package net.sf.retrotranslator.runtime.java.lang;
 
 import net.sf.retrotranslator.runtime.java.io._Reader;
 import net.sf.retrotranslator.runtime.java.nio._CharBuffer;
+import net.sf.retrotranslator.runtime.impl.Derived;
 
 import java.nio.CharBuffer;
 import java.io.IOException;
@@ -41,6 +42,7 @@ import java.io.Reader;
 /**
  * @author Taras Puchko
  */
+@Derived({Reader.class, CharBuffer.class})
 public class _Readable {
 
     public static int read(Readable readable, CharBuffer cb) throws IOException {

@@ -52,4 +52,10 @@ public class _String {
         return matcher.replaceAll(Matcher.quoteReplacement(replacement.toString()));
     }
 
+    /**
+     * @since JDK 1.6
+     */
+    public static boolean isEmpty(String s) {
+        return s.length() == 0;
+    }
 }

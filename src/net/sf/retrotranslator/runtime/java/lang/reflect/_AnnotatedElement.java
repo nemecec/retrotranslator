@@ -33,6 +33,7 @@ package net.sf.retrotranslator.runtime.java.lang.reflect;
 
 import net.sf.retrotranslator.runtime.java.lang._Class;
 import net.sf.retrotranslator.runtime.java.lang._Package;
+import net.sf.retrotranslator.runtime.impl.Derived;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
@@ -43,6 +44,7 @@ import java.lang.reflect.Method;
 /**
  * @author Taras Puchko
  */
+@Derived({Class.class, Constructor.class, Field.class, Method.class, Package.class})
 public class _AnnotatedElement {
 
     public static Annotation getAnnotation(AnnotatedElement annotatedElement, Class annotationType) {

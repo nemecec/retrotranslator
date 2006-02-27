@@ -31,12 +31,16 @@
  */
 package net.sf.retrotranslator.runtime.java.io;
 
+import net.sf.retrotranslator.runtime.impl.Derived;
+
 import java.io.*;
 import java.nio.channels.Channel;
 
 /**
  * @author Taras Puchko
  */
+@Derived({InputStream.class, OutputStream.class,
+        Reader.class, Writer.class, RandomAccessFile.class, Channel.class})
 public class _Closeable {
 
     public static void close(Closeable closeable) throws IOException {

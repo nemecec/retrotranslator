@@ -34,6 +34,7 @@ package net.sf.retrotranslator.runtime.java.lang;
 import net.sf.retrotranslator.runtime.java.io._Writer;
 import net.sf.retrotranslator.runtime.java.io._PrintStream;
 import net.sf.retrotranslator.runtime.java.nio._CharBuffer;
+import net.sf.retrotranslator.runtime.impl.Derived;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -43,6 +44,7 @@ import java.nio.CharBuffer;
 /**
  * @author Taras Puchko
  */
+@Derived({StringBuffer.class, PrintStream.class, Writer.class, CharBuffer.class})
 public class _Appendable {
 
     public static Appendable append(Appendable appendable, CharSequence csq) throws IOException {

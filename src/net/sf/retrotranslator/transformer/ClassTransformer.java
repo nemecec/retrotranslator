@@ -53,7 +53,7 @@ class ClassTransformer {
     }
 
     public static byte[] transform(byte[] bytes, int offset, int length, boolean lazy, boolean stripsign) {
-        if (lazy && (bytes[offset + 7] != 49 ||
+        if (lazy && (bytes[offset + 7] <= 48 ||
                 bytes[offset + 6] != 0 || bytes[offset + 5] != 0 || bytes[offset + 4] != 0)) {
             if (offset == 0 && length == bytes.length) return bytes;
             byte[] result = new byte[length];
@@ -62,8 +62,8 @@ class ClassTransformer {
         }
         ClassReader classReader = new ClassReader(bytes, offset, length);
         ClassWriter classWriter = new ClassWriter(true);
-        ClassVisitor visitor = new VersionVisitor(new ClassSubstitutionVisitor(
-                new MemberSubstitutionVisitor(new ConstructorSubstitutionVisitor(new InheritanceVisitor(
+        ClassVisitor visitor = new VersionVisitor(new InheritanceVisitor(new ClassSubstitutionVisitor(
+                new MemberSubstitutionVisitor(new ConstructorSubstitutionVisitor(
                         new EnumVisitor(new ClassLiteralVisitor(new ArrayCloningVisitor(classWriter))))))));
         if (stripsign) {
             visitor = new SignatureStrippingVisitor(visitor);

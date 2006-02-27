@@ -31,12 +31,15 @@
  */
 package net.sf.retrotranslator.runtime.java.lang;
 
+import net.sf.retrotranslator.runtime.impl.Derived;
+
 import java.util.Collection;
 import java.util.Iterator;
 
 /**
  * @author Taras Puchko
  */
+@Derived(Collection.class)
 public class _Iterable {
 
     public static Iterator iterator(Iterable iterable) {

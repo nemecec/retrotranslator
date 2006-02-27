@@ -98,6 +98,10 @@ public class ClassDescriptor extends GenericDeclarationDescriptor {
         return descriptor;
     }
 
+    public String getName() {
+        return name;
+    }
+
     private static synchronized Map<Class, ClassDescriptor> getMap() {
         Map<Class, ClassDescriptor> map = cache == null ? null : cache.get();
         if (map == null) {

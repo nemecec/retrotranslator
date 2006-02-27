@@ -25,7 +25,8 @@
         </delete>
 		<mkdir dir="build/classes14"/>
 		<java classname="net.sf.retrotranslator.transformer.Retrotranslator"
-              classpathref="classpath" classpath="build/classes15" failonerror="true">
+              classpathref="classpath" classpath="build/classes15" failonerror="true"
+              jvm="${java15_home}/bin/java.exe">
 			<arg value="-srcdir"/>
 			<arg value="build/classes15"/>
 			<arg value="-destdir"/>
@@ -76,7 +77,8 @@
 		</retrotranslator>
 
         <echo message="Running tests on ${java14_home}"/>
-        <junit printsummary="withOutAndErr" fork="yes" failureproperty="test.failed" jvm="${java14_home}/bin/java">
+        <junit printsummary="withOutAndErr" fork="yes" failureproperty="test.failed"
+               jvm="${java14_home}/bin/java" forkmode="once">
 			<jvmarg value="-Xfuture"/>
 			<classpath>
 				<path refid="classpath"/>

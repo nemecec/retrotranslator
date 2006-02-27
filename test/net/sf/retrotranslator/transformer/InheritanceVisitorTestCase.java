@@ -80,5 +80,7 @@ public class InheritanceVisitorTestCase extends TestCase {
         assertFalse(new Object() instanceof Number);
         assertTrue(this.getClass() instanceof AnnotatedElement);
         assertFalse((Object) "Hello" instanceof AnnotatedElement);
+        assertTrue(new String[0] instanceof String[]);
+        assertFalse(((Object) new Integer[0]) instanceof String[]);
     }
 }

@@ -55,6 +55,7 @@ public class ClassLiteralVisitorTestCase extends TestCase {
     }
 
     public void testClasses() {
+        assertTrue(Iterable.class.isInterface());
         assertEquals(ClassLiteralVisitorTestCase.class, ClassLiteralVisitorTestCase[].class.getComponentType());
         assertEquals(InterfaceInClass.class, InterfaceInClass[].class.getComponentType());
         assertEquals(StaticClassInClass.class, StaticClassInClass[].class.getComponentType());

@@ -44,6 +44,6 @@ class VersionVisitor extends ClassAdapter {
     }
 
     public void visit(final int version, final int access, final String name, final String signature, final String superName, final String[] interfaces) {
-        super.visit(version == 49 ? 48 : version, access, name, signature, superName, interfaces);
+        super.visit((version & 0xFFFF) > 48 ? 48 : version, access, name, signature, superName, interfaces);
     }
 }

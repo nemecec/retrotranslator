@@ -1,3 +1,4 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
     <title>Retrotranslator</title>
@@ -213,17 +214,17 @@ and concurrency utilities
 <h4><a name="supported">What Java 5.0 classes and methods are supported?</a></h4>
 <table border="1" cellspacing="0" cellpadding="5">
     <tr><th>Package</th><th>Class</th><th>Methods</th><th>Compatibility notes</th></tr>
-    <tr><td><code>java.lang.annotation</code></td><td>All classes</td><td>All methods</td><td>&nbsp;</td></tr>
+    <tr><td><code>java.lang.annotation</code></td><td>* (all classes)</td><td>* (all methods)</td><td>&nbsp;</td></tr>
     <tr><td><code>java.util.concurrent,<br>java.util.concurrent.atomic,<br>java.util.concurrent.locks</code></td>
-        <td>Almost all classes</td><td>Almost all methods</td>
+        <td>almost all classes</td><td>almost all methods</td>
         <td>
             <a href="http://dcl.mathcs.emory.edu/util/backport-util-concurrent/index.php">
                 Backport of JSR 166 (java.util.concurrent) to Java 1.4</a>
         </td></tr>
-    <tr><td rowspan="5"><code>java.io</code></td><td><code>Closeable</code></td><td><code>All methods</code></td><td>
+    <tr><td rowspan="5"><code>java.io</code></td><td><code>Closeable</code></td><td><code>*</code></td><td>
             <code>new Closeable[...]</code> is replaced with <code>new Object[...]</code>
         </td></tr>
-    <tr><td><code>Flushable</code></td><td><code>All methods</code></td><td>
+    <tr><td><code>Flushable</code></td><td><code>*</code></td><td>
             <code>new Flushable[...]</code> is replaced with <code>new Object[...]</code>
         </td></tr>
     <tr><td><code>PrintStream</code></td><td>
@@ -233,27 +234,27 @@ and concurrency utilities
     <tr><td><code>Writer</code></td><td>
         <code>append(CharSequence), append(CharSequence, int, int), append(char)</code>
         </td><td>&nbsp;</td></tr>
-    <tr><td rowspan="22"><code>java.lang</code></td><td><code>Appendable</code></td><td>All methods
+    <tr><td rowspan="22"><code>java.lang</code></td><td><code>Appendable</code></td><td>*
     </td><td>
         <code>new Appendable[...]</code> is replaced with <code>new Object[...]</code>
     </td></tr>
     <tr><td><code>Boolean</code></td><td><code>parseBoolean(String)</code></td><td>&nbsp;</td></tr>
     <tr><td><code>Byte</code></td><td><code>valueOf(byte)</code></td><td>&nbsp;</td></tr>
     <tr><td><code>Character</code></td><td><code>valueOf(char)</code></td><td>&nbsp;</td></tr>
-    <tr><td><code>Class</code></td><td>All methods (21 new!)</td><td>&nbsp;</td></tr>
-    <tr><td><code>Deprecated</code></td><td>All methods</td><td>&nbsp;</td></tr>
+    <tr><td><code>Class</code></td><td>* (21 new methods)</td><td>&nbsp;</td></tr>
+    <tr><td><code>Deprecated</code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>Double</code></td><td><code>valueOf(double)</code></td><td>&nbsp;</td></tr>
-    <tr><td><code>Enum</code></td><td>All methods</td><td>&nbsp;</td></tr>
+    <tr><td><code>Enum</code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>Float</code></td><td><code>valueOf(float)</code></td><td>&nbsp;</td></tr>
     <tr><td><code>IllegalStateException</code></td><td><code>IllegalStateException(String, Throwable),<br>
         IllegalStateException(Throwable)</code></td><td>&nbsp;</td></tr>
     <tr><td><code>Integer</code></td><td><code>valueOf(int)</code></td><td>&nbsp;</td></tr>
-    <tr><td><code>Iterable</code></td><td>All methods</td><td>
+    <tr><td><code>Iterable</code></td><td>*</td><td>
         <code>new Iterable[...]</code> is replaced with <code>new Object[...]</code>
     </td></tr>
     <tr><td><code>Long</code></td><td><code>valueOf(long)</code></td><td>&nbsp;</td></tr>
-    <tr><td><code>Package</code></td><td>All methods (4 new!)</td><td>&nbsp;</td></tr>
-    <tr><td><code>Readable</code></td><td>All methods</td><td>
+    <tr><td><code>Package</code></td><td>* (4 new methods)</td><td>&nbsp;</td></tr>
+    <tr><td><code>Readable</code></td><td>*</td><td>
         <code>new Readable[...]</code> is replaced with <code>new Object[...]</code>
     </td></tr>
     <tr><td><code>Short</code></td><td><code>valueOf(short)</code></td><td>&nbsp;</td></tr>
@@ -266,28 +267,30 @@ and concurrency utilities
     <tr><td><code>StringBuilder</code></td><td>
         All methods supported in <code>StringBuffer</code>
     </td><td><code>StringBuilder</code> is replaced with <code>StringBuffer</code></td></tr>
-    <tr><td><code>SuppressWarnings</code></td><td>All methods</td><td>&nbsp;</td></tr>
-    <tr><td><code>Thread</code></td><td><code>getStackTrace()</code></td><td>Non-empty stack trace is returned only for current thread</td></tr>
-    <tr><td><code>TypeNotPresentException</code></td><td>All methods</td><td>&nbsp;</td></tr>
+    <tr><td><code>SuppressWarnings</code></td><td>*</td><td>&nbsp;</td></tr>
+    <tr><td><code>Thread</code></td><td><code>getStackTrace(), getId()
+    </code></td><td><code>getStackTrace()</code> returns non-empty stack trace only for the current thread,
+        and <code>getId()</code> does not reflect the order in which threads were created.</td></tr>
+    <tr><td><code>TypeNotPresentException</code></td><td>*</td><td>&nbsp;</td></tr>
 
-    <tr><td rowspan="12"><code>java.lang.reflect</code></td><td><code>AnnotatedElement</code></td><td>All methods</td><td>
+    <tr><td rowspan="12"><code>java.lang.reflect</code></td><td><code>AnnotatedElement</code></td><td>*</td><td>
         <code>new AnnotatedElement[...]</code> is replaced with <code>new Object[...]</code>
     </td></tr>
-    <tr><td><code>Constructor</code></td><td>All methods (11 new!)</td><td>&nbsp;</td></tr>
-    <tr><td><code>Field</code></td><td>All methods (8 new!)</td><td>&nbsp;</td></tr>
-    <tr><td><code>GenericArrayType</code></td><td>All methods</td><td>&nbsp;</td></tr>
-    <tr><td><code>GenericDeclaration</code></td><td>All methods</td><td>
+    <tr><td><code>Constructor</code></td><td>* (11 new methods)</td><td>&nbsp;</td></tr>
+    <tr><td><code>Field</code></td><td>* (8 new methods)</td><td>&nbsp;</td></tr>
+    <tr><td><code>GenericArrayType</code></td><td>*</td><td>&nbsp;</td></tr>
+    <tr><td><code>GenericDeclaration</code></td><td>*</td><td>
         <code>new GenericDeclaration[...]</code> is replaced with <code>new Object[...]</code>
     </td></tr>
-    <tr><td><code>GenericSignatureFormatError</code></td><td>All methods</td><td>&nbsp;</td></tr>
-    <tr><td><code>MalformedParameterizedTypeException</code></td><td>All methods</td><td>&nbsp;</td></tr>
-    <tr><td><code>Method</code></td><td>All methods (14 new!)</td><td>&nbsp;</td></tr>
-    <tr><td><code>ParameterizedType</code></td><td>All methods</td><td>&nbsp;</td></tr>
-    <tr><td><code>Type</code></td><td>All methods</td><td>
+    <tr><td><code>GenericSignatureFormatError</code></td><td>*</td><td>&nbsp;</td></tr>
+    <tr><td><code>MalformedParameterizedTypeException</code></td><td>*</td><td>&nbsp;</td></tr>
+    <tr><td><code>Method</code></td><td>* (14 new methods)</td><td>&nbsp;</td></tr>
+    <tr><td><code>ParameterizedType</code></td><td>*</td><td>&nbsp;</td></tr>
+    <tr><td><code>Type</code></td><td>*</td><td>
         <code>new Type[...]</code> is replaced with <code>new Object[...]</code>
     </td></tr>
-    <tr><td><code>TypeVariable</code></td><td>All methods</td><td>&nbsp;</td></tr>
-    <tr><td><code>WildcardType</code></td><td>All methods</td><td>&nbsp;</td></tr>
+    <tr><td><code>TypeVariable</code></td><td>*</td><td>&nbsp;</td></tr>
+    <tr><td><code>WildcardType</code></td><td>*</td><td>&nbsp;</td></tr>
 
     <tr><td ><code>java.math</code></td><td><code>BigDecimal</code></td><td>
         <code>BigDecimal(int), BigDecimal(long)</code></td><td>&nbsp;</td></tr>
@@ -296,18 +299,18 @@ and concurrency utilities
         <code>append(CharSequence), append(CharSequence, int, int), append(char), read(CharBuffer)</code>
         </td><td>&nbsp;</td></tr>
 
-    <tr><td rowspan="9"><code>java.util</code></td><td><code>AbstractQueue</code></td><td>All methods</td><td>
+    <tr><td rowspan="9"><code>java.util</code></td><td><code>AbstractQueue</code></td><td>*</td><td>
         &nbsp;</td></tr>
-    <tr><td><code>Arrays</code></td><td>All methods (21 new!)</td><td>&nbsp;</td></tr>
-    <tr><td><code>Collections</code></td><td>All methods (13 new!)</td><td>&nbsp;</td></tr>
-    <tr><td><code>EnumMap</code></td><td>All methods</td><td>&nbsp;</td></tr>
-    <tr><td><code>EnumSet</code></td><td>All methods</td><td>&nbsp;</td></tr>
-    <tr><td><code>LinkedList</code></td><td>All methods (5 new!)</td><td>&nbsp;</td></tr>
-    <tr><td><code>PriorityQueue</code></td><td>All methods</td><td>&nbsp;</td></tr>
-    <tr><td><code>Queue</code></td><td>All methods</td><td>
+    <tr><td><code>Arrays</code></td><td>* (21 new methods)</td><td>&nbsp;</td></tr>
+    <tr><td><code>Collections</code></td><td>* (13 new methods)</td><td>&nbsp;</td></tr>
+    <tr><td><code>EnumMap</code></td><td>*</td><td>&nbsp;</td></tr>
+    <tr><td><code>EnumSet</code></td><td>*</td><td>&nbsp;</td></tr>
+    <tr><td><code>LinkedList</code></td><td>* (5 new methods)</td><td>&nbsp;</td></tr>
+    <tr><td><code>PriorityQueue</code></td><td>*</td><td>&nbsp;</td></tr>
+    <tr><td><code>Queue</code></td><td>*</td><td>
         <code>new Queue[...]</code> is replaced with <code>new Object[...]</code>
     </td></tr>
-    <tr><td><code>UUID</code></td><td>All methods</td><td>&nbsp;</td></tr>
+    <tr><td><code>UUID</code></td><td>*</td><td>&nbsp;</td></tr>
 
     <tr><td><code>java.util.regex</code></td><td><code>Matcher</code></td><td><code>quoteReplacement(String)</code></td>
         <td>&nbsp;</td></tr>

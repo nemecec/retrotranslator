@@ -31,6 +31,8 @@
  */
 package net.sf.retrotranslator.runtime.java.io;
 
+import net.sf.retrotranslator.runtime.impl.Derived;
+
 import java.io.IOException;
 import java.io.Flushable;
 import java.io.OutputStream;
@@ -39,6 +41,7 @@ import java.io.Writer;
 /**
  * @author Taras Puchko
  */
+@Derived({OutputStream.class, Writer.class})
 public class _Flushable {
 
     public static void flush(Flushable flushable) throws IOException {

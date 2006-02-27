@@ -52,4 +52,15 @@ public class _ThreadTestCase extends TestCase {
             assertNotNull(stackTraceElement);
         }
     }
+
+    public void testGetId() throws Exception {
+        long currentId = Thread.currentThread().getId();
+        assertTrue(currentId > 0);
+        Thread thread = new Thread();
+        long newId = thread.getId();
+        assertTrue(newId > 0);
+        assertTrue(currentId != newId);
+        assertEquals(currentId, Thread.currentThread().getId());
+        assertEquals(newId, thread.getId());
+    }
 }
