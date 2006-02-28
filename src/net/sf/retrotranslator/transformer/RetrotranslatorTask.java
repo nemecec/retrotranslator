@@ -110,16 +110,9 @@ public class RetrotranslatorTask extends Task implements MessageLogger {
         return classpath.createPath();
     }
 
-    public void verbose(String message) {
-        if (verbose) log(message, Project.MSG_INFO);
-    }
-
-    public void info(String message) {
-        log(message, Project.MSG_INFO);
-    }
-
-    public void warning(String message) {
-        log(message, Project.MSG_WARN);
+    public void log(Message message) {
+        boolean info = message.getLevel().compareTo(Level.INFO) >= 0;
+        log(message.toString(), info ? Project.MSG_INFO : Project.MSG_WARN);
     }
 
     public void execute() throws BuildException {

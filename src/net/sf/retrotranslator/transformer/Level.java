@@ -34,8 +34,34 @@ package net.sf.retrotranslator.transformer;
 /**
  * @author Taras Puchko
  */
-public interface MessageLogger {
+public class Level implements Comparable<Level> {
 
-    public void log(Message message);
+    public static Level ERROR = new Level(1, "ERROR");
+    public static Level WARNING = new Level(2, "WARNING");
+    public static Level INFO = new Level(3, "INFO");
+    public static Level VERBOSE = new Level(4, "VERBOSE");
 
+    private final int ordinal;
+    private final String name;
+
+    public Level(int ordinal, String name) {
+        this.ordinal = ordinal;
+        this.name = name;
+    }
+
+    public int ordinal() {
+        return ordinal;
+    }
+
+    public String name() {
+        return name;
+    }
+
+    public String toString() {
+        return name;
+    }
+
+    public int compareTo(Level o) {
+        return ordinal - o.ordinal;
+    }
 }

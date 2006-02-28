@@ -113,15 +113,7 @@ public class Retrotranslator implements MessageLogger {
         this.logger = logger;
     }
 
-    public void verbose(String message) {
-        if (verbose) System.out.println(message);
-    }
-
-    public void info(String message) {
-        System.out.println(message);
-    }
-
-    public void warning(String message) {
+    public void log(Message message) {
         System.out.println(message);
     }
 
@@ -159,11 +151,11 @@ public class Retrotranslator implements MessageLogger {
         File src = fileSet.getBaseDir();
         File dest = destdir != null ? destdir : src;
         List<String> fileNames = fileSet.getFileNames();
-        logger.info("Transforming " + fileNames.size() + " file(s)" +
-                (dest.equals(src) ? " in " + src + "." : " from " + src + " to " + dest + "."));
+        String location = dest.equals(src) ? " in " + src + "." : " from " + src + " to " + dest + ".";
+        logger.log(new Message(Level.INFO, "Transforming " + fileNames.size() + " file(s)" + location));
         for (int i = 0; i < fileNames.size(); i++) {
             String fileName = fileNames.get(i);
-            logger.verbose(fileName);
+            if (verbose) logger.log(new Message(Level.VERBOSE, "Transformation...", src, fileName));
             byte[] sourceData = TransformerTools.readFileToByteArray(new File(src, fileName));
             byte[] resultData = transformer.transform(sourceData, 0, sourceData.length);
             if (src != dest || sourceData != resultData) {
@@ -173,23 +165,28 @@ public class Retrotranslator implements MessageLogger {
                 TransformerTools.writeByteArrayToFile(new File(dest, fixedName), resultData);
             }
         }
-        logger.info("Transformation of " + fileNames.size() + " file(s) completed successfully.");
+        logger.log(new Message(Level.INFO, "Transformation of " + fileNames.size() + " file(s) completed successfully."));
     }
 
     private boolean verify(ClassReaderFactory factory, ClassFileSet fileSet) {
-        File dir = destdir != null ? destdir : fileSet.getBaseDir();
+        final File dir = destdir != null ? destdir : fileSet.getBaseDir();
         List<String> fileNames = fileSet.getFileNames();
-        logger.info("Verifying " + fileNames.size() + " file(s) in " + dir + ".");
-        ReferenceVerifyingVisitor visitor = new ReferenceVerifyingVisitor(factory, logger);
-        for (String fileName : fileNames) {
-            logger.verbose(fileName);
+        logger.log(new Message(Level.INFO, "Verifying " + fileNames.size() + " file(s) in " + dir + "."));
+        final int[] warningCount = new int[1];
+        for (final String fileName : fileNames) {
+            if (verbose) logger.log(new Message(Level.VERBOSE, "Verification...", dir, fileName));
             byte[] data = TransformerTools.readFileToByteArray(new File(dir, fileName));
+            ReferenceVerifyingVisitor visitor = new ReferenceVerifyingVisitor(factory) {
+                protected void warning(String text) {
+                    warningCount[0]++;
+                    logger.log(new Message(Level.WARNING, text, dir, fileName));
+                }
+            };
             new ClassReader(data).accept(visitor, true);
         }
-        int warningCount = visitor.getWarningCount();
-        logger.info("Verification of " + fileNames.size() + " file(s) completed" +
-                (warningCount != 0 ? " with " + warningCount + " warning(s)." : " successfully."));
-        return warningCount == 0;
+        String result = warningCount[0] != 0 ? " with " + warningCount[0] + " warning(s)." : " successfully.";
+        logger.log(new Message(Level.INFO, "Verification of " + fileNames.size() + " file(s) completed" + result));
+        return warningCount[0] == 0;
     }
 
     private boolean execute(String[] args) {

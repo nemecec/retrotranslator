@@ -42,33 +42,17 @@ import java.util.Set;
 /**
  * @author Taras Puchko
  */
-class ReferenceVerifyingVisitor extends GenericClassVisitor {
+abstract class ReferenceVerifyingVisitor extends GenericClassVisitor {
 
     private final ClassReaderFactory factory;
-    private final MessageLogger logger;
-    private String currentClassName;
     private Set<String> warnings = new LinkedHashSet<String>();
-    private int warningCount;
 
-    public ReferenceVerifyingVisitor(ClassReaderFactory factory, MessageLogger logger) {
+    public ReferenceVerifyingVisitor(ClassReaderFactory factory) {
         super(new EmptyVisitor());
         this.factory = factory;
-        this.logger = logger;
     }
 
-    public int getWarningCount() {
-        return warningCount;
-    }
-
-    public void visit(final int version, final int access, final String name, final String signature, final String superName, final String[] interfaces) {
-        currentClassName = getClassInfo(name);
-        warnings.clear();
-        super.visit(version, access, name, signature, superName, interfaces);
-    }
-
-    public void visitEnd() {
-        super.visitEnd();
-    }
+    protected abstract void warning(String text);
 
     protected String visitInternalName(String name) {
         try {
@@ -113,11 +97,9 @@ class ReferenceVerifyingVisitor extends GenericClassVisitor {
     }
 
     private void println(String text) {
-        String msg = currentClassName + ":\n " + text;
-        if (!warnings.contains(msg)) {
-            warningCount++;
-            logger.warning(msg);
-            warnings.add(msg);
+        if (!warnings.contains(text)) {
+            warnings.add(text);
+            warning(text);
         }
     }
 

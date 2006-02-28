@@ -31,11 +31,46 @@
  */
 package net.sf.retrotranslator.transformer;
 
+import java.io.File;
+
 /**
  * @author Taras Puchko
  */
-public interface MessageLogger {
+public class Message {
 
-    public void log(Message message);
+    private Level level;
+    private String text;
+    private String fileName;
+    private File fileLocation;
 
+    Message(Level level, String text) {
+        this(level, text, null, null);
+    }
+
+    Message(Level level, String text, File fileLocation, String fileName) {
+        this.level = level;
+        this.text = text;
+        this.fileName = fileName;
+        this.fileLocation = fileLocation;
+    }
+
+    public Level getLevel() {
+        return level;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public File getFileLocation() {
+        return fileLocation;
+    }
+
+    public String toString() {
+        return fileName == null ? text : fileName + "\n  " + text;
+    }
 }
