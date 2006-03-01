@@ -38,8 +38,6 @@ import net.sf.retrotranslator.runtime.asm.Opcodes;
 import net.sf.retrotranslator.runtime.asm.signature.SignatureReader;
 import net.sf.retrotranslator.runtime.asm.signature.SignatureVisitor;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Inherited;
 import java.lang.ref.SoftReference;
@@ -57,6 +55,7 @@ import java.util.Map;
 public class ClassDescriptor extends GenericDeclarationDescriptor {
 
     private static SoftReference<Map<Class, ClassDescriptor>> cache;
+    private static BytecodeTransformer bytecodeTransformer;
 
     private String name;
     private Class target;
@@ -67,39 +66,35 @@ public class ClassDescriptor extends GenericDeclarationDescriptor {
     private Map<String, FieldDescriptor> fieldDescriptors = new HashMap<String, FieldDescriptor>();
     private Map<String, MethodDescriptor> methodDescriptors = new HashMap<String, MethodDescriptor>();
 
-    public ClassDescriptor(Class target) {
+    public ClassDescriptor(Class target, byte[] bytecode) {
         this.target = target;
-        try {
-            init();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        if (bytecode != null) {
+            if (bytecodeTransformer != null) {
+                bytecode = bytecodeTransformer.transform(bytecode, 0, bytecode.length);
+            }
+            new ClassReader(bytecode).accept(this, true);
         }
     }
 
-    private void init() throws IOException {
-        if (target.isPrimitive() || target.isArray()) return;
-        String targetName = target.getName();
-        int index = targetName.lastIndexOf('.');
-        String simpleName = index < 0 ? targetName : targetName.substring(index + 1);
-        InputStream stream = target.getResourceAsStream(simpleName + ".class");
-        try {
-            new ClassReader(stream).accept(this, true);
-        } finally {
-            stream.close();
-        }
+    public static void setBytecodeTransformer(BytecodeTransformer transformer) {
+        bytecodeTransformer = transformer;
     }
 
     public static ClassDescriptor getInstance(Class target) {
         Map<Class, ClassDescriptor> map = getMap();
         ClassDescriptor descriptor = map.get(target);
         if (descriptor != null) return descriptor;
-        descriptor = new ClassDescriptor(target);
+        descriptor = new ClassDescriptor(target, getBytecode(target));
         map.put(target, descriptor);
         return descriptor;
     }
 
-    public String getName() {
-        return name;
+    private static byte[] getBytecode(Class target) {
+        if (target.isPrimitive() || target.isArray()) return null;
+        String targetName = target.getName();
+        int index = targetName.lastIndexOf('.');
+        String simpleName = index < 0 ? targetName : targetName.substring(index + 1);
+        return RuntimeTools.readResourceToByteArray(target, simpleName + ".class");
     }
 
     private static synchronized Map<Class, ClassDescriptor> getMap() {
@@ -127,6 +122,10 @@ public class ClassDescriptor extends GenericDeclarationDescriptor {
             result.put(annotation.getClass().getInterfaces()[0], annotation);
         }
         return result.values().toArray(new Annotation[result.size()]);
+    }
+
+    public String getName() {
+        return name;
     }
 
     public ClassDescriptor getClassDescriptor() {

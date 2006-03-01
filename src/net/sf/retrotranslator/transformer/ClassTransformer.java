@@ -34,11 +34,12 @@ package net.sf.retrotranslator.transformer;
 import net.sf.retrotranslator.runtime.asm.ClassReader;
 import net.sf.retrotranslator.runtime.asm.ClassVisitor;
 import net.sf.retrotranslator.runtime.asm.ClassWriter;
+import net.sf.retrotranslator.runtime.impl.BytecodeTransformer;
 
 /**
  * @author Taras Puchko
  */
-class ClassTransformer {
+class ClassTransformer implements BytecodeTransformer {
 
     private boolean lazy;
     private boolean stripsign;
@@ -63,8 +64,8 @@ class ClassTransformer {
         ClassReader classReader = new ClassReader(bytes, offset, length);
         ClassWriter classWriter = new ClassWriter(true);
         ClassVisitor visitor = new VersionVisitor(new InheritanceVisitor(new ClassSubstitutionVisitor(
-                new MemberSubstitutionVisitor(new ConstructorSubstitutionVisitor(
-                        new EnumVisitor(new ClassLiteralVisitor(new ArrayCloningVisitor(classWriter))))))));
+                new MemberSubstitutionVisitor(new ConstructorSubstitutionVisitor(new EnumVisitor(
+                        new ClassLiteralVisitor(new ArrayCloningVisitor(classWriter))))))));
         if (stripsign) {
             visitor = new SignatureStrippingVisitor(visitor);
         }

@@ -31,11 +31,12 @@
  */
 package net.sf.retrotranslator.runtime.java.lang;
 
+import net.sf.retrotranslator.runtime.impl.ClassDescriptor;
+import net.sf.retrotranslator.runtime.impl.RuntimeTools;
+
 import java.lang.annotation.Annotation;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 /**
  * @author Taras Puchko
@@ -43,59 +44,71 @@ import java.util.Set;
 public class _Package {
 
     public static Annotation getAnnotation(Package aPackage, Class annotationType) {
-        return _Class.getAnnotation(getPackageInfo(aPackage), annotationType);
+        return getPackageInfo(aPackage).getAnnotation(annotationType);
     }
 
     public static Annotation[] getAnnotations(Package aPackage) {
-        return _Class.getAnnotations(getPackageInfo(aPackage));
+        return getPackageInfo(aPackage).getAnnotations();
     }
 
     public static Annotation[] getDeclaredAnnotations(Package aPackage) {
-        return _Class.getDeclaredAnnotations(getPackageInfo(aPackage));
+        return getPackageInfo(aPackage).getDeclaredAnnotations();
     }
 
     public static boolean isAnnotationPresent(Package aPackage, Class annotationType) {
-        return _Class.isAnnotationPresent(getPackageInfo(aPackage), annotationType);
+        return getPackageInfo(aPackage).isAnnotationPresent(annotationType);
     }
 
-    private static Class<?> getPackageInfo(Package aPackage) {
+    private static ClassDescriptor getPackageInfo(Package aPackage) {
+        String className = aPackage.getName() + ".package$info";
         try {
-            return loadClass(aPackage.getName() + ".package$info");
+            return ClassDescriptor.getInstance(Class.forName(className));
         } catch (ClassNotFoundException e) {
-            return ExecutionContext.class;
-        }
-    }
-
-    private static Class loadClass(String name) throws ClassNotFoundException {
-        for (ClassLoader classLoader : getClassLoaders()) {
+            String resourceName = "/" + aPackage.getName().replace('.', '/') + "/package-info.class";
             try {
-                return Class.forName(name, false, classLoader);
-            } catch (ClassNotFoundException e) {
-                //ignore
+                return createPackageInfo(_Package.class, resourceName);
+            } catch (Throwable t) {
+                return getPrivilegedInfo(className, resourceName);
             }
         }
-        return Class.forName(name);
     }
 
-    private static Set<ClassLoader> getClassLoaders() {
-        return AccessController.doPrivileged(new PrivilegedAction<Set<ClassLoader>>() {
-            public Set<ClassLoader> run() {
-                Set<ClassLoader> result = new LinkedHashSet<ClassLoader>();
+    private static ClassDescriptor createPackageInfo(Class loader, String resourceName) {
+        return new ClassDescriptor(loader, RuntimeTools.readResourceToByteArray(loader, resourceName));
+    }
+
+    private static ClassDescriptor getPrivilegedInfo(final String className, final String resourceName) {
+        return AccessController.doPrivileged(new PrivilegedAction<ClassDescriptor>() {
+            public ClassDescriptor run() {
                 try {
-                    for (Class aClass : new ExecutionContext().getClassContext()) {
-                        result.add(aClass.getClassLoader());
-                    }
-                } catch (SecurityException e) {
-                    //ignore
+                    return getContextInfo(className, resourceName);
+                } catch (Throwable e) {
+                    return ClassDescriptor.getInstance(_Package.class);
                 }
-                return result;
             }
         });
     }
 
-    public static class ExecutionContext extends SecurityManager {
+    private static ClassDescriptor getContextInfo(String className, String resourceName) {
+        for (Class contextClass : new ExecutionContext().getClassContext()) {
+            try {
+                ClassLoader classLoader = contextClass.getClassLoader();
+                try {
+                    return ClassDescriptor.getInstance(Class.forName(className, false, classLoader));
+                } catch (Throwable e) {
+                    return createPackageInfo(contextClass, resourceName);
+                }
+            } catch (Throwable e) {
+                //continue;
+            }
+        }
+        return ClassDescriptor.getInstance(_Package.class);
+    }
+
+    private static class ExecutionContext extends SecurityManager {
         public Class[] getClassContext() {
             return super.getClassContext();
         }
     }
+
 }

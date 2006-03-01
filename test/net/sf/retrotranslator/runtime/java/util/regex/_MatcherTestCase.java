@@ -33,7 +33,9 @@ package net.sf.retrotranslator.runtime.java.util.regex;
 
 import junit.framework.TestCase;
 
+import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Taras Puchko
@@ -45,4 +47,108 @@ public class _MatcherTestCase extends TestCase {
         assertEquals("a\\\\b", Matcher.quoteReplacement("a\\b"));
         assertSame("ab", Matcher.quoteReplacement("ab"));
     }
+
+    public void testToMatchResult() throws Exception {
+        Matcher matcher = Pattern.compile("a(b.?)c").matcher("XabcYab1cZ");
+        assertTrue(matcher.find());
+        checkFirst(matcher);
+        MatchResult first = matcher.toMatchResult();
+        assertTrue(matcher.find());
+        checkSecond(matcher);
+        MatchResult second = matcher.toMatchResult();
+        assertFalse(matcher.find());
+        MatchResult illegal = matcher.toMatchResult();
+        checkIllegal(illegal);
+        checkFirst(first);
+        checkSecond(second);
+    }
+
+    private void checkFirst(MatchResult first) {
+        assertEquals(1, first.groupCount());
+
+        assertEquals(1, first.start());
+        assertEquals(1, first.start(0));
+        assertEquals(2, first.start(1));
+        try {
+            first.start(2);
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+            //ok
+        }
+        assertEquals(4, first.end());
+        assertEquals(4, first.end(0));
+        assertEquals(3, first.end(1));
+        try {
+            first.end(2);
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+            //ok
+        }
+        assertEquals("abc", first.group());
+        assertEquals("abc", first.group(0));
+        assertEquals("b", first.group(1));
+        try {
+            first.group(2);
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+            //ok
+        }
+    }
+
+    private void checkSecond(MatchResult first) {
+        assertEquals(1, first.groupCount());
+
+        assertEquals(5, first.start());
+        assertEquals(5, first.start(0));
+        assertEquals(6, first.start(1));
+        try {
+            first.start(2);
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+            //ok
+        }
+        assertEquals(9, first.end());
+        assertEquals(9, first.end(0));
+        assertEquals(8, first.end(1));
+        try {
+            first.end(2);
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+            //ok
+        }
+        assertEquals("ab1c", first.group());
+        assertEquals("ab1c", first.group(0));
+        assertEquals("b1", first.group(1));
+        try {
+            first.group(2);
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+            //ok
+        }
+    }
+
+    private void checkIllegal(MatchResult illegal) {
+        assertEquals(1, illegal.groupCount());
+        for (int i = 0; i < 10; i++) {
+            try {
+                illegal.start(i);
+                fail();
+            } catch (IllegalStateException e) {
+                //ok
+            }
+            try {
+                illegal.end(i);
+                fail();
+            } catch (IllegalStateException e) {
+                //ok
+            }
+            try {
+                illegal.group(i);
+                fail();
+            } catch (IllegalStateException e) {
+                //ok
+            }
+        }
+    }
+
 }

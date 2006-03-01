@@ -1,103 +1,129 @@
 <project name="retrotranslator" default="build" basedir=".">
 
-	<property name="version" value="0.9.8"/>
+    <property name="version" value="0.9.8"/>
 
-	<property file="build.properties"/>
+    <property file="build.properties"/>
 
-	<path id="classpath">
-		<fileset dir="lib" includes="**/*.jar"/>
-	</path>
+    <path id="classpath">
+        <fileset dir="lib" includes="**/*.jar"/>
+    </path>
 
-    <target name="build" depends="dist-bin, dist-src, maven-dist" />
+    <target name="build" depends="dist-bin, dist-src, maven-dist"/>
 
-	<target name="init">
-		<delete dir="build"/>
-		<delete dir="dist"/>
-	</target>
+    <target name="init">
+        <delete dir="build"/>
+        <delete dir="dist"/>
+    </target>
 
-	<target name="compile" depends="init">
-		<mkdir dir="build/classes15"/>
-		<javac fork="yes" srcdir="src" destdir="build/classes15" debug="true"
+    <target name="compile" depends="init">
+        <mkdir dir="build/classes15"/>
+        <javac fork="yes" srcdir="src" destdir="build/classes15" debug="true"
                classpathref="classpath" executable="${java15_home}/bin/javac"/>
         <delete>
             <fileset dir="build/classes15/net/sf/retrotranslator/transformer"
-                     includes="ClassFileTransformer.class ClassPreProcessor.class" />
+                     includes="ClassFileTransformer.class ClassPreProcessor.class"/>
         </delete>
-		<mkdir dir="build/classes14"/>
-		<java classname="net.sf.retrotranslator.transformer.Retrotranslator"
+        <mkdir dir="build/classes14"/>
+        <java classname="net.sf.retrotranslator.transformer.Retrotranslator"
               classpathref="classpath" classpath="build/classes15" failonerror="true"
               jvm="${java15_home}/bin/java.exe">
-			<arg value="-srcdir"/>
-			<arg value="build/classes15"/>
-			<arg value="-destdir"/>
-			<arg value="build/classes14"/>
-			<arg value="-stripsign"/>
-			<arg value="-lazy"/>
-		</java>
+            <arg value="-srcdir"/>
+            <arg value="build/classes15"/>
+            <arg value="-destdir"/>
+            <arg value="build/classes14"/>
+            <arg value="-stripsign"/>
+            <arg value="-lazy"/>
+        </java>
         <jar destfile="build/retrotranslator-runtime-${version}.jar">
-			<fileset dir="build/classes14" includes="net/sf/retrotranslator/runtime/**"/>
-			<fileset file="doc/LICENSE.txt"/>
-			<manifest>
-				<attribute name="Implementation-Title" value="Retrotranslator runtime"/>
-				<attribute name="Implementation-Version" value="${version}"/>
-			</manifest>
-		</jar>
-		<jar destfile="build/retrotranslator-transformer-${version}.jar">
-			<fileset dir="build/classes14" includes="net/sf/retrotranslator/transformer/**"/>
-			<fileset file="doc/LICENSE.txt"/>
-			<fileset file="doc/ASM-LICENSE.txt"/>
-			<manifest>
-				<attribute name="Implementation-Title" value="Retrotranslator transformer"/>
-				<attribute name="Implementation-Version" value="${version}"/>
-				<attribute name="Class-Path"
+            <fileset dir="build/classes14" includes="net/sf/retrotranslator/runtime/**"/>
+            <fileset file="doc/LICENSE.txt"/>
+            <fileset file="doc/ASM-LICENSE.txt"/>
+            <manifest>
+                <attribute name="Implementation-Title" value="Retrotranslator runtime"/>
+                <attribute name="Implementation-Version" value="${version}"/>
+            </manifest>
+        </jar>
+        <jar destfile="build/retrotranslator-transformer-${version}.jar">
+            <fileset dir="build/classes14" includes="net/sf/retrotranslator/transformer/**"/>
+            <fileset file="doc/LICENSE.txt"/>
+            <manifest>
+                <attribute name="Implementation-Title" value="Retrotranslator transformer"/>
+                <attribute name="Implementation-Version" value="${version}"/>
+                <attribute name="Class-Path"
                            value="retrotranslator-runtime-${version}.jar backport-util-concurrent.jar"/>
-				<attribute name="Main-Class" value="net.sf.retrotranslator.transformer.Retrotranslator"/>
-			</manifest>
-		</jar>
-		<taskdef name="retrotranslator" classname="net.sf.retrotranslator.transformer.RetrotranslatorTask">
-			<classpath>
-				<path refid="classpath"/>
-				<pathelement location="build/retrotranslator-runtime-${version}.jar"/>
-				<pathelement location="build/retrotranslator-transformer-${version}.jar"/>
-			</classpath>
-		</taskdef>
-	</target>
+                <attribute name="Main-Class" value="net.sf.retrotranslator.transformer.Retrotranslator"/>
+            </manifest>
+        </jar>
+        <taskdef name="retrotranslator" classname="net.sf.retrotranslator.transformer.RetrotranslatorTask">
+            <classpath>
+                <path refid="classpath"/>
+                <pathelement location="build/retrotranslator-runtime-${version}.jar"/>
+                <pathelement location="build/retrotranslator-transformer-${version}.jar"/>
+            </classpath>
+        </taskdef>
+    </target>
 
-	<target name="test" depends="compile">
-
-		<mkdir dir="build/test-classes"/>
-		<javac srcdir="test" destdir="build/test-classes"
+    <target name="compile-tests" depends="compile">
+        <mkdir dir="build/test-classes15"/>
+        <javac srcdir="test" destdir="build/test-classes15"
                fork="yes" debug="true" executable="${java15_home}/bin/javac"
                classpathref="classpath" classpath="build/classes15"/>
+    </target>
 
-		<retrotranslator srcdir="build/test-classes" verify="true" lazy="true">
-			<classpath location="${java14_rt_jar}"/>
-			<classpath location="build/retrotranslator-runtime-${version}.jar"/>
-			<classpath refid="classpath"/>
-		</retrotranslator>
+    <target name="test" depends="test-translated, test-with-jit" />
 
-        <echo message="Running tests on ${java14_home}"/>
-        <junit printsummary="withOutAndErr" fork="yes" failureproperty="test.failed"
-               jvm="${java14_home}/bin/java" forkmode="once">
-			<jvmarg value="-Xfuture"/>
-			<classpath>
-				<path refid="classpath"/>
-				<pathelement location="build/retrotranslator-runtime-${version}.jar"/>
-				<pathelement location="build/test-classes"/>
-			</classpath>
-			<formatter type="brief" usefile="false"/>
-			<batchtest>
-				<fileset dir="build/test-classes" includes="**/*TestCase.class" excludes="**/BaseTestCase.class"/>
-			</batchtest>
-		</junit>
-		<fail if="test.failed">Unit tests failed.</fail>
-	</target>
+    <target name="test-translated" depends="compile-tests">
+        <mkdir dir="build/test-classes14"/>
+        <retrotranslator srcdir="build/test-classes15" destdir="build/test-classes14" verify="true">
+            <classpath location="${java14_rt_jar}"/>
+            <classpath location="build/retrotranslator-runtime-${version}.jar"/>
+            <classpath refid="classpath"/>
+        </retrotranslator>
+        <echo message="Running translated tests on ${java14_home}"/>
+        <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
+               jvm="${java14_home}/bin/java" failureproperty="test.failed">
+            <jvmarg value="-Xfuture"/>
+            <classpath>
+                <path refid="classpath"/>
+                <pathelement location="build/test-classes14"/>
+                <pathelement location="build/retrotranslator-runtime-${version}.jar"/>
+            </classpath>
+            <formatter type="brief" usefile="false"/>
+            <batchtest>
+                <fileset dir="build/test-classes14" includes="**/*TestCase.class"
+                         excludes="**/BaseTestCase.class"/>
+            </batchtest>
+        </junit>
+        <fail if="test.failed"/>
+    </target>
 
-	<target name="dist-bin" depends="test">
-		<mkdir dir="dist"/>
-        <property name="bin.name" value="Retrotranslator-${version}-bin" />
+    <target name="test-with-jit" depends="compile-tests">
+        <java classname="net.sf.retrotranslator.transformer.JITRetrotranslator" failonerror="true"
+              fork="true" jvm="${java14_home}/bin/java" classpath="${java.class.path}" classpathref="classpath">
+            <classpath path="build/retrotranslator-transformer-${version}.jar"/>
+            <arg value="org.apache.tools.ant.launch.Launcher"/>
+            <arg value="junit-for-jit"/>
+        </java>
+    </target>
+
+    <target name="junit-for-jit">
+        <echo message="Running tests on ${java.home} with JIT Retrotranslator"/>
+        <junit printsummary="withOutAndErr" fork="no" reloading="false" failureproperty="test.failed">
+            <formatter type="brief" usefile="false"/>
+            <classpath location="build/test-classes15"/>
+            <batchtest>
+                <fileset dir="build/test-classes15" includes="**/*TestCase.class"
+                         excludes="**/BaseTestCase.class"/>
+            </batchtest>
+        </junit>
+        <fail if="test.failed"/>
+    </target>
+
+    <target name="dist-bin" depends="test">
+        <mkdir dir="dist"/>
+        <property name="bin.name" value="Retrotranslator-${version}-bin"/>
         <zip destfile="dist/${bin.name}.zip">
-            <zipfileset prefix="${bin.name}" dir="doc" />
+            <zipfileset prefix="${bin.name}" dir="doc"/>
             <zipfileset prefix="${bin.name}" dir="build">
                 <include name="retrotranslator-runtime-${version}.jar"/>
                 <include name="retrotranslator-transformer-${version}.jar"/>
@@ -106,11 +132,11 @@
                 <include name="backport-util-concurrent.jar"/>
             </zipfileset>
         </zip>
-	</target>
+    </target>
 
-	<target name="dist-src" depends="test">
-		<mkdir dir="dist"/>
-        <property name="src.name" value="Retrotranslator-${version}-src" />
+    <target name="dist-src" depends="test">
+        <mkdir dir="dist"/>
+        <property name="src.name" value="Retrotranslator-${version}-src"/>
         <zip destfile="dist/${src.name}.zip">
             <zipfileset prefix="${src.name}" dir=".">
                 <include name="conf/**"/>
@@ -123,42 +149,45 @@
                 <include name="build_windows.properties"/>
             </zipfileset>
         </zip>
-	</target>
+    </target>
 
     <target name="maven-dist" depends="test" description="Creates the maven deployment units">
-		<mkdir dir="dist/maven"/>
-		<filter token="version" value="${version}"/>
+        <mkdir dir="dist/maven"/>
+        <filter token="version" value="${version}"/>
 
         <mkdir dir="build/maven/runtime"/>
         <copy todir="build/maven/runtime" file="conf/runtime/pom.xml" filtering="on"/>
-		<jar destfile="dist/maven/retrotranslator-runtime-bin-${version}.jar">
+        <jar destfile="dist/maven/retrotranslator-runtime-bin-${version}.jar">
             <fileset file="doc/LICENSE.txt"/>
             <fileset file="build/maven/runtime/pom.xml"/>
             <fileset file="build/retrotranslator-runtime-${version}.jar"/>
         </jar>
 
-		<mkdir dir="build/maven/transformer"/>
-		<copy todir="build/maven/transformer" file="conf/transformer/pom.xml" filtering="on"/>
+        <mkdir dir="build/maven/transformer"/>
+        <copy todir="build/maven/transformer" file="conf/transformer/pom.xml" filtering="on"/>
         <jar destfile="dist/maven/retrotranslator-transformer-bin-${version}.jar">
             <fileset file="doc/LICENSE.txt"/>
             <fileset file="build/maven/transformer/pom.xml"/>
             <fileset file="build/retrotranslator-transformer-${version}.jar"/>
         </jar>
-	</target>
+    </target>
 
-    <target name="maven-install" depends="compile" description="Installs the compile units into the current Maven 2 repository">
-        <property name="maven.dir" value="${user.home}/.m2/repository/net/sf/retrotranslator" />
-        <property name="runtime.dir" value="${maven.dir}/retrotranslator-runtime/${version}" />
-		<property name="transformer.dir" value="${maven.dir}/retrotranslator-transformer/${version}" />
+    <target name="maven-install" depends="compile"
+            description="Installs the compile units into the current Maven 2 repository">
+        <property name="maven.dir" value="${user.home}/.m2/repository/net/sf/retrotranslator"/>
+        <property name="runtime.dir" value="${maven.dir}/retrotranslator-runtime/${version}"/>
+        <property name="transformer.dir" value="${maven.dir}/retrotranslator-transformer/${version}"/>
 
-		<mkdir dir="${runtime.dir}" />
-		<mkdir dir="${transformer.dir}" />
+        <mkdir dir="${runtime.dir}"/>
+        <mkdir dir="${transformer.dir}"/>
         <filter token="version" value="${version}"/>
 
-		<copy todir="${runtime.dir}" file="build/retrotranslator-runtime-${version}.jar" />
-		<copy todir="${transformer.dir}" file="build/retrotranslator-transformer-${version}.jar" />
+        <copy todir="${runtime.dir}" file="build/retrotranslator-runtime-${version}.jar"/>
+        <copy todir="${transformer.dir}" file="build/retrotranslator-transformer-${version}.jar"/>
 
-		<copy tofile="${runtime.dir}/retrotranslator-runtime-${version}.pom" file="conf/runtime/pom.xml" filtering="on"/>
-		<copy tofile="${transformer.dir}/retrotranslator-transformer-${version}.pom" file="conf/transformer/pom.xml" filtering="on"/>
-	</target>
+        <copy tofile="${runtime.dir}/retrotranslator-runtime-${version}.pom" file="conf/runtime/pom.xml"
+              filtering="on"/>
+        <copy tofile="${transformer.dir}/retrotranslator-transformer-${version}.pom" file="conf/transformer/pom.xml"
+              filtering="on"/>
+    </target>
 </project>

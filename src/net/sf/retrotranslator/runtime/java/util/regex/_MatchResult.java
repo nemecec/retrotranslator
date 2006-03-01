@@ -31,7 +31,7 @@
  */
 package net.sf.retrotranslator.runtime.java.util.regex;
 
-import net.sf.retrotranslator.runtime.impl.MatchResultImpl;
+import net.sf.retrotranslator.runtime.impl.Derived;
 
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
@@ -39,34 +39,56 @@ import java.util.regex.Matcher;
 /**
  * @author Taras Puchko
  */
-public class _Matcher {
+@Derived(Matcher.class)
+public class _MatchResult {
 
-    public static String quoteReplacement(String s) {
-        if (s.indexOf('\\') < 0 && s.indexOf('$') < 0) return s;
-        StringBuffer buffer = new StringBuffer();
-        for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-            if (c == '\\' || c == '$') buffer.append('\\');
-            buffer.append(c);
+    public static int start(MatchResult matchResult) {
+        if (matchResult instanceof Matcher) {
+            return ((Matcher) matchResult).start();
         }
-        return buffer.toString();
+        return matchResult.start();
     }
 
-    public static MatchResult toMatchResult(Matcher matcher) {
-        boolean available = true;
-        int groupCount = matcher.groupCount();
-        int[] starts = new int[groupCount + 1];
-        int[] ends = new int[groupCount + 1];
-        String[] groups = new String[groupCount + 1];
-        try {
-            for (int i = 0; i <= groupCount; i++) {
-                starts[i] = matcher.start(i);
-                ends[i] = matcher.end(i);
-                groups[i] = matcher.group(i);
-            }
-        } catch (IllegalStateException e) {
-            available = false;
+    public static int start(MatchResult matchResult, int group) {
+        if (matchResult instanceof Matcher) {
+            return ((Matcher) matchResult).start(group);
         }
-        return new MatchResultImpl(available, groupCount, starts, ends, groups);
+        return matchResult.start(group);
     }
+
+    public static int end(MatchResult matchResult) {
+        if (matchResult instanceof Matcher) {
+            return ((Matcher) matchResult).end();
+        }
+        return matchResult.end();
+    }
+
+    public static int end(MatchResult matchResult, int group) {
+        if (matchResult instanceof Matcher) {
+            return ((Matcher) matchResult).end(group);
+        }
+        return matchResult.end(group);
+    }
+
+    public static String group(MatchResult matchResult) {
+        if (matchResult instanceof Matcher) {
+            return ((Matcher) matchResult).group();
+        }
+        return matchResult.group();
+    }
+
+    public static String group(MatchResult matchResult, int group) {
+        if (matchResult instanceof Matcher) {
+            return ((Matcher) matchResult).group(group);
+        }
+        return matchResult.group(group);
+    }
+
+    public static int groupCount(MatchResult matchResult) {
+        if (matchResult instanceof Matcher) {
+            return ((Matcher) matchResult).groupCount();
+        }
+        return matchResult.groupCount();
+    }
+
 }

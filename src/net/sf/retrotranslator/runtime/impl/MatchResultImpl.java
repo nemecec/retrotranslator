@@ -29,44 +29,59 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.runtime.java.util.regex;
-
-import net.sf.retrotranslator.runtime.impl.MatchResultImpl;
+package net.sf.retrotranslator.runtime.impl;
 
 import java.util.regex.MatchResult;
-import java.util.regex.Matcher;
 
 /**
  * @author Taras Puchko
  */
-public class _Matcher {
+public class MatchResultImpl implements MatchResult {
 
-    public static String quoteReplacement(String s) {
-        if (s.indexOf('\\') < 0 && s.indexOf('$') < 0) return s;
-        StringBuffer buffer = new StringBuffer();
-        for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-            if (c == '\\' || c == '$') buffer.append('\\');
-            buffer.append(c);
-        }
-        return buffer.toString();
+    private final boolean available;
+    private final int groupCount;
+    private final int[] starts;
+    private final int[] ends;
+    private final String[] groups;
+
+    public MatchResultImpl(boolean available, int groupCount,
+                           int[] starts, int[] ends, String[] groups) {
+        this.available = available;
+        this.groupCount = groupCount;
+        this.starts = starts;
+        this.ends = ends;
+        this.groups = groups;
     }
 
-    public static MatchResult toMatchResult(Matcher matcher) {
-        boolean available = true;
-        int groupCount = matcher.groupCount();
-        int[] starts = new int[groupCount + 1];
-        int[] ends = new int[groupCount + 1];
-        String[] groups = new String[groupCount + 1];
-        try {
-            for (int i = 0; i <= groupCount; i++) {
-                starts[i] = matcher.start(i);
-                ends[i] = matcher.end(i);
-                groups[i] = matcher.group(i);
-            }
-        } catch (IllegalStateException e) {
-            available = false;
-        }
-        return new MatchResultImpl(available, groupCount, starts, ends, groups);
+    public int start() {
+        return start(0);
     }
+
+    public int start(int group) {
+        if (!available) throw new IllegalStateException();
+        return starts[group];
+    }
+
+    public int end() {
+        return end(0);
+    }
+
+    public int end(int group) {
+        if (!available) throw new IllegalStateException();
+        return ends[group];
+    }
+
+    public String group() {
+        return group(0);
+    }
+
+    public String group(int group) {
+        if (!available) throw new IllegalStateException();
+        return groups[group];
+    }
+
+    public int groupCount() {
+        return groupCount;
+    }
+
 }

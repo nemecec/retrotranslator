@@ -35,6 +35,10 @@ import net.sf.retrotranslator.runtime.asm.Type;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
+import java.io.InputStream;
+import java.io.IOException;
+import java.io.ByteArrayOutputStream;
+import java.util.MissingResourceException;
 
 /**
  * @author Taras Puchko
@@ -117,6 +121,28 @@ public class RuntimeTools {
             builder.append(getString(types[i]));
         }
         return builder;
+    }
+
+    public static byte[] readResourceToByteArray(Class loader, String resourceName) throws MissingResourceException {
+        InputStream inputStream = loader.getResourceAsStream(resourceName);
+        if (inputStream == null) {
+            throw new MissingResourceException(resourceName, loader.getName(), resourceName);
+        }
+        try {
+            try {
+                byte[] buffer = new byte[0x1000];
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                int count;
+                while((count = inputStream.read(buffer)) > 0) {
+                    outputStream.write(buffer, 0, count);
+                }
+                return outputStream.toByteArray();
+            } finally {
+                inputStream.close();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

@@ -31,42 +31,22 @@
  */
 package net.sf.retrotranslator.runtime.java.util.regex;
 
-import net.sf.retrotranslator.runtime.impl.MatchResultImpl;
+import net.sf.retrotranslator.tests.BaseTestCase;
 
-import java.util.regex.MatchResult;
+import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.regex.MatchResult;
 
 /**
  * @author Taras Puchko
  */
-public class _Matcher {
+public class _MatchResultTestCase extends BaseTestCase {
 
-    public static String quoteReplacement(String s) {
-        if (s.indexOf('\\') < 0 && s.indexOf('$') < 0) return s;
-        StringBuffer buffer = new StringBuffer();
-        for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-            if (c == '\\' || c == '$') buffer.append('\\');
-            buffer.append(c);
+    public void testGroupCount() throws Exception {
+        Matcher matcher = Pattern.compile("a(b)").matcher("abc");
+        MatchResult[] matchResults = new MatchResult[] {matcher, matcher.toMatchResult()};
+        for (MatchResult matchResult : matchResults) {
+            assertEquals(1, matchResult.groupCount());
         }
-        return buffer.toString();
-    }
-
-    public static MatchResult toMatchResult(Matcher matcher) {
-        boolean available = true;
-        int groupCount = matcher.groupCount();
-        int[] starts = new int[groupCount + 1];
-        int[] ends = new int[groupCount + 1];
-        String[] groups = new String[groupCount + 1];
-        try {
-            for (int i = 0; i <= groupCount; i++) {
-                starts[i] = matcher.start(i);
-                ends[i] = matcher.end(i);
-                groups[i] = matcher.group(i);
-            }
-        } catch (IllegalStateException e) {
-            available = false;
-        }
-        return new MatchResultImpl(available, groupCount, starts, ends, groups);
     }
 }

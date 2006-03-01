@@ -269,8 +269,8 @@ and concurrency utilities
     </td><td><code>StringBuilder</code> is replaced with <code>StringBuffer</code></td></tr>
     <tr><td><code>SuppressWarnings</code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>Thread</code></td><td><code>getStackTrace(), getId()
-    </code></td><td><code>getStackTrace()</code> returns non-empty stack trace only for the current thread,
-        and <code>getId()</code> does not reflect the order in which threads were created.</td></tr>
+    </code></td><td><code>getStackTrace()</code> returns non-empty stack trace only for the current thread;<br>
+        <code>getId()</code> does not reflect the order in which threads were created.</td></tr>
     <tr><td><code>TypeNotPresentException</code></td><td>*</td><td>&nbsp;</td></tr>
 
     <tr><td rowspan="12"><code>java.lang.reflect</code></td><td><code>AnnotatedElement</code></td><td>*</td><td>
@@ -312,8 +312,11 @@ and concurrency utilities
     </td></tr>
     <tr><td><code>UUID</code></td><td>*</td><td>&nbsp;</td></tr>
 
-    <tr><td><code>java.util.regex</code></td><td><code>Matcher</code></td><td><code>quoteReplacement(String)</code></td>
-        <td>&nbsp;</td></tr>
+    <tr><td rowspan="2"><code>java.util.regex</code></td><td><code>Matcher</code></td><td>
+        <code>quoteReplacement(String), toMatchResult()</code></td><td>&nbsp;</td></tr>
+    <tr><td><code>MatchResult</code></td><td>*</td><td>
+        <code>new MatchResult[...]</code> is replaced with <code>new Object[...]</code>
+    </td></tr>
 </table>
 
 <h4><a name="extension">How to write an extension for Retrotranslator?</a></h4>

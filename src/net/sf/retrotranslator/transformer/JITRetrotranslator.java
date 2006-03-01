@@ -31,6 +31,8 @@
  */
 package net.sf.retrotranslator.transformer;
 
+import net.sf.retrotranslator.runtime.impl.ClassDescriptor;
+
 import java.io.File;
 
 /**
@@ -42,6 +44,7 @@ public class JITRetrotranslator {
     }
 
     public static synchronized boolean install() {
+        ClassDescriptor.setBytecodeTransformer(new ClassTransformer(true, false));
         return JRockitJITRetrotranslator.install() || SunJITRetrotranslator.install();
     }
 
