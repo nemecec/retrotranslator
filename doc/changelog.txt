@@ -1,11 +1,14 @@
 Retrotranslator Changelog
 =================================
 
-  - java.util.UUID implemented.
+0.9.9 (2006-03-01)
+---------------------------------
+  - Supported: Thread.getId(), UUID, MatchResult, Flushable, Appendable, Readable.
+  - Retrotranslator transformer API was improved for better plugin integration.
   - JIT Retrotranslator works on IBM JDK and BEA JRockit JDK.
-  - Bug fixed: several methods of java.util.concurrent.DelayQueue were not translated properly.
-  - Bug fixed: debug information was removed from translated classes.
-  - Most classes in net.sf.retrotranslator.transformer package became non-public.
+  - Bug fixed: debug information is kept in translated classes.
+  - Bug fixed: invocations of DelayQueue are translated properly.
+  - Bug fixed: JIT Retrotranslator supports runtime annotations.
 
 0.9.8 (2006-02-03)
 ---------------------------------
