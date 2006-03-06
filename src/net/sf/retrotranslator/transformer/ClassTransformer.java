@@ -53,7 +53,7 @@ class ClassTransformer implements BytecodeTransformer {
         return transform(bytes, offset, length, lazy, stripsign);
     }
 
-    public static byte[] transform(byte[] bytes, int offset, int length, boolean lazy, boolean stripsign) {
+    public static synchronized byte[] transform(byte[] bytes, int offset, int length, boolean lazy, boolean stripsign) {
         if (lazy && (bytes[offset + 7] <= 48 ||
                 bytes[offset + 6] != 0 || bytes[offset + 5] != 0 || bytes[offset + 4] != 0)) {
             if (offset == 0 && length == bytes.length) return bytes;

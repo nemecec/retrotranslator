@@ -66,7 +66,7 @@ class MemberSubstitutionVisitor extends ClassAdapter {
             public void visitMethodInsn(int opcode, String owner, String name, String desc) {
                 if (!owner.equals(currentClass)) {
                     ClassMember method = BackportFactory.getMethod(opcode == INVOKESTATIC, owner, name, desc);
-                    if (method != null) {
+                    if (method != null && !method.owner.equals(currentClass)) {
                         opcode = method.isStatic ? INVOKESTATIC : INVOKEINTERFACE;
                         owner = method.owner;
                         name = method.name;
