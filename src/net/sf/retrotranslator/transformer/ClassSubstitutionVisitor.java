@@ -65,16 +65,12 @@ class ClassSubstitutionVisitor extends GenericClassVisitor {
         super(cv);
     }
 
-    public static String fixIdentifier(String identifier) {
-        return identifier.replace('+', '$').replace('-', '$');
-    }
-
     protected String visitIdentifier(String identifier) {
-        return fixIdentifier(identifier);
+        return TransformerTools.fixIdentifier(identifier);
     }
 
     protected String visitInternalName(String name) {
-        name = fixIdentifier(name);
+        name = TransformerTools.fixIdentifier(name);
         if (name.startsWith("java/util/concurrent/")) {
             return BACKPORT + name;
         }

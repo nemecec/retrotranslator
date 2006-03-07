@@ -43,38 +43,6 @@ import java.io.IOException;
  */
 class TransformerTools {
 
-    public static byte[] readFileToByteArray(File file) {
-        int len = (int) file.length();
-        byte[] buffer = new byte[len];
-        try {
-            FileInputStream stream = new FileInputStream(file);
-            try {
-                for (int n = 0, off = 0; n >= 0 && len > 0; off += n, len -= n) {
-                    n = stream.read(buffer, off, len);
-                }
-            } finally {
-                stream.close();
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return buffer;
-    }
-
-    public static void writeByteArrayToFile(File file, byte[] data) {
-        file.getParentFile().mkdirs();
-        try {
-            FileOutputStream outputStream = new FileOutputStream(file);
-            try {
-                outputStream.write(data);
-            } finally {
-                outputStream.close();
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public static String descriptor(Class returnType, Class... parameterTypes) {
         Type[] argumentTypes = new Type[parameterTypes.length];
         for (int i = 0; i < argumentTypes.length; i++) {
@@ -85,5 +53,9 @@ class TransformerTools {
 
     public static Type getTypeByInternalName(String name) {
         return Type.getType("L" + name + ";");
+    }
+
+    public static String fixIdentifier(String identifier) {
+        return identifier.replace('+', '$').replace('-', '$');
     }
 }

@@ -44,33 +44,37 @@ import java.io.File;
  */
 public class RetrotranslatorTask extends Task implements MessageLogger {
 
-    private Path src;
+    private Path src = new Path(getProject());
     private File destdir;
+    private File destjar;
     private boolean verbose;
     private boolean stripsign;
     private boolean lazy;
     private boolean verify;
     private boolean failonwarning = true;
-    private Path classpath;
+    private Path classpath = new Path(getProject());
 
     public RetrotranslatorTask() {
     }
 
     public void setSrcdir(Path srcdir) {
-        if (src == null) {
-            src = srcdir;
-        } else {
-            src.append(srcdir);
-        }
+        src.append(srcdir);
+    }
+
+    public void setSrcjar(Path srcjar) {
+        src.append(srcjar);
     }
 
     public Path createSrc() {
-        if (src == null) src = new Path(getProject());
         return src.createPath();
     }
 
     public void setDestdir(File destdir) {
         this.destdir = destdir;
+    }
+
+    public void setDestjar(File destjar) {
+        this.destjar = destjar;
     }
 
     public void setVerbose(boolean verbose) {
@@ -98,15 +102,10 @@ public class RetrotranslatorTask extends Task implements MessageLogger {
     }
 
     public void setClasspath(Path classpath) {
-        if (this.classpath == null) {
-            this.classpath = classpath;
-        } else {
-            this.classpath.append(classpath);
-        }
+        this.classpath.append(classpath);
     }
 
     public Path createClasspath() {
-        if (classpath == null) classpath = new Path(getProject());
         return classpath.createPath();
     }
 
@@ -117,22 +116,24 @@ public class RetrotranslatorTask extends Task implements MessageLogger {
 
     public void execute() throws BuildException {
         Retrotranslator retrotranslator = new Retrotranslator();
-        if (src != null) {
-            for (String srcdir : src.list()) {
-                retrotranslator.addSrcdir(getProject().resolveFile(srcdir));
+        for (String name : src.list()) {
+            File file = getProject().resolveFile(name);
+            if (file.isFile()) {
+                retrotranslator.addSrcjar(file);
+            } else if (file.exists()) {
+                retrotranslator.addSrcdir(file);
+            } else {
+                throw new BuildException("Path not found: " + file);
             }
         }
-        if (destdir != null) {
-            retrotranslator.setDestdir(destdir);
-        }
+        if (destdir != null) retrotranslator.setDestdir(destdir);
+        if (destjar != null) retrotranslator.setDestjar(destjar);
         retrotranslator.setVerbose(verbose);
         retrotranslator.setStripsign(stripsign);
         retrotranslator.setLazy(lazy);
         retrotranslator.setVerify(verify);
-        if (classpath != null) {
-            for (String fileName : classpath.list()) {
-                retrotranslator.addClasspathElement(getProject().resolveFile(fileName));
-            }
+        for (String fileName : classpath.list()) {
+            retrotranslator.addClasspathElement(getProject().resolveFile(fileName));
         }
         retrotranslator.setLogger(this);
         boolean verified = retrotranslator.run();

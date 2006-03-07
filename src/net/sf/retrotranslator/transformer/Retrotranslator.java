@@ -31,8 +31,6 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import net.sf.retrotranslator.runtime.asm.ClassReader;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,8 +41,8 @@ import java.util.StringTokenizer;
  */
 public class Retrotranslator implements MessageLogger {
 
-    private List<ClassFileSet> src = new ArrayList<ClassFileSet>();
-    private File destdir;
+    private List<FileContainer> src = new ArrayList<FileContainer>();
+    private FileContainer dest;
     private boolean stripsign;
     private boolean verbose;
     private boolean lazy;
@@ -69,17 +67,27 @@ public class Retrotranslator implements MessageLogger {
 
     public void addSrcdir(File srcdir) {
         if (!srcdir.isDirectory()) throw new IllegalArgumentException("Invalid srcdir: " + srcdir);
-        this.src.add(new ClassFileSet(srcdir));
+        src.add(new FolderFileContainer(srcdir));
+    }
+
+    public void addSrcjar(File srcjar) {
+        if (!srcjar.isFile()) throw new IllegalArgumentException("Invalid srcjar: " + srcjar);
+        src.add(new JarFileContainer(srcjar));
     }
 
     public void addSourceFiles(File srcdir, List<String> fileNames) {
         if (!srcdir.isDirectory()) throw new IllegalArgumentException("Invalid srcdir: " + srcdir);
-        this.src.add(new ClassFileSet(srcdir, fileNames));
+        src.add(new FolderFileContainer(srcdir, fileNames));
     }
 
     public void setDestdir(File destdir) {
         if (!destdir.isDirectory()) throw new IllegalArgumentException("Invalid destdir: " + destdir);
-        this.destdir = destdir;
+        dest = new FolderFileContainer(destdir);
+    }
+
+    public void setDestjar(File destjar) {
+        if (destjar.isDirectory()) throw new IllegalArgumentException("Invalid destjar: " + destjar);
+        dest = new JarFileContainer(destjar);
     }
 
     public void setStripsign(boolean stripsign) {
@@ -118,75 +126,80 @@ public class Retrotranslator implements MessageLogger {
     }
 
     public boolean run() {
-        if (src.isEmpty()) throw new IllegalArgumentException("Source directory is not set.");
+        if (src.isEmpty()) throw new IllegalArgumentException("Source not set.");
         ClassTransformer transformer = new ClassTransformer(lazy, stripsign);
-        for (ClassFileSet fileSet : src) {
-            transform(transformer, fileSet);
+        for (FileContainer container : src) {
+            transform(transformer, container, dest != null ? dest : container);
         }
-
+        if (dest != null) dest.flush();
         if (!verify) return true;
         ClassReaderFactory factory = new ClassReaderFactory(classpath.isEmpty());
         try {
-            for (File file : classpath) {
-                factory.appendPath(file);
-            }
-            if (destdir != null) {
-                factory.appendPath(destdir);
-            } else {
-                for (ClassFileSet fileSet : src) {
-                    factory.appendPath(fileSet.getBaseDir());
-                }
-            }
-            boolean verified = true;
-            for (ClassFileSet fileSet : src) {
-                verified &= verify(factory, fileSet);
-            }
-            return verified;
+            return verify(factory);
         } finally {
             factory.close();
         }
     }
 
-    private void transform(ClassTransformer transformer, ClassFileSet fileSet) {
-        File src = fileSet.getBaseDir();
-        File dest = destdir != null ? destdir : src;
-        List<String> fileNames = fileSet.getFileNames();
-        String location = dest.equals(src) ? " in " + src + "." : " from " + src + " to " + dest + ".";
-        logger.log(new Message(Level.INFO, "Transforming " + fileNames.size() + " file(s)" + location));
-        for (int i = 0; i < fileNames.size(); i++) {
-            String fileName = fileNames.get(i);
-            if (verbose) logger.log(new Message(Level.VERBOSE, "Transformation...", src, fileName));
-            byte[] sourceData = TransformerTools.readFileToByteArray(new File(src, fileName));
-            byte[] resultData = transformer.transform(sourceData, 0, sourceData.length);
-            if (src != dest || sourceData != resultData) {
-                String fixedName = ClassSubstitutionVisitor.fixIdentifier(fileName);
-                fileNames.set(i, fixedName);
-                if (src == dest && !fixedName.equals(fileName)) new File(dest, fileName).delete();
-                TransformerTools.writeByteArrayToFile(new File(dest, fixedName), resultData);
+    private void transform(ClassTransformer transformer, FileContainer source, FileContainer destination) {
+        int classFileCount = source.getClassFileCount();
+        logger.log(new Message(Level.INFO, "Transforming " + classFileCount + " file(s)" +
+                (source == destination ? " in " + source : " from " + source + " to " + destination) + "."));
+        for (FileEntry entry : source.getEntries()) {
+            if (entry.isClassFile()) {
+                String name = entry.getName();
+                if (verbose) logger.log(new Message(Level.VERBOSE, "Transformation", source.getLocation(), name));
+                byte[] sourceData = entry.getContent();
+                byte[] resultData = transformer.transform(sourceData, 0, sourceData.length);
+                if (source != destination || sourceData != resultData) {
+                    String fixedName = TransformerTools.fixIdentifier(name);
+                    if (!fixedName.equals(name)) destination.removeEntry(name);
+                    destination.putEntry(fixedName, resultData);
+                }
+            } else if (source != destination) {
+                destination.putEntry(entry.getName(), entry.getContent());
             }
         }
-        logger.log(new Message(Level.INFO, "Transformation of " + fileNames.size() + " file(s) completed successfully."));
+        source.flush();
+        logger.log(new Message(Level.INFO, "Transformation of " + classFileCount + " file(s) completed successfully."));
     }
 
-    private boolean verify(ClassReaderFactory factory, ClassFileSet fileSet) {
-        final File dir = destdir != null ? destdir : fileSet.getBaseDir();
-        List<String> fileNames = fileSet.getFileNames();
-        logger.log(new Message(Level.INFO, "Verifying " + fileNames.size() + " file(s) in " + dir + "."));
-        final int[] warningCount = new int[1];
-        for (final String fileName : fileNames) {
-            if (verbose) logger.log(new Message(Level.VERBOSE, "Verification...", dir, fileName));
-            byte[] data = TransformerTools.readFileToByteArray(new File(dir, fileName));
-            ReferenceVerifyingVisitor visitor = new ReferenceVerifyingVisitor(factory) {
-                protected void warning(String text) {
-                    warningCount[0]++;
-                    logger.log(new Message(Level.WARNING, text, dir, fileName));
-                }
-            };
-            new ClassReader(data).accept(visitor, true);
+    private boolean verify(ClassReaderFactory factory) {
+        for (File file : classpath) {
+            factory.appendPath(file);
         }
-        String result = warningCount[0] != 0 ? " with " + warningCount[0] + " warning(s)." : " successfully.";
-        logger.log(new Message(Level.INFO, "Verification of " + fileNames.size() + " file(s) completed" + result));
-        return warningCount[0] == 0;
+        if (dest != null) {
+            factory.appendPath(dest.getLocation());
+        } else {
+            for (FileContainer container : src) {
+                factory.appendPath(container.getLocation());
+            }
+        }
+        if (dest != null) {
+            return verify(factory, dest);
+        }
+        boolean verified = true;
+        for (FileContainer container : src) {
+            verified &= verify(factory, container);
+        }
+        return verified;
+    }
+
+    private boolean verify(ClassReaderFactory factory, final FileContainer container) {
+        int classFileCount = container.getClassFileCount();
+        logger.log(new Message(Level.INFO, "Verifying " + classFileCount + " file(s) in " + container + "."));
+        int warningCount = 0;
+        for (final FileEntry entry : container.getEntries()) {
+            if (entry.isClassFile()) {
+                if (verbose) logger.log(new Message(Level.VERBOSE,
+                        "Verification", container.getLocation(), entry.getName()));
+                warningCount += new ReferenceVerifyingVisitor(factory, logger,
+                        container.getLocation(), entry.getName()).verify(entry.getContent());
+            }
+        }
+        String result = warningCount != 0 ? " with " + warningCount + " warning(s)." : " successfully.";
+        logger.log(new Message(Level.INFO, "Verification of " + classFileCount + " file(s) completed" + result));
+        return warningCount == 0;
     }
 
     private boolean execute(String[] args) {
@@ -195,8 +208,12 @@ public class Retrotranslator implements MessageLogger {
             String string = args[i++];
             if (string.equals("-srcdir") && i < args.length) {
                 addSrcdir(new File(args[i++]));
+            } else if (string.equals("-srcjar") && i < args.length) {
+                addSrcjar(new File(args[i++]));
             } else if (string.equals("-destdir") && i < args.length) {
                 setDestdir(new File(args[i++]));
+            } else if (string.equals("-destjar") && i < args.length) {
+                setDestjar(new File(args[i++]));
             } else if (string.equals("-stripsign")) {
                 setStripsign(true);
             } else if (string.equals("-verbose")) {
@@ -218,7 +235,8 @@ public class Retrotranslator implements MessageLogger {
         String version = Retrotranslator.class.getPackage().getImplementationVersion();
         String suffix = (version == null) ? "" : "-" + version;
         System.out.println("Usage: java -jar retrotranslator-transformer" + suffix + ".jar" +
-                " -srcdir <path> [-destdir <path>] [-stripsign] [-verbose] [-lazy] [-verify] [-classpath <classpath>]");
+                " [-srcdir <path> | -srcjar <file>] [-destdir <path> | -destjar <file>]" +
+                " [-stripsign] [-verbose] [-lazy] [-verify] [-classpath <classpath>]");
     }
 
     public static void main(String[] args) {
@@ -234,4 +252,5 @@ public class Retrotranslator implements MessageLogger {
             System.exit(1);
         }
     }
+
 }

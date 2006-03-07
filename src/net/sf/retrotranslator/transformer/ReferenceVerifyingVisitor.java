@@ -35,24 +35,36 @@ import net.sf.retrotranslator.runtime.impl.EmptyVisitor;
 import net.sf.retrotranslator.runtime.impl.RuntimeTools;
 import net.sf.retrotranslator.runtime.asm.Opcodes;
 import net.sf.retrotranslator.runtime.asm.Type;
+import net.sf.retrotranslator.runtime.asm.ClassReader;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.io.File;
 
 /**
  * @author Taras Puchko
  */
-abstract class ReferenceVerifyingVisitor extends GenericClassVisitor {
+class ReferenceVerifyingVisitor extends GenericClassVisitor {
 
-    private final ClassReaderFactory factory;
-    private Set<String> warnings = new LinkedHashSet<String>();
+    private ClassReaderFactory factory;
+    private MessageLogger logger;
+    private File location;
+    private String name;
+    private Set<String> warnings;
 
-    public ReferenceVerifyingVisitor(ClassReaderFactory factory) {
+    public ReferenceVerifyingVisitor(ClassReaderFactory factory, MessageLogger logger, File location, String name) {
         super(new EmptyVisitor());
         this.factory = factory;
+        this.logger = logger;
+        this.location = location;
+        this.name = name;
     }
 
-    protected abstract void warning(String text);
+    public int verify(byte[] bytes) {
+        warnings = new LinkedHashSet<String>();
+        new ClassReader(bytes).accept(this, true);
+        return warnings.size();
+    }
 
     protected String visitInternalName(String name) {
         try {
@@ -93,13 +105,13 @@ abstract class ReferenceVerifyingVisitor extends GenericClassVisitor {
     }
 
     private void cannotVerify(String text, ClassNotFoundException e) {
-        println(text + "\n (Class not found: " + getClassInfo(e.getMessage()) + ")");
+        println(text + " (class not found: " + getClassInfo(e.getMessage()) + ")");
     }
 
     private void println(String text) {
         if (!warnings.contains(text)) {
             warnings.add(text);
-            warning(text);
+            logger.log(new Message(Level.WARNING, text, location, name));
         }
     }
 

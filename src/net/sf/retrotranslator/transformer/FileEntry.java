@@ -31,46 +31,24 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import java.io.File;
-
 /**
  * @author Taras Puchko
  */
-public class Message {
+abstract class FileEntry {
 
-    private Level level;
-    private String text;
-    private String fileName;
-    private File fileLocation;
+    private String name;
 
-    Message(Level level, String text) {
-        this(level, text, null, null);
+    protected FileEntry(String name) {
+        this.name = name;
     }
 
-    Message(Level level, String text, File fileLocation, String fileName) {
-        this.level = level;
-        this.text = text;
-        this.fileName = fileName;
-        this.fileLocation = fileLocation;
+    public abstract byte[] getContent();
+
+    public String getName() {
+        return name;
     }
 
-    public Level getLevel() {
-        return level;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public String getFileName() {
-        return fileName;
-    }
-
-    public File getFileLocation() {
-        return fileLocation;
-    }
-
-    public String toString() {
-        return fileName == null ? text : fileName + ": " + text;
+    public boolean isClassFile() {
+        return name.endsWith(".class");
     }
 }

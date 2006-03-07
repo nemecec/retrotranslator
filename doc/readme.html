@@ -40,7 +40,7 @@ and concurrency utilities
 <ul>
     <li>Generics (generic types)</li>
     <li>Annotations (metadata)</li>
-    <li>Metadata and generics reflection</li>
+    <li>Reflection on generics and annotations</li>
     <li>Typesafe enums (enumerated types)</li>
     <li>Autoboxing/unboxing</li>
     <li>Enhanced for loop (for-each loop)</li>
@@ -70,115 +70,128 @@ and concurrency utilities
 </ol>
 
 <p>Full command line syntax:<br>
-    <code>java -jar retrotranslator-transformer-<i>n.n.n</i>.jar
-        -srcdir &lt;path&gt; [-destdir &lt;path&gt;] [-stripsign] [-verbose] [-lazy] [-verify] [-classpath &lt;classpath&gt;]</code>
+    <code>java -jar retrotranslator-transformer-<i>n.n.n</i>.jar &lt;options&gt;</code>
     <br>or<br>
-    <code>java -cp retrotranslator-transformer-<i>n.n.n</i>.jar net.sf.retrotranslator.transformer.Retrotranslator
-        -srcdir &lt;path&gt; [-destdir &lt;path&gt;] [-stripsign] [-verbose] [-lazy] [-verify] [-classpath &lt;classpath&gt;]</code></p>
+    <code>java -cp retrotranslator-transformer-<i>n.n.n</i>.jar net.sf.retrotranslator.transformer.Retrotranslator &lt;options&gt;</code></p>
 <table border="1" cellspacing="0" cellpadding="5">
-    <tr><th>Option</th><th>Description</th><th>Required</th><th>Default</th></tr>
+    <tr><th>Option</th><th>Description</th><th>Default</th></tr>
     <tr>
-        <td>-srcdir</td>
-        <td>Location of the class files compiled with JDK 5.0.</td>
-        <td>Yes</td>
+        <td><code>-srcdir</code></td>
+        <td>Directory with classes compiled using JDK 5.0.</td>
         <td>-</td>
     </tr>
     <tr>
-        <td>-destdir</td>
-        <td>Location to store the class files compatible with JVM 1.4.</td>
-        <td>No</td>
-        <td>Source directory</td>
+        <td><code>-srcjar</code></td>
+        <td>JAR file with classes compiled using JDK 5.0.</td>
+        <td>-</td>
     </tr>
     <tr>
-        <td>-stripsign</td>
+        <td><code>-destdir</code></td>
+        <td>Directory to place classes compatible with J2SE 1.4.</td>
+        <td>Location of sources</td>
+    </tr>
+    <tr>
+        <td><code>-destjar</code></td>
+        <td>JAR file to place classes compatible with J2SE 1.4.</td>
+        <td>Location of sources</td>
+    </tr>
+    <tr>
+        <td><code>-stripsign</code></td>
         <td>Asks the translator to strip signature (generics) information.</td>
-        <td>No</td>
         <td>Off</td>
     </tr>
     <tr>
-        <td>-verbose</td>
+        <td><code>-verbose</code></td>
         <td>Asks the translator for verbose output.</td>
-        <td>No</td>
         <td>Off</td>
     </tr>
     <tr>
-        <td>-lazy</td>
+        <td><code>-lazy</code></td>
         <td>Asks the translator to transform only Java 5.0 classes.</td>
-        <td>No</td>
         <td>Off</td>
     </tr>
     <tr>
-        <td>-verify</td>
+        <td><code>-verify</code></td>
         <td>Asks the translator for warnings when references to unknown classes, methods, or fields are found.</td>
-        <td>No</td>
         <td>Off</td>
     </tr>
     <tr>
-        <td>-classpath</td>
+        <td><code>-classpath</code></td>
         <td>The classpath to use for verification (including <code>rt.jar</code> from JRE 1.4,
             <code>retrotranslator-runtime-<i>n.n.n</i>.jar</code>, and <code>backport-util-concurrent.jar</code>).</td>
-        <td>No</td>
         <td>Current classpath</td>
     </tr>
 </table>
+<p>
+    For example, if you have Java 5 application <code>myapplication5.jar</code>, you can use the following command
+    to produce <code>myapplication4.jar</code> that will run on J2SE 1.4:<br>
+    <code>java -jar retrotranslator-transformer-<i>n.n.n</i>.jar
+    -srcjar retrotranslator-runtime-<i>n.n.n</i>.jar -srcjar myapplication5.jar -destjar myapplication4.jar</code>
+</p>
 
 <h4><a name="ant">How to use Retrotranslator from Apache Ant?</a></h4>
 
 <p>The distribution contains an integrated <a href="http://ant.apache.org/">Apache Ant</a> task
     <code>net.sf.retrotranslator.transformer.RetrotranslatorTask</code>. It has the following syntax:</p>
 <table border="1" cellspacing="0" cellpadding="5">
-    <tr><th>Attribute</th><th>Description</th><th>Required</th><th>Default</th></tr>
+    <tr><th>Attribute</th><th>Description</th><th>Default</th></tr>
     <tr>
-        <td>srcdir</td>
-        <td>Location of the class files compiled with JDK 5.0. Also you may use nested <code>src</code> elements.</td>
-        <td>Yes</td>
+        <td><code>srcdir</code></td>
+        <td>Directory with classes compiled using JDK 5.0.</td>
         <td>-</td>
     </tr>
     <tr>
-        <td>destdir</td>
-        <td>Location to store the class files compatible with JVM 1.4.</td>
-        <td>No</td>
-        <td>Source directory</td>
+        <td><code>srcjar</code></td>
+        <td>JAR file with classes compiled using JDK 5.0.</td>
+        <td>-</td>
     </tr>
     <tr>
-        <td>stripsign</td>
+        <td><code>destdir</code></td>
+        <td>Directory to place classes compatible with J2SE 1.4.</td>
+        <td>Location of sources</td>
+    </tr>
+    <tr>
+        <td><code>destjar</code></td>
+        <td>JAR file to place classes compatible with J2SE 1.4.</td>
+        <td>Location of sources</td>
+    </tr>
+    <tr>
+        <td><code>stripsign</code></td>
         <td>Asks the translator to strip signature (generics) information.</td>
-        <td>No</td>
         <td>Off</td>
     </tr>
     <tr>
-        <td>verbose</td>
+        <td><code>verbose</code></td>
         <td>Asks the translator for verbose output.</td>
-        <td>No</td>
         <td>Off</td>
     </tr>
     <tr>
-        <td>lazy</td>
+        <td><code>lazy</code></td>
         <td>Asks the translator to transform only Java 5.0 classes.</td>
-        <td>No</td>
         <td>Off</td>
     </tr>
     <tr>
-        <td>verify</td>
+        <td><code>verify</code></td>
         <td>Asks the translator for warnings when references to unknown classes, methods, or fields are found.</td>
-        <td>No</td>
         <td>Off</td>
     </tr>
     <tr>
-        <td>failonwarning</td>
-        <td>Indicates whether the build will fail when there are verification warnings.</td>
-        <td>No</td>
-        <td>On</td>
-    </tr>
-    <tr>
-        <td>classpath</td>
+        <td><code>classpath</code></td>
         <td>The classpath to use for verification (including <code>rt.jar</code> from JRE 1.4,
             <code>retrotranslator-runtime-<i>n.n.n</i>.jar</code>, and <code>backport-util-concurrent.jar</code>).
-            You may use nested <code>classpath</code> elements as well.</td>
-        <td>No</td>
+        </td>
         <td>Current classpath</td>
     </tr>
+    <tr>
+        <td><code>failonwarning</code></td>
+        <td>Indicates whether the build will fail when there are verification warnings.</td>
+        <td>On</td>
+    </tr>
 </table>
+<p>
+    You may use nested <code>src</code> elements to specify source directories or JAR files, and nested
+    <code>classpath</code> elements to specify classpath for verification.
+</p>
 
 <h4><a name="idea">How to use Retrotranslator from IntelliJ IDEA?</a></h4>
 <p>
@@ -190,9 +203,8 @@ and concurrency utilities
 <h4><a name="jit">How to use Just-in-Time Retrotranslator?</a></h4>
 
 <p>
-    You may use JIT Retrotranslator to run your Java 5 application on J2SE 1.4. Any Java 5 class loaded with
-    any classloader will be translated at runtime on J2SE 1.4 from Sun, IBM, BEA, or Apple.
-    When you start JIT Retrotranslator on J2SE 5.0 it will simply call your application.
+    JIT Retrotranslator is able to translate at runtime Java classes loaded with any classloader.
+    It works only on J2SE 1.4 from Sun, IBM, BEA, and Apple, on other platforms (including J2SE 5.0) it is inactive.
 </p>
 <ol>
     <li>

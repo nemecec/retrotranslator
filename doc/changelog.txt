@@ -1,6 +1,8 @@
 Retrotranslator Changelog
 =================================
 
+   - Ability to process JAR files.
+
 0.9.9 (2006-03-01)
 ---------------------------------
   - Supported: Thread.getId(), UUID, MatchResult, Flushable, Appendable, Readable.

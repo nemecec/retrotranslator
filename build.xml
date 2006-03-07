@@ -36,7 +36,7 @@
         </java>
         <jar destfile="build/retrotranslator-runtime-${version}.jar">
             <fileset dir="build/classes14" includes="net/sf/retrotranslator/runtime/**"/>
-            <fileset file="doc/LICENSE.txt"/>
+            <zipfileset file="doc/LICENSE.txt" fullpath="RETROTRANSLATOR-LICENSE.txt"/>
             <fileset file="doc/ASM-LICENSE.txt"/>
             <manifest>
                 <attribute name="Implementation-Title" value="Retrotranslator runtime"/>
@@ -45,7 +45,7 @@
         </jar>
         <jar destfile="build/retrotranslator-transformer-${version}.jar">
             <fileset dir="build/classes14" includes="net/sf/retrotranslator/transformer/**"/>
-            <fileset file="doc/LICENSE.txt"/>
+            <zipfileset file="doc/LICENSE.txt" fullpath="RETROTRANSLATOR-LICENSE.txt"/>
             <manifest>
                 <attribute name="Implementation-Title" value="Retrotranslator transformer"/>
                 <attribute name="Implementation-Version" value="${version}"/>

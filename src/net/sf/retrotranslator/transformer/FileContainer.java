@@ -32,46 +32,55 @@
 package net.sf.retrotranslator.transformer;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ByteArrayOutputStream;
+import java.util.Collection;
 
 /**
  * @author Taras Puchko
  */
-class ClassFileSet {
+abstract class FileContainer {
 
-    private File baseDir;
-    private List<String> fileNames;
+    protected File location;
 
-    public ClassFileSet(File baseDir) {
-        this.baseDir = baseDir;
+    protected FileContainer(File location) {
+        this.location = location;
     }
 
-    public ClassFileSet(File baseDir, List<String> fileNames) {
-        this.baseDir = baseDir;
-        this.fileNames = fileNames;
+    public File getLocation() {
+        return location;
     }
 
-    public File getBaseDir() {
-        return baseDir;
-    }
+    public abstract Collection<? extends FileEntry> getEntries();
 
-    public List<String> getFileNames() {
-        if (fileNames == null) {
-            fileNames = new ArrayList<String>();
-            addFileNames(baseDir);
+    public abstract void removeEntry(String name);
+
+    public abstract void putEntry(String name, byte[] contents);
+
+    public abstract void flush();
+
+    protected static byte[] readFully(InputStream stream, int length) throws IOException {
+        if (length <= 0) length = 0x8000;
+        byte[] buffer = new byte[length];
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream(length);
+        int count;
+        while((count = stream.read(buffer)) > 0) {
+            outputStream.write(buffer, 0, count);
         }
-        return fileNames;
+        return outputStream.toByteArray();
     }
 
-    private void addFileNames(File dir) {
-        for (File file : dir.listFiles()) {
-            if (file.isDirectory()) {
-                addFileNames(file);
-            } else if (file.getName().endsWith(".class")) {
-                if (!file.getPath().startsWith(baseDir.getPath())) throw new IllegalStateException();
-                fileNames.add(file.getPath().substring(baseDir.getPath().length() + 1));
-            }
-        }
+    public String toString() {
+        return location.toString();
     }
+
+    public int getClassFileCount() {
+        int result = 0;
+        for (FileEntry entry : getEntries()) {
+            if (entry.isClassFile()) result++;
+        }
+        return result;
+    }
+
 }
