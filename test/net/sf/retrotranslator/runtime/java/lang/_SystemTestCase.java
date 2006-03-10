@@ -31,17 +31,30 @@
  */
 package net.sf.retrotranslator.runtime.java.lang;
 
+import net.sf.retrotranslator.tests.BaseTestCase;
+
 /**
  * @author Taras Puchko
  */
-public class _Boolean {
+public class _SystemTestCase extends BaseTestCase {
 
-    public static boolean parseBoolean(String s) {
-        return Boolean.valueOf(s).booleanValue();
+    public void testClearProperty() throws Exception {
+        String key = _SystemTestCase.class.getName();
+        System.setProperty(key, "x");
+        assertEquals("x", System.getProperty(key));
+        System.clearProperty(key);
+        assertNull(System.getProperty(key));
+        try {
+            System.clearProperty(null);
+            fail();
+        } catch (NullPointerException e) {
+            //ok
+        }
+        try {
+            System.clearProperty("");
+            fail();
+        } catch (IllegalArgumentException e) {
+            //ok
+        }
     }
-
-    public static int compareTo(Boolean self, Boolean other) {
-        return self.booleanValue() == other.booleanValue() ? 0 : self.booleanValue() ? 1 : -1;
-    }
-
 }

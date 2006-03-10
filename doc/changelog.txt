@@ -1,7 +1,10 @@
 Retrotranslator Changelog
 =================================
 
+1.0.0 (2006-03-10)
+---------------------------------
    - Ability to process JAR files.
+   - Supported: System.nanoTime(), System.clearProperty(String), Boolean.compareTo(Boolean)
 
 0.9.9 (2006-03-01)
 ---------------------------------

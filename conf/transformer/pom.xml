@@ -6,7 +6,7 @@
     <artifactId>retrotranslator-transformer</artifactId>
     <packaging>jar</packaging>
     <version>@version@</version>
-    <name>Retrotranslator transformer</name>
+    <name>Retrotranslator Transformer</name>
     <url>http://retrotranslator.sourceforge.net/</url>
     <description>Java 5.0 to Java 1.4 bytecode transformer</description>
     <scm>

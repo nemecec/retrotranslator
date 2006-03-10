@@ -48,7 +48,7 @@ public abstract class LazyValue<I, R> {
     }
 
     public final synchronized void provide(R result) {
-        if (this.result == null) this.result = result;
+        this.result = result;
     }
 
     protected abstract R resolve(I input);

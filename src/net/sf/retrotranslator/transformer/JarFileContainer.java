@@ -112,9 +112,10 @@ class JarFileContainer extends FileContainer {
         attributes.putValue("Manifest-Version", "1.0");
         attributes.putValue("Created-By",
                 System.getProperty("java.vm.version") + " (" + System.getProperty("java.vm.vendor") + ")");
-        String implementationVersion = getClass().getPackage().getImplementationVersion();
-        if (implementationVersion != null) {
-            attributes.putValue("Retrotranslator-Version", implementationVersion);
+        String title = getClass().getPackage().getImplementationTitle();
+        String version = getClass().getPackage().getImplementationVersion();
+        if (title != null && version != null) {
+            attributes.putValue("Retrotranslator-Version", title + " " + version);
         }
         JarOutputStream stream = new JarOutputStream(fileOutputStream, manifest);
         stream.setLevel(Deflater.BEST_COMPRESSION);

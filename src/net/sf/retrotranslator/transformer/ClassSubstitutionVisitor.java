@@ -56,7 +56,7 @@ class ClassSubstitutionVisitor extends GenericClassVisitor {
         map.put("net/sf/retrotranslator/transformer/ClassPreProcessor", "com/bea/jvm/ClassPreProcessor");
         for (Class type : new Class[]{AbstractQueue.class, PriorityQueue.class, Queue.class}) {
             String name = type.getName().replace('.', '/');
-            if (!name.startsWith(BACKPORT)) throw new IllegalArgumentException();
+            if (!name.startsWith(BACKPORT)) throw new IllegalArgumentException(name);
             map.put(name.substring(BACKPORT.length()), name);
         }
     }

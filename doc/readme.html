@@ -77,12 +77,12 @@ and concurrency utilities
     <tr><th>Option</th><th>Description</th><th>Default</th></tr>
     <tr>
         <td><code>-srcdir</code></td>
-        <td>Directory with classes compiled using JDK 5.0.</td>
+        <td>Directory with classes compiled using JDK 5.0 (may be specified several times).</td>
         <td>-</td>
     </tr>
     <tr>
         <td><code>-srcjar</code></td>
-        <td>JAR file with classes compiled using JDK 5.0.</td>
+        <td>JAR file with classes compiled using JDK 5.0 (may be specified several times).</td>
         <td>-</td>
     </tr>
     <tr>
@@ -123,10 +123,14 @@ and concurrency utilities
     </tr>
 </table>
 <p>
-    For example, if you have Java 5 application <code>myapplication5.jar</code>, you can use the following command
-    to produce <code>myapplication4.jar</code> that will run on J2SE 1.4:<br>
+    For example, if you have Java 5 application <code>myapplication5.jar</code> you can use the following command
+    to produce <code>myapplication4.jar</code> that will run on J2SE 1.4. Since the file
+    <code>retrotranslator-runtime-<i>n.n.n</i>.jar</code> will be added to your application,
+    <code>myapplication4.jar</code> will not depend on the Retrotranslator runtime library.
+</p>
+<p>
     <code>java -jar retrotranslator-transformer-<i>n.n.n</i>.jar
-    -srcjar retrotranslator-runtime-<i>n.n.n</i>.jar -srcjar myapplication5.jar -destjar myapplication4.jar</code>
+    -srcjar retrotranslator-runtime-<i>n.n.n</i>.jar -srcjar myapplication5.jar -destjar myapplication4.jar</code><br>
 </p>
 
 <h4><a name="ant">How to use Retrotranslator from Apache Ant?</a></h4>
@@ -208,7 +212,7 @@ and concurrency utilities
 </p>
 <ol>
     <li>
-        If you want to run a jar file, execute:<br>
+        If you want to run a JAR file, execute:<br>
         <code>java -cp retrotranslator-transformer-<i>n.n.n</i>.jar
             net.sf.retrotranslator.transformer.JITRetrotranslator -jar &lt;jarfile&gt; [&lt;args...&gt;]</code>
     </li>
@@ -246,11 +250,11 @@ and concurrency utilities
     <tr><td><code>Writer</code></td><td>
         <code>append(CharSequence), append(CharSequence, int, int), append(char)</code>
         </td><td>&nbsp;</td></tr>
-    <tr><td rowspan="22"><code>java.lang</code></td><td><code>Appendable</code></td><td>*
+    <tr><td rowspan="23"><code>java.lang</code></td><td><code>Appendable</code></td><td>*
     </td><td>
         <code>new Appendable[...]</code> is replaced with <code>new Object[...]</code>
     </td></tr>
-    <tr><td><code>Boolean</code></td><td><code>parseBoolean(String)</code></td><td>&nbsp;</td></tr>
+    <tr><td><code>Boolean</code></td><td><code>parseBoolean(String), compareTo(Boolean)</code></td><td>&nbsp;</td></tr>
     <tr><td><code>Byte</code></td><td><code>valueOf(byte)</code></td><td>&nbsp;</td></tr>
     <tr><td><code>Character</code></td><td><code>valueOf(char)</code></td><td>&nbsp;</td></tr>
     <tr><td><code>Class</code></td><td>* (21 new methods)</td><td>&nbsp;</td></tr>
@@ -280,6 +284,11 @@ and concurrency utilities
         All methods supported in <code>StringBuffer</code>
     </td><td><code>StringBuilder</code> is replaced with <code>StringBuffer</code></td></tr>
     <tr><td><code>SuppressWarnings</code></td><td>*</td><td>&nbsp;</td></tr>
+    <tr><td><code>System</code></td><td><code>nanoTime(), clearProperty(String)</code></td><td>
+        <code>nanoTime()</code> precision
+        <a href="http://dcl.mathcs.emory.edu/util/backport-util-concurrent/doc/api/edu/emory/mathcs/backport/java/util/concurrent/helpers/Utils.html#nanoTime()">
+            may vary</a> on different platforms
+    </td></tr>
     <tr><td><code>Thread</code></td><td><code>getStackTrace(), getId()
     </code></td><td><code>getStackTrace()</code> returns non-empty stack trace only for the current thread;<br>
         <code>getId()</code> does not reflect the order in which threads were created.</td></tr>
@@ -334,15 +343,33 @@ and concurrency utilities
 <h4><a name="extension">How to write an extension for Retrotranslator?</a></h4>
 
 <p>
-    Since most backported classes are discovered by Retrotranslator at transformation time,
-    you may write an extension and simply put it into Retrotranslator classpath to make it work.
-    For example, <code>net.sf.retrotranslator.runtime.java.util.EnumSet_</code> is a backport of
-    <code>java.util.EnumSet</code> and <code>net.sf.retrotranslator.runtime.java.lang._String</code>
-    constains additional methods for <code>java.lang.String</code>. The additional methods should be
-    <code>public static</code> and must accept an original class instance as the first argument
-    if they replace instance methods. To include your code into Retrotranslator just send
-    a <a href="http://sourceforge.net/tracker/?group_id=153566&atid=788281">patch</a> if you can release it under
-    the <a href="#license">Retrotranslator license</a>. For more information see Retrotranslator source code.
+    Since most backported classes are discovered by Retrotranslator at translation time,
+    you may write an extension and simply put it into the Retrotranslator classpath to make it work.
+    For example, all references to
+    <a href="http://java.sun.com/j2se/1.5.0/docs/api/java/util/EnumSet.html"><code>java.util.EnumSet</code></a>
+    are replaced with references to
+    <a href="http://cvs.sourceforge.net/viewcvs.py/retrotranslator/Retrotranslator/src/net/sf/retrotranslator/runtime/java/util/EnumSet_.java?view=markup">
+    <code>net.sf.retrotranslator.runtime.java.util.EnumSet<b>_</b></code></a> (trailing underscore) if the latter
+    can be found. But if you replace a class that exists in J2SE 1.4, you may encounter interoperability issues with not
+    translated libraries. Therefore another approach is also used: for example, additional instance and static methods for
+    <a href="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/Boolean.html"><code>java.lang.Boolean</code></a>
+    are added from
+    <a href="http://cvs.sourceforge.net/viewcvs.py/retrotranslator/Retrotranslator/src/net/sf/retrotranslator/runtime/java/lang/_Boolean.java?view=markup">
+    <code>net.sf.retrotranslator.runtime.java.lang.<b>_</b>Boolean</code></a> (leading underscore) if it is found.
+    The methods should be <code>public static</code> and must accept an original class instance
+    as the first argument if they replace instance methods. If the additional methods require access
+    to non-public methods or fields of the instance, they cannot be fully handled by Retrotranslator.
+    While you can use reflection to access any data, translated code generally should not depend on security context.
+    For example, it is impossible to write an implementation for methods <code>getSource()</code>
+    and <code>setSource()</code> of <code>java.beans.PropertyEditorSupport</code> that will work in any environment.
+    Also such an approach cannot be used to replace field access or constructor calls.
+</p>
+
+<p>
+    So if you need some new functionality you may develop it yourself or post a
+    <a href="http://sourceforge.net/tracker/?group_id=153566&atid=788282">feature request</a>.
+    If you can release your extension under the <a href="#license">Retrotranslator license</a>
+    please consider sending a <a href="http://sourceforge.net/tracker/?group_id=153566&atid=788281">patch</a>.
 </p>
 
 <h4><a name="contact">Contact</a></h4>

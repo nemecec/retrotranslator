@@ -47,4 +47,12 @@ public class _BooleanTestCase extends TestCase {
         assertTrue(Boolean.parseBoolean("True"));
         assertFalse(Boolean.parseBoolean("Yes"));
     }
+
+    public void testCompareTo() throws Exception {
+        assertEquals(1, Boolean.TRUE.compareTo(Boolean.FALSE));
+        assertEquals(0, Boolean.TRUE.compareTo(Boolean.TRUE));
+        assertEquals(-1, Boolean.FALSE.compareTo(Boolean.TRUE));
+        assertEquals(0, Boolean.FALSE.compareTo(Boolean.FALSE));
+    }
+
 }

@@ -71,6 +71,6 @@ public class Message {
     }
 
     public String toString() {
-        return fileName == null ? text : fileName + ": " + text;
+        return fileName == null ? text : fileName + "\n     " + text;
     }
 }

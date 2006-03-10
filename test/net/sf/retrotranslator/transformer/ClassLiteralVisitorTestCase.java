@@ -33,6 +33,8 @@ package net.sf.retrotranslator.transformer;
 
 import junit.framework.TestCase;
 
+import java.util.Queue;
+
 public class ClassLiteralVisitorTestCase extends TestCase {
 
     public static Class CONST = Float.class;
@@ -55,6 +57,7 @@ public class ClassLiteralVisitorTestCase extends TestCase {
     }
 
     public void testClasses() {
+        assertTrue(Queue.class.isInterface());
         assertTrue(Iterable.class.isInterface());
         assertEquals(ClassLiteralVisitorTestCase.class, ClassLiteralVisitorTestCase[].class.getComponentType());
         assertEquals(InterfaceInClass.class, InterfaceInClass[].class.getComponentType());

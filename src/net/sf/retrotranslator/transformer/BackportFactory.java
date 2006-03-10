@@ -60,6 +60,7 @@ public class BackportFactory {
         for (Class aClass : new Class[]{Collection.class, _Queue.class}) {
             loadBackport(Type.getInternalName(aClass), queueName);
         }
+        implementations.clear();
         classes.put(queueName, true);
     }
 

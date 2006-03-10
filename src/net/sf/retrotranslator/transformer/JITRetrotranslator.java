@@ -44,8 +44,12 @@ public class JITRetrotranslator {
     }
 
     public static synchronized boolean install() {
-        ClassDescriptor.setBytecodeTransformer(new ClassTransformer(true, false));
-        return JRockitJITRetrotranslator.install() || SunJITRetrotranslator.install();
+        if (System.getProperty("java.version").startsWith("1.4")) {
+            ClassDescriptor.setBytecodeTransformer(new ClassTransformer(true, false));
+            return JRockitJITRetrotranslator.install() || SunJITRetrotranslator.install();
+        } else {
+            return true;
+        }
     }
 
     public static void main(String[] args) throws Exception {
@@ -53,10 +57,8 @@ public class JITRetrotranslator {
         if (args.length == 0 || jar && args.length == 1) {
             printUsageAndExit();
         }
-        if (System.getProperty("java.version").startsWith("1.4")) {
-            if (!install()) {
-                System.out.println("Cannot install JIT Retrotranslator.");
-            }
+        if (!install()) {
+            System.out.println("Cannot install JIT Retrotranslator.");
         }
         if (jar) {
             File file = new File(args[1]);

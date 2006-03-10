@@ -63,4 +63,12 @@ public class MemberSubstitutionVisitorTestCase extends TestCase {
         assertNotNull(delayQueue.peek());
     }
 
+    public void testNanotime() throws Exception {
+        long n = System.nanoTime();
+        long m = System.currentTimeMillis();
+        Thread.sleep(100);
+        m = System.currentTimeMillis() - m;
+        n = System.nanoTime() - n;
+        assertTrue(Math.abs(n / 1000000 - m) <= 100);
+    }
 }

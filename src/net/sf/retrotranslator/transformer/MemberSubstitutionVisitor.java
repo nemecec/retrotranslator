@@ -33,6 +33,7 @@ package net.sf.retrotranslator.transformer;
 
 import edu.emory.mathcs.backport.java.util.concurrent.DelayQueue;
 import edu.emory.mathcs.backport.java.util.concurrent.Delayed;
+import edu.emory.mathcs.backport.java.util.concurrent.helpers.Utils;
 import net.sf.retrotranslator.runtime.asm.*;
 import static net.sf.retrotranslator.runtime.asm.Opcodes.*;
 
@@ -43,6 +44,7 @@ class MemberSubstitutionVisitor extends ClassAdapter {
 
     private static final String DELAY_QUEUE_NAME = Type.getInternalName(DelayQueue.class);
     private static final String DELAYED_NAME = Type.getInternalName(Delayed.class);
+    private static final String SYSTEM_NAME = Type.getInternalName(System.class);
 
     private static DescriptorTransformer DELAYED_TRANSFORMER = new DescriptorTransformer() {
         protected String transformInternalName(String internalName) {
@@ -75,6 +77,9 @@ class MemberSubstitutionVisitor extends ClassAdapter {
                 }
                 if (owner.equals(DELAY_QUEUE_NAME)) {
                     desc = DELAYED_TRANSFORMER.transformDescriptor(desc);
+                }
+                if (owner.equals(SYSTEM_NAME) & name.equals("nanoTime")) {
+                    owner = Type.getInternalName(Utils.class);
                 }
                 super.visitMethodInsn(opcode, owner, name, desc);
             }

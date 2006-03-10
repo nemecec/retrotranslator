@@ -34,14 +34,13 @@ package net.sf.retrotranslator.runtime.java.lang;
 /**
  * @author Taras Puchko
  */
-public class _Boolean {
+public class _System {
 
-    public static boolean parseBoolean(String s) {
-        return Boolean.valueOf(s).booleanValue();
-    }
-
-    public static int compareTo(Boolean self, Boolean other) {
-        return self.booleanValue() == other.booleanValue() ? 0 : self.booleanValue() ? 1 : -1;
+    public static String clearProperty(String key) {
+        if (key.length() == 0) {
+            throw new IllegalArgumentException();
+        }
+        return (String) System.getProperties().remove(key);
     }
 
 }

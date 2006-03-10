@@ -6,7 +6,7 @@
     <artifactId>retrotranslator-runtime</artifactId>
     <packaging>jar</packaging>
     <version>@version@</version>
-    <name>Retrotranslator runtime</name>
+    <name>Retrotranslator Runtime</name>
     <url>http://retrotranslator.sourceforge.net/</url>
     <description>Library classes for bytecode transformed by Retrotranslator</description>
     <scm>
