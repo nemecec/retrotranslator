@@ -20,7 +20,7 @@
     <li><a href="#what">What is Retrotranslator?</a></li>
     <li><a href="#features">What Java 5.0 features are supported?</a></li>
     <li><a href="#commandline">How to use Retrotranslator from command line?</a></li>
-    <li><a href="#ant">How to use Retrotranslator from Apache Ant?</a></li>
+    <li><a href="#ant">How to use Retrotranslator from Apache Ant or Maven?</a></li>
     <li><a href="#idea">How to use Retrotranslator from IntelliJ IDEA?</a></li>
     <li><a href="#jit">How to use Just-in-Time Retrotranslator?</a></li>
     <li><a href="#supported">What Java 5.0 classes and methods are supported?</a></li>
@@ -133,7 +133,7 @@ and concurrency utilities
     -srcjar retrotranslator-runtime-<i>n.n.n</i>.jar -srcjar myapplication5.jar -destjar myapplication4.jar</code><br>
 </p>
 
-<h4><a name="ant">How to use Retrotranslator from Apache Ant?</a></h4>
+<h4><a name="ant">How to use Retrotranslator from Apache Ant or Maven?</a></h4>
 
 <p>The distribution contains an integrated <a href="http://ant.apache.org/">Apache Ant</a> task
     <code>net.sf.retrotranslator.transformer.RetrotranslatorTask</code>. It has the following syntax:</p>
@@ -194,9 +194,24 @@ and concurrency utilities
 </table>
 <p>
     You may use nested <code>src</code> elements to specify source directories or JAR files, and nested
-    <code>classpath</code> elements to specify classpath for verification.
+    <code>classpath</code> elements to specify classpath for verification. For example:
 </p>
-
+<pre>
+    &lt;path id="classpath"&gt;
+        &lt;fileset dir="lib" includes="**/*.jar"/&gt;
+    &lt;/path&gt;
+    &lt;taskdef name="retrotranslator" classpathref="classpath"
+             classname="net.sf.retrotranslator.transformer.RetrotranslatorTask" /&gt;
+    &lt;retrotranslator destdir="build/classes14" verify="true"&gt;
+        &lt;src path="build/classes15"/&gt;
+        &lt;classpath location="${java14_home}/jre/lib/rt.jar"/&gt;
+        &lt;classpath refid="classpath"/&gt;
+    &lt;/retrotranslator&gt;
+</pre>
+<p>
+    A <a href="http://maven.apache.org/">Maven</a> plugin for Retrotranslator may be found on
+    the <a href="http://mojo.codehaus.org/">Mojo Project</a> home page.
+</p>
 <h4><a name="idea">How to use Retrotranslator from IntelliJ IDEA?</a></h4>
 <p>
     To automatically translate and verify classes compiled by <a href="http://www.jetbrains.com/idea/">IntelliJ IDEA</a>
@@ -359,7 +374,7 @@ and concurrency utilities
     The methods should be <code>public static</code> and must accept an original class instance
     as the first argument if they replace instance methods. If the additional methods require access
     to non-public methods or fields of the instance, they cannot be fully handled by Retrotranslator.
-    While you can use reflection to access any data, translated code generally should not depend on security context.
+    While you can use reflection to access any data, translated code generally should not depend on security settings.
     For example, it is impossible to write an implementation for methods <code>getSource()</code>
     and <code>setSource()</code> of <code>java.beans.PropertyEditorSupport</code> that will work in any environment.
     Also such an approach cannot be used to replace field access or constructor calls.

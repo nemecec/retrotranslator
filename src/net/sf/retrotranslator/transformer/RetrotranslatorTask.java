@@ -44,7 +44,7 @@ import java.io.File;
  */
 public class RetrotranslatorTask extends Task implements MessageLogger {
 
-    private Path src = new Path(getProject());
+    private Path src;
     private File destdir;
     private File destjar;
     private boolean verbose;
@@ -52,21 +52,25 @@ public class RetrotranslatorTask extends Task implements MessageLogger {
     private boolean lazy;
     private boolean verify;
     private boolean failonwarning = true;
-    private Path classpath = new Path(getProject());
+    private Path classpath;
 
     public RetrotranslatorTask() {
     }
 
     public void setSrcdir(Path srcdir) {
-        src.append(srcdir);
+        getSrc().append(srcdir);
     }
 
     public void setSrcjar(Path srcjar) {
-        src.append(srcjar);
+        getSrc().append(srcjar);
     }
 
     public Path createSrc() {
-        return src.createPath();
+        return getSrc().createPath();
+    }
+
+    private Path getSrc() {
+        return src != null ? src : (src = new Path(getProject()));
     }
 
     public void setDestdir(File destdir) {
@@ -102,11 +106,15 @@ public class RetrotranslatorTask extends Task implements MessageLogger {
     }
 
     public void setClasspath(Path classpath) {
-        this.classpath.append(classpath);
+        this.getClasspath().append(classpath);
     }
 
     public Path createClasspath() {
-        return classpath.createPath();
+        return getClasspath().createPath();
+    }
+
+    private Path getClasspath() {
+        return classpath != null ? classpath : (classpath = new Path(getProject()));
     }
 
     public void log(Message message) {
@@ -116,7 +124,7 @@ public class RetrotranslatorTask extends Task implements MessageLogger {
 
     public void execute() throws BuildException {
         Retrotranslator retrotranslator = new Retrotranslator();
-        for (String name : src.list()) {
+        for (String name : getSrc().list()) {
             File file = getProject().resolveFile(name);
             if (file.isFile()) {
                 retrotranslator.addSrcjar(file);
@@ -132,7 +140,7 @@ public class RetrotranslatorTask extends Task implements MessageLogger {
         retrotranslator.setStripsign(stripsign);
         retrotranslator.setLazy(lazy);
         retrotranslator.setVerify(verify);
-        for (String fileName : classpath.list()) {
+        for (String fileName : getClasspath().list()) {
             retrotranslator.addClasspathElement(getProject().resolveFile(fileName));
         }
         retrotranslator.setLogger(this);

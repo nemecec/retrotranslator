@@ -165,15 +165,15 @@ public class Retrotranslator implements MessageLogger {
     }
 
     private boolean verify(ClassReaderFactory factory) {
-        for (File file : classpath) {
-            factory.appendPath(file);
-        }
         if (dest != null) {
             factory.appendPath(dest.getLocation());
         } else {
             for (FileContainer container : src) {
                 factory.appendPath(container.getLocation());
             }
+        }
+        for (File file : classpath) {
+            factory.appendPath(file);
         }
         if (dest != null) {
             return verify(factory, dest);

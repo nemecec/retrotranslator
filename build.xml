@@ -1,6 +1,6 @@
 <project name="retrotranslator" default="build" basedir=".">
 
-    <property name="version" value="1.0.0"/>
+    <property name="version" value="1.0.1"/>
 
     <property file="build.properties"/>
 
@@ -82,19 +82,18 @@
 
     <target name="test-translated" depends="compile-tests">
         <mkdir dir="build/test-classes14"/>
-        <mkdir dir="build/test-classes"/>
         <retrotranslator srcdir="build/test-classes15" destdir="build/test-classes14" verify="true">
             <classpath location="${java14_rt_jar}"/>
             <classpath location="build/retrotranslator-runtime-${version}.jar"/>
             <classpath refid="classpath"/>
         </retrotranslator>
-        <antcall target="junit-on-translated"><param name="path" value="build/test-classes14"/></antcall>
-        <retrotranslator srcdir="build/test-classes14" destdir="build/test-classes" verify="true">
+        <antcall target="junit-on-translated" />
+        <retrotranslator srcdir="build/test-classes14" verify="true">
             <classpath location="${java14_rt_jar}"/>
             <classpath location="build/retrotranslator-runtime-${version}.jar"/>
             <classpath refid="classpath"/>
         </retrotranslator>
-        <antcall target="junit-on-translated"><param name="path" value="build/test-classes"/></antcall>
+        <antcall target="junit-on-translated" />
     </target>
 
     <target name="test-with-jit" depends="compile-tests">
@@ -120,18 +119,18 @@
     </target>
 
     <target name="junit-on-translated">
-        <echo message="Running classes in ${path} on ${java14_home}"/>
+        <echo message="Running classes in build/test-classes14 on ${java14_home}"/>
         <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
                jvm="${java14_home}/bin/java" failureproperty="test.failed">
             <jvmarg value="-Xfuture"/>
             <classpath>
                 <path refid="classpath"/>
-                <pathelement location="${path}"/>
+                <pathelement location="build/test-classes14"/>
                 <pathelement location="build/retrotranslator-runtime-${version}.jar"/>
             </classpath>
             <formatter type="brief" usefile="false"/>
             <batchtest>
-                <fileset dir="${path}" includes="**/*TestCase.class" excludes="**/BaseTestCase.class"/>
+                <fileset dir="build/test-classes14" includes="**/*TestCase.class" excludes="**/BaseTestCase.class"/>
             </batchtest>
         </junit>
         <fail if="test.failed"/>

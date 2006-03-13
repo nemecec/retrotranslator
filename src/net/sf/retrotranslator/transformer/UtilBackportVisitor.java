@@ -35,39 +35,56 @@ import edu.emory.mathcs.backport.java.util.concurrent.DelayQueue;
 import edu.emory.mathcs.backport.java.util.concurrent.Delayed;
 import edu.emory.mathcs.backport.java.util.concurrent.helpers.Utils;
 import net.sf.retrotranslator.runtime.asm.*;
-import static net.sf.retrotranslator.runtime.asm.Opcodes.*;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Taras Puchko
  */
-class MemberSubstitutionVisitor extends ClassAdapter {
+class UtilBackportVisitor extends ClassAdapter {
 
-    private String currentClass;
+    private static final String DELAY_QUEUE_NAME = Type.getInternalName(DelayQueue.class);
+    private static final String DELAYED_NAME = Type.getInternalName(Delayed.class);
+    private static final String SYSTEM_NAME = Type.getInternalName(System.class);
+    private static final String COLLECTIONS_NAME = Type.getInternalName(Collections.class);
 
-    public MemberSubstitutionVisitor(final ClassVisitor cv) {
-        super(cv);
+    private static final Map<String, String> FIELDS = new HashMap<String, String>();
+
+    static {
+        FIELDS.put("emptyList", "EMPTY_LIST");
+        FIELDS.put("emptyMap", "EMPTY_MAP");
+        FIELDS.put("emptySet", "EMPTY_SET");
     }
 
-    public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-        super.visit(version, access, name, signature, superName, interfaces);
-        currentClass = name;
+    private static DescriptorTransformer DELAYED_TRANSFORMER = new DescriptorTransformer() {
+        protected String transformInternalName(String internalName) {
+            return DELAYED_NAME.equals(internalName) ? Type.getInternalName(Object.class) : internalName;
+        }
+    };
+
+    public UtilBackportVisitor(final ClassVisitor cv) {
+        super(cv);
     }
 
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         return new MethodAdapter(super.visitMethod(access, name, desc, signature, exceptions)) {
             public void visitMethodInsn(int opcode, String owner, String name, String desc) {
-                if (!owner.equals(currentClass)) {
-                    ClassMember method = BackportFactory.getMethod(opcode == INVOKESTATIC, owner, name, desc);
-                    if (method != null && !method.owner.equals(currentClass)) {
-                        opcode = method.isStatic ? INVOKESTATIC : INVOKEINTERFACE;
-                        owner = method.owner;
-                        name = method.name;
-                        desc = method.desc;
+                if (owner.equals(DELAY_QUEUE_NAME)) {
+                    desc = DELAYED_TRANSFORMER.transformDescriptor(desc);
+                } else if (owner.equals(SYSTEM_NAME) & name.equals("nanoTime")) {
+                    owner = Type.getInternalName(Utils.class);
+                } else if (owner.equals(COLLECTIONS_NAME)) {
+                    String field = FIELDS.get(name);
+                    if (field != null) {
+                        mv.visitFieldInsn(Opcodes.GETSTATIC, COLLECTIONS_NAME,
+                                field, Type.getReturnType(desc).toString());
+                        return;
                     }
                 }
                 super.visitMethodInsn(opcode, owner, name, desc);
             }
         };
     }
-
 }

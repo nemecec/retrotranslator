@@ -64,8 +64,8 @@ class ClassTransformer implements BytecodeTransformer {
         ClassReader classReader = new ClassReader(bytes, offset, length);
         ClassWriter classWriter = new ClassWriter(true);
         ClassVisitor visitor = new VersionVisitor(new InheritanceVisitor(new ClassSubstitutionVisitor(
-                new MemberSubstitutionVisitor(new ConstructorSubstitutionVisitor(new EnumVisitor(
-                        new ClassLiteralVisitor(new ArrayCloningVisitor(classWriter))))))));
+                new UtilBackportVisitor(new MemberSubstitutionVisitor(new ConstructorSubstitutionVisitor(
+                        new EnumVisitor(new ClassLiteralVisitor(new ArrayCloningVisitor(classWriter)))))))));
         if (stripsign) {
             visitor = new SignatureStrippingVisitor(visitor);
         }

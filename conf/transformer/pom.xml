@@ -9,6 +9,17 @@
     <name>Retrotranslator Transformer</name>
     <url>http://retrotranslator.sourceforge.net/</url>
     <description>Java 5.0 to Java 1.4 bytecode transformer</description>
+    <licenses>
+        <license>
+            <name>BSD License</name>
+            <url>http://retrotranslator.sourceforge.net/LICENSE.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <organization>
+        <name>Taras Puchko</name>
+        <url>http://sourceforge.net/users/tarasp/</url>
+    </organization>
     <scm>
         <url>http://cvs.sourceforge.net/viewcvs.py/retrotranslator/</url>
     </scm>
