@@ -11,8 +11,13 @@
     <description>Library classes for bytecode transformed by Retrotranslator</description>
     <licenses>
         <license>
-            <name>BSD License</name>
+            <name>BSD-style license</name>
             <url>http://retrotranslator.sourceforge.net/LICENSE.txt</url>
+            <distribution>repo</distribution>
+        </license>
+        <license>
+            <name>BSD-style license</name>
+            <url>http://asm.objectweb.org/license.html</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
