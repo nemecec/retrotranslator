@@ -45,6 +45,7 @@ public class Enum_TestCase extends TestCase {
 
     public void testName() throws Exception {
         assertEquals("GREEN", getName(MyColor.GREEN));
+        assertEquals("EAST", getName(CardinalPoint.EAST));
     }
 
     private static String getName(Enum anEnum) {
@@ -53,6 +54,7 @@ public class Enum_TestCase extends TestCase {
 
     public void testOrdinal() throws Exception {
         assertEquals(1, MyColor.GREEN.ordinal());
+        assertEquals(2, CardinalPoint.SOUTH.ordinal());
     }
 
     public void testValueOf() throws Exception {
@@ -65,6 +67,16 @@ public class Enum_TestCase extends TestCase {
         } catch (IllegalArgumentException e) {
             //ok
         }
+
+        CardinalPoint point = Enum.valueOf(CardinalPoint.class, "WEST");
+        assertEquals(CardinalPoint.WEST, point);
+        assertSame(CardinalPoint.WEST, CardinalPoint.valueOf("WEST"));
+        try {
+            CardinalPoint.valueOf("CENTER");
+            fail("No such point!");
+        } catch (IllegalArgumentException e) {
+            //ok
+        }
     }
 
     public void testValues() {
@@ -73,13 +85,24 @@ public class Enum_TestCase extends TestCase {
         assertEquals(MyColor.RED, colors[0]);
         assertEquals(MyColor.GREEN, colors[1]);
         assertEquals(MyColor.BLUE, colors[2]);
+
+
+        CardinalPoint[] points = CardinalPoint.values();
+        assertEquals(4, points.length);
+        assertEquals(CardinalPoint.NORTH, points[0]);
+        assertEquals(CardinalPoint.EAST, points[1]);
+        assertEquals(CardinalPoint.SOUTH, points[2]);
+        assertEquals(CardinalPoint.WEST, points[3]);
     }
 
     public void testReadResolve() throws Exception {
+        assertSame(MyColor.BLUE, pump(MyColor.BLUE));
+        assertSame(CardinalPoint.SOUTH, pump(CardinalPoint.SOUTH));
+    }
+
+    private Object pump(Object o) throws Exception {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        new ObjectOutputStream(stream).writeObject(MyColor.BLUE);
-        MyColor result = (MyColor) new ObjectInputStream(
-                new ByteArrayInputStream(stream.toByteArray())).readObject();
-        assertSame(MyColor.BLUE, result);
+        new ObjectOutputStream(stream).writeObject(o);
+        return new ObjectInputStream(new ByteArrayInputStream(stream.toByteArray())).readObject();
     }
 }

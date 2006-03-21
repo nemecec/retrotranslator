@@ -31,7 +31,10 @@
  */
 package net.sf.retrotranslator.runtime.java.lang;
 
+import java.io.InvalidObjectException;
 import java.io.Serializable;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -98,19 +101,38 @@ public abstract class Enum_<E extends Enum_<E>> implements Comparable<E>, Serial
         throw new IllegalArgumentException("No enum const " + enumType + "." + name);
     }
 
-    protected Object readResolve() {
-        return valueOf(getClass(), name);
+    protected Object readResolve() throws InvalidObjectException {
+        try {
+            return valueOf(getDeclaringClass(), name);
+        } catch (IllegalArgumentException e) {
+            InvalidObjectException exception = new InvalidObjectException(e.getMessage());
+            exception.initCause(e);
+            throw exception;
+        }
     }
 
     protected static Enum_[] getEnumConstants(Class aClass) {
         if (aClass.getSuperclass() != Enum_.class) return null;
+        initialize(aClass);
+        synchronized (map) {
+            return map.get(aClass);
+        }
+    }
+
+    private static void initialize(final Class aClass) {
         try {
             Class.forName(aClass.getName(), true, aClass.getClassLoader());
         } catch (Exception e) {
-            //ignore
-        }
-        synchronized (map) {
-            return map.get(aClass);
+            AccessController.doPrivileged(new PrivilegedAction() {
+                public Object run() {
+                    try {
+                        Class.forName(aClass.getName(), true, aClass.getClassLoader());
+                    } catch (Exception ex) {
+                        //ignore
+                    }
+                    return null;
+                }
+            });
         }
     }
 

@@ -1,6 +1,10 @@
 Retrotranslator Changelog
 =================================
 
+1.0.2 (2006-03-21)
+---------------------------------
+   - Bug fixed: exception on deserialization of enum inner classes.
+
 1.0.1 (2006-03-13)
 ---------------------------------
    - Bug fixed: NullPointerException in RetrotranslatorTask
