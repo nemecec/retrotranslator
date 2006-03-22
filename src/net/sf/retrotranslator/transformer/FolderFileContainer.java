@@ -68,8 +68,10 @@ class FolderFileContainer extends FileContainer {
     }
 
     public void removeEntry(String name) {
-        FolderFileEntry entry = entries.remove(name);
-        if (entry != null) entry.file.delete();
+        if (entries != null) {
+            FolderFileEntry entry = entries.remove(name);
+            if (entry != null) entry.file.delete();
+        }
     }
 
     private void scanFolder(File folder, int prefixLength) {

@@ -61,7 +61,9 @@ class JarFileContainer extends FileContainer {
     }
 
     public void removeEntry(String name) {
-        entries.remove(name);
+        if (entries != null) {
+            entries.remove(name);
+        }
     }
 
     private void init() {
