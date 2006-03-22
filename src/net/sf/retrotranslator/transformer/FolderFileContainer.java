@@ -71,6 +71,8 @@ class FolderFileContainer extends FileContainer {
         if (entries != null) {
             FolderFileEntry entry = entries.remove(name);
             if (entry != null) entry.file.delete();
+        } else {
+            new File(location, name).delete();
         }
     }
 
