@@ -31,14 +31,8 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.FileOutputStream;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 
 /**
  * @author Taras Puchko
@@ -64,7 +58,7 @@ class FolderFileContainer extends FileContainer {
             entries = new LinkedHashMap<String, FolderFileEntry>();
             scanFolder(location, location.getPath().length() + 1);
         }
-        return entries.values();
+        return new ArrayList<FolderFileEntry>(entries.values());
     }
 
     public void removeEntry(String name) {

@@ -35,6 +35,7 @@ import java.io.*;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.ArrayList;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
@@ -57,7 +58,7 @@ class JarFileContainer extends FileContainer {
 
     public Collection<? extends FileEntry> getEntries() {
         if (entries == null) init();
-        return entries.values();
+        return new ArrayList<JarFileEntry>(entries.values());
     }
 
     public void removeEntry(String name) {
