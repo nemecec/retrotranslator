@@ -37,11 +37,11 @@ package net.sf.retrotranslator.runtime.java.util.regex;
 public class _Pattern {
 
     public static String quote(String s) {
-        StringBuilder builder = new StringBuilder(s + 4).append("\\Q");
+        StringBuilder builder = new StringBuilder(s.length() + 4).append("\\Q");
         int lastIndex = 0;
         int nextIndex;
         while ((nextIndex = s.indexOf("\\E", lastIndex)) >= 0) {
-            builder.append(s.substring(lastIndex, nextIndex)).append("\\E\\E\\Q");
+            builder.append(s.substring(lastIndex, nextIndex)).append("\\E\\\\E\\Q");
             lastIndex = nextIndex + 2;
         }
         return builder.append(s.substring(lastIndex)).append("\\E").toString();

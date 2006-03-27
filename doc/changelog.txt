@@ -1,6 +1,8 @@
 Retrotranslator Changelog
 =================================
 
+  - Supported: java.util.regex.Pattern.quote(String).
+
 1.0.2 (2006-03-21)
 ---------------------------------
    - Bug fixed: exception on deserialization of enum inner classes.
