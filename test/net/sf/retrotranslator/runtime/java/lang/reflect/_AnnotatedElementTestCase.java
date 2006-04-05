@@ -35,6 +35,10 @@ import junit.framework.TestCase;
 import net.sf.retrotranslator.runtime.java.lang.MyStyle;
 
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Method;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,6 +47,10 @@ import java.util.List;
  */
 public class _AnnotatedElementTestCase extends TestCase {
 
+    @Retention(RetentionPolicy.CLASS)
+    private @interface Invisible {}
+
+    @Invisible
     private Class aClass = getClass();
 
     public void test() throws Exception {
@@ -58,5 +66,13 @@ public class _AnnotatedElementTestCase extends TestCase {
             assertEquals(0, element.getAnnotations().length);
             assertEquals(0, element.getDeclaredAnnotations().length);
         }
+        Method method = aClass.getDeclaredMethod("methodWithParameter", String.class);
+        Annotation[] annotations = method.getParameterAnnotations()[0];
+        assertNotNull(annotations);
+        assertEquals(0, annotations.length);
+    }
+
+    protected void methodWithParameter(@Invisible String s) {
+        //empty
     }
 }

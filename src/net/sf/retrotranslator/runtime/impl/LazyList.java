@@ -68,6 +68,9 @@ public abstract class LazyList<I, R> {
         if (results == null) {
             if (inputs == null) {
                 results = newArray(0);
+                for (int i = 0; i < results.length; i++) {
+                    results[i] = resolve(null);
+                }
             } else {
                 results = newArray(inputs.size());
                 Iterator<I> iterator = inputs.iterator();

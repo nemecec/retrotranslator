@@ -1,6 +1,9 @@
 Retrotranslator Changelog
 =================================
 
+1.0.3 (2006-04-04)
+---------------------------------
+  - Bug fixed: NullPointerException on invisible (RetentionPolicy.CLASS) annotations
   - Supported: java.util.regex.Pattern.quote(String).
 
 1.0.2 (2006-03-21)

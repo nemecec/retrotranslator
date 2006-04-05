@@ -187,7 +187,7 @@ public class MethodDescriptor extends GenericDeclarationDescriptor {
     }
 
     public AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {
-        if (!visible) return null;
+        if (!visible) return EMPTY_VISITOR;
         List<AnnotationValue> values = parameterAnnotations.get(parameter);
         if (values == null) {
             values = new ArrayList<AnnotationValue>();

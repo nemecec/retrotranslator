@@ -1,6 +1,6 @@
 <project name="retrotranslator" default="build" basedir=".">
 
-    <property name="version" value="1.0.2"/>
+    <property name="version" value="1.0.3"/>
 
     <property file="build.properties"/>
 
@@ -175,16 +175,14 @@
 
         <mkdir dir="build/maven/runtime"/>
         <copy todir="build/maven/runtime" file="conf/runtime/pom.xml" filtering="on"/>
-        <jar destfile="dist/maven/retrotranslator-runtime-bin-${version}.jar">
-            <fileset file="doc/LICENSE.txt"/>
+        <jar destfile="dist/maven/retrotranslator-runtime-${version}-bundle.jar">
             <fileset file="build/maven/runtime/pom.xml"/>
             <fileset file="build/retrotranslator-runtime-${version}.jar"/>
         </jar>
 
         <mkdir dir="build/maven/transformer"/>
         <copy todir="build/maven/transformer" file="conf/transformer/pom.xml" filtering="on"/>
-        <jar destfile="dist/maven/retrotranslator-transformer-bin-${version}.jar">
-            <fileset file="doc/LICENSE.txt"/>
+        <jar destfile="dist/maven/retrotranslator-transformer-${version}-bundle.jar">
             <fileset file="build/maven/transformer/pom.xml"/>
             <fileset file="build/retrotranslator-transformer-${version}.jar"/>
         </jar>

@@ -48,6 +48,7 @@ import java.util.*;
 public abstract class AnnotatedElementDescriptor extends EmptyVisitor {
 
     private static final Annotation[] EMPTY = new Annotation[0];
+    protected static final EmptyVisitor EMPTY_VISITOR = new EmptyVisitor();
 
     protected int access;
 
@@ -111,7 +112,7 @@ public abstract class AnnotatedElementDescriptor extends EmptyVisitor {
     }
 
     public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-        if (!visible) return null;
+        if (!visible) return EMPTY_VISITOR;
         AnnotationValue value = new AnnotationValue(desc);
         declaredAnnotations.add(value);
         return value;
