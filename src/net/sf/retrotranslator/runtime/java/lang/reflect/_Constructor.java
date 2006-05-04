@@ -89,14 +89,6 @@ public class _Constructor {
     }
 
     public static String toGenericString(Constructor constructor) {
-        try {
-            return getGenericString(constructor);
-        } catch (Exception e) {
-            return "<" + e.toString() + ">";
-        }
-    }
-
-    private static String getGenericString(Constructor constructor) {
         StringBuilder builder = new StringBuilder();
         if (constructor.getModifiers() != 0) {
             builder.append(Modifier.toString(constructor.getModifiers())).append(' ');
@@ -113,4 +105,5 @@ public class _Constructor {
         }
         return builder.toString();
     }
+
 }

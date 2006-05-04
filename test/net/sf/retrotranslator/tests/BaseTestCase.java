@@ -38,6 +38,10 @@ import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ByteArrayInputStream;
 
 /**
  * @author Taras Puchko
@@ -75,5 +79,11 @@ public abstract class BaseTestCase extends TestCase {
             assertTrue(set.remove(object));
         }
         assertTrue(set.isEmpty());
+    }
+
+    protected Object pump(Object o) throws Exception {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        new ObjectOutputStream(stream).writeObject(o);
+        return new ObjectInputStream(new ByteArrayInputStream(stream.toByteArray())).readObject();
     }
 }

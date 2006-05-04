@@ -50,5 +50,9 @@ public class _StringTestCase extends TestCase {
 
     public void testReplace() throws Exception {
         assertEquals("axydxy", "abcdbc".replace("bc", "xy"));
+        assertEquals("abc", "abc*".replace("*", ""));
+        assertEquals("XaXbXcX", "abc".replace("", "X"));
+        assertEquals("ac", "abc".replace("b", ""));
+        assertEquals("abc", "abc".replace("", ""));
     }
 }

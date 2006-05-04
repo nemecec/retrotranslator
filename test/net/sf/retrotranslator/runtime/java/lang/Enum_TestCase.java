@@ -38,10 +38,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import net.sf.retrotranslator.tests.BaseTestCase;
+
 /**
  * @author Taras Puchko
  */
-public class Enum_TestCase extends TestCase {
+public class Enum_TestCase extends BaseTestCase {
 
     public void testName() throws Exception {
         assertEquals("GREEN", getName(MyColor.GREEN));
@@ -98,11 +100,5 @@ public class Enum_TestCase extends TestCase {
     public void testReadResolve() throws Exception {
         assertSame(MyColor.BLUE, pump(MyColor.BLUE));
         assertSame(CardinalPoint.SOUTH, pump(CardinalPoint.SOUTH));
-    }
-
-    private Object pump(Object o) throws Exception {
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        new ObjectOutputStream(stream).writeObject(o);
-        return new ObjectInputStream(new ByteArrayInputStream(stream.toByteArray())).readObject();
     }
 }

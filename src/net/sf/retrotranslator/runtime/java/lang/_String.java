@@ -31,9 +31,6 @@
  */
 package net.sf.retrotranslator.runtime.java.lang;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 /**
  * @author Taras Puchko
  */
@@ -48,8 +45,25 @@ public class _String {
     }
 
     public static String replace(String s, CharSequence target, CharSequence replacement) {
-        Matcher matcher = Pattern.compile(target.toString(), Pattern.LITERAL).matcher(s);
-        return matcher.replaceAll(Matcher.quoteReplacement(replacement.toString()));
+        String pattern = target.toString();
+        int patternIndex = s.indexOf(pattern);
+        if (patternIndex < 0) return s;
+        if (pattern.length() > 0) {
+            StringBuilder builder = new StringBuilder();
+            int startIndex = 0;
+            do {
+                builder.append(s.substring(startIndex, patternIndex)).append(replacement);
+                startIndex = patternIndex + pattern.length();
+                patternIndex = s.indexOf(pattern, startIndex);
+            } while (patternIndex >= 0);
+            return builder.append(s.substring(startIndex)).toString();
+        } else {
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < s.length(); i++) {
+                builder.append(replacement).append(s.charAt(i));
+            }
+            return builder.append(replacement).toString();
+        }
     }
 
     /**

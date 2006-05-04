@@ -104,10 +104,11 @@ public class _FieldTestCase extends BaseTestCase {
         assertEquals("small", styles[1].value());
     }
 
-    public void testGetAnnotation_Equals() {
+    public void testGetAnnotation_Equals() throws Exception {
         MyFormatter first = getAnnotation();
         MyFormatter second = getAnnotation();
         assertEquals(first, second);
+        assertEquals(getAnnotation(), pump(getAnnotation()));
     }
 
     public void testGetAnnotation_HashCode() {

@@ -56,6 +56,6 @@ class TransformerTools {
     }
 
     public static String fixIdentifier(String identifier) {
-        return identifier.replace('+', '$').replace('-', '$');
+        return identifier.replace('+', '$');
     }
 }

@@ -1,6 +1,12 @@
 Retrotranslator Changelog
 =================================
 
+1.0.4 (2006-04-25)
+---------------------------------
+  - Bug fixed: String.replace(CharSequence, CharSequence) did not work with some characters.
+  - Bug fixed: NotSerializableException when serializing annotations.
+  - Retrotranslator will not replace "-" by "$" in identifiers any more, e.g. in "package-info.class".
+
 1.0.3 (2006-04-04)
 ---------------------------------
   - Bug fixed: NullPointerException on invisible (RetentionPolicy.CLASS) annotations

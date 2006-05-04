@@ -60,16 +60,11 @@ public class _Package {
     }
 
     private static ClassDescriptor getPackageInfo(Package aPackage) {
-        String className = aPackage.getName() + ".package$info";
+        String resourceName = "/" + aPackage.getName().replace('.', '/') + "/package-info.class";
         try {
-            return ClassDescriptor.getInstance(Class.forName(className));
-        } catch (ClassNotFoundException e) {
-            String resourceName = "/" + aPackage.getName().replace('.', '/') + "/package-info.class";
-            try {
-                return createPackageInfo(_Package.class, resourceName);
-            } catch (Throwable t) {
-                return getPrivilegedInfo(className, resourceName);
-            }
+            return createPackageInfo(_Package.class, resourceName);
+        } catch (Throwable t) {
+            return getPrivilegedInfo(resourceName);
         }
     }
 
@@ -77,11 +72,11 @@ public class _Package {
         return new ClassDescriptor(loader, RuntimeTools.readResourceToByteArray(loader, resourceName));
     }
 
-    private static ClassDescriptor getPrivilegedInfo(final String className, final String resourceName) {
+    private static ClassDescriptor getPrivilegedInfo(final String resourceName) {
         return AccessController.doPrivileged(new PrivilegedAction<ClassDescriptor>() {
             public ClassDescriptor run() {
                 try {
-                    return getContextInfo(className, resourceName);
+                    return getContextInfo(resourceName);
                 } catch (Throwable e) {
                     return ClassDescriptor.getInstance(_Package.class);
                 }
@@ -89,15 +84,10 @@ public class _Package {
         });
     }
 
-    private static ClassDescriptor getContextInfo(String className, String resourceName) {
+    private static ClassDescriptor getContextInfo(String resourceName) {
         for (Class contextClass : new ExecutionContext().getClassContext()) {
             try {
-                ClassLoader classLoader = contextClass.getClassLoader();
-                try {
-                    return ClassDescriptor.getInstance(Class.forName(className, false, classLoader));
-                } catch (Throwable e) {
-                    return createPackageInfo(contextClass, resourceName);
-                }
+                return createPackageInfo(contextClass, resourceName);
             } catch (Throwable e) {
                 //continue;
             }

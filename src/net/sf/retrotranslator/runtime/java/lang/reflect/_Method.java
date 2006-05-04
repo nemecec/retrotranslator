@@ -102,14 +102,6 @@ public class _Method {
     }
 
     public static String toGenericString(Method method) {
-        try {
-            return getGenericString(method);
-        } catch (Exception e) {
-            return "<" + e.toString() + ">";
-        }
-    }
-
-    private static String getGenericString(Method method) {
         StringBuilder builder = new StringBuilder();
         if (method.getModifiers() != 0) {
             builder.append(Modifier.toString(method.getModifiers())).append(' ');
