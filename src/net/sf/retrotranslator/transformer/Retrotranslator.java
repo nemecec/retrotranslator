@@ -46,6 +46,7 @@ public class Retrotranslator implements MessageLogger {
     private boolean stripsign;
     private boolean verbose;
     private boolean lazy;
+    private boolean advanced;
     private boolean verify;
     private List<File> classpath = new ArrayList<File>();
     private MessageLogger logger = this;
@@ -102,6 +103,10 @@ public class Retrotranslator implements MessageLogger {
         this.lazy = lazy;
     }
 
+    public void setAdvanced(boolean advanced) {
+        this.advanced = advanced;
+    }
+
     public void setVerify(boolean verify) {
         this.verify = verify;
     }
@@ -127,7 +132,7 @@ public class Retrotranslator implements MessageLogger {
 
     public boolean run() {
         if (src.isEmpty()) throw new IllegalArgumentException("Source not set.");
-        ClassTransformer transformer = new ClassTransformer(lazy, stripsign);
+        ClassTransformer transformer = new ClassTransformer(lazy, stripsign, advanced);
         for (FileContainer container : src) {
             transform(transformer, container, dest != null ? dest : container);
         }
@@ -220,6 +225,8 @@ public class Retrotranslator implements MessageLogger {
                 setVerbose(true);
             } else if (string.equals("-lazy")) {
                 setLazy(true);
+            } else if (string.equals("-advanced")) {
+                setAdvanced(true);
             } else if (string.equals("-verify")) {
                 setVerify(true);
             } else if (string.equals("-classpath") && i < args.length) {
@@ -236,7 +243,7 @@ public class Retrotranslator implements MessageLogger {
         String suffix = (version == null) ? "" : "-" + version;
         System.out.println("Usage: java -jar retrotranslator-transformer" + suffix + ".jar" +
                 " [-srcdir <path> | -srcjar <file>] [-destdir <path> | -destjar <file>]" +
-                " [-stripsign] [-verbose] [-lazy] [-verify] [-classpath <classpath>]");
+                " [-stripsign] [-verbose] [-lazy] [-advanced] [-verify] [-classpath <classpath>]");
     }
 
     public static void main(String[] args) {

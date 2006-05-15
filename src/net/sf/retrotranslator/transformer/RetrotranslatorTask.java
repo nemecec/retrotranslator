@@ -50,6 +50,7 @@ public class RetrotranslatorTask extends Task implements MessageLogger {
     private boolean verbose;
     private boolean stripsign;
     private boolean lazy;
+    private boolean advanced;
     private boolean verify;
     private boolean failonwarning = true;
     private Path classpath;
@@ -97,6 +98,10 @@ public class RetrotranslatorTask extends Task implements MessageLogger {
         this.lazy = lazy;
     }
 
+    public void setAdvanced(boolean advanced) {
+        this.advanced = advanced;
+    }
+
     public void setFailonwarning(boolean failonwarning) {
         this.failonwarning = failonwarning;
     }
@@ -139,6 +144,7 @@ public class RetrotranslatorTask extends Task implements MessageLogger {
         retrotranslator.setVerbose(verbose);
         retrotranslator.setStripsign(stripsign);
         retrotranslator.setLazy(lazy);
+        retrotranslator.setAdvanced(advanced);
         retrotranslator.setVerify(verify);
         for (String fileName : getClasspath().list()) {
             retrotranslator.addClasspathElement(getProject().resolveFile(fileName));

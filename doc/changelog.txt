@@ -1,6 +1,10 @@
 Retrotranslator Changelog
 =================================
 
+  - New option -advanced allows to override Java 1.4 methods.
+  - Supported in BigDecimal: ZERO, ONE, TEN, pow(int), toPlainString(), valueOf(double), valueOf(long).
+  - Supported BigDecimal.setScale(int, int) for negative scales in advanced mode.
+
 1.0.4 (2006-04-25)
 ---------------------------------
   - Bug fixed: String.replace(CharSequence, CharSequence) did not work with some characters.

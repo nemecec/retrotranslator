@@ -45,7 +45,7 @@ class JRockitJITRetrotranslator {
         }
 
         public byte[] preProcess(ClassLoader classLoader, String string, byte[] bytes) {
-            bytes = ClassTransformer.transform(bytes, 0, bytes.length, true, false);
+            bytes = ClassTransformer.transform(bytes, 0, bytes.length, true, false, true);
             return delegate != null ? delegate.preProcess(classLoader, string, bytes) : bytes;
         }
     }

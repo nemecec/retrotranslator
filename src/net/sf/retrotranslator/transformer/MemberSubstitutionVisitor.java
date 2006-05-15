@@ -31,9 +31,6 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import edu.emory.mathcs.backport.java.util.concurrent.DelayQueue;
-import edu.emory.mathcs.backport.java.util.concurrent.Delayed;
-import edu.emory.mathcs.backport.java.util.concurrent.helpers.Utils;
 import net.sf.retrotranslator.runtime.asm.*;
 import static net.sf.retrotranslator.runtime.asm.Opcodes.*;
 
@@ -43,9 +40,11 @@ import static net.sf.retrotranslator.runtime.asm.Opcodes.*;
 class MemberSubstitutionVisitor extends ClassAdapter {
 
     private String currentClass;
+    private boolean advanced;
 
-    public MemberSubstitutionVisitor(final ClassVisitor cv) {
+    public MemberSubstitutionVisitor(boolean advanced, final ClassVisitor cv) {
         super(cv);
+        this.advanced = advanced;
     }
 
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
@@ -55,10 +54,11 @@ class MemberSubstitutionVisitor extends ClassAdapter {
 
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         return new MethodAdapter(super.visitMethod(access, name, desc, signature, exceptions)) {
+
             public void visitMethodInsn(int opcode, String owner, String name, String desc) {
                 if (!owner.equals(currentClass)) {
                     ClassMember method = BackportFactory.getMethod(opcode == INVOKESTATIC, owner, name, desc);
-                    if (method != null && !method.owner.equals(currentClass)) {
+                    if (method != null && !method.owner.equals(currentClass) && (advanced | !method.advanced)) {
                         opcode = method.isStatic ? INVOKESTATIC : INVOKEINTERFACE;
                         owner = method.owner;
                         name = method.name;
@@ -66,6 +66,18 @@ class MemberSubstitutionVisitor extends ClassAdapter {
                     }
                 }
                 super.visitMethodInsn(opcode, owner, name, desc);
+            }
+
+            public void visitFieldInsn(int opcode, String owner, String name, String desc) {
+                if (opcode == GETSTATIC || opcode == PUTSTATIC) {
+                    ClassMember field = BackportFactory.getField(owner, name, desc);
+                    if (field != null && !field.owner.equals(currentClass) && (advanced | !field.advanced)) {
+                        owner = field.owner;
+                        name = field.name;
+                        desc = field.desc;
+                    }
+                }
+                super.visitFieldInsn(opcode, owner, name, desc);
             }
         };
     }

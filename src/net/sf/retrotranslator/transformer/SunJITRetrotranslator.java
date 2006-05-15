@@ -42,7 +42,7 @@ class SunJITRetrotranslator {
         }
 
         public byte[] transform(byte[] bytes, int offset, int length) {
-            return ClassTransformer.transform(bytes, offset, length, false, false);
+            return ClassTransformer.transform(bytes, offset, length, false, false, true);
         }
     }
 

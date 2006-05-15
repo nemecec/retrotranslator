@@ -82,14 +82,16 @@
 
     <target name="test-translated" depends="compile-tests">
         <mkdir dir="build/test-classes14"/>
-        <copydir src="build/test-classes15" dest="build/test-classes14"/>
+        <copy todir="build/test-classes14">
+            <fileset dir="build/test-classes15" />
+        </copy>
         <antcall target="retrotranslate-test-classes14" />
         <!-- test twice -->
         <antcall target="retrotranslate-test-classes14" />
     </target>
 
     <target name="retrotranslate-test-classes14">
-        <retrotranslator srcdir="build/test-classes14" verify="true">
+        <retrotranslator srcdir="build/test-classes14" advanced="true" verify="true">
             <classpath location="${java14_rt_jar}"/>
             <classpath location="build/retrotranslator-runtime-${version}.jar"/>
             <classpath refid="classpath"/>

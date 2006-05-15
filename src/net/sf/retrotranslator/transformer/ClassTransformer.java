@@ -43,17 +43,20 @@ class ClassTransformer implements BytecodeTransformer {
 
     private boolean lazy;
     private boolean stripsign;
+    private boolean advanced;
 
-    public ClassTransformer(boolean lazy, boolean stripsign) {
+    public ClassTransformer(boolean lazy, boolean stripsign, boolean advanced) {
         this.lazy = lazy;
         this.stripsign = stripsign;
+        this.advanced = advanced;
     }
 
     public byte[] transform(byte[] bytes, int offset, int length) {
-        return transform(bytes, offset, length, lazy, stripsign);
+        return transform(bytes, offset, length, lazy, stripsign, advanced);
     }
 
-    public static synchronized byte[] transform(byte[] bytes, int offset, int length, boolean lazy, boolean stripsign) {
+    public static synchronized byte[] transform(byte[] bytes, int offset, int length,
+                                                boolean lazy, boolean stripsign, boolean advanced) {
         if (lazy && (bytes[offset + 7] <= 48 ||
                 bytes[offset + 6] != 0 || bytes[offset + 5] != 0 || bytes[offset + 4] != 0)) {
             if (offset == 0 && length == bytes.length) return bytes;
@@ -64,7 +67,7 @@ class ClassTransformer implements BytecodeTransformer {
         ClassReader classReader = new ClassReader(bytes, offset, length);
         ClassWriter classWriter = new ClassWriter(true);
         ClassVisitor visitor = new VersionVisitor(new InheritanceVisitor(new ClassSubstitutionVisitor(
-                new UtilBackportVisitor(new MemberSubstitutionVisitor(new ConstructorSubstitutionVisitor(
+                new UtilBackportVisitor(new MemberSubstitutionVisitor(advanced, new ConstructorSubstitutionVisitor(
                         new EnumVisitor(new ClassLiteralVisitor(new ArrayCloningVisitor(classWriter)))))))));
         if (stripsign) {
             visitor = new SignatureStrippingVisitor(visitor);

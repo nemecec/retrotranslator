@@ -43,12 +43,16 @@ import java.lang.reflect.TypeVariable;
  */
 public class FieldDescriptor extends AnnotatedElementDescriptor {
 
+    private String name;
+    private String desc;
     private ClassDescriptor classDescriptor;
     private TypeDescriptor typeDescriptor;
 
-    public FieldDescriptor(ClassDescriptor classDescriptor, int access, String signature) {
+    public FieldDescriptor(ClassDescriptor classDescriptor, int access, String name, String desc, String signature) {
         this.classDescriptor = classDescriptor;
         this.access = access;
+        this.name = name;
+        this.desc = desc;
         if (signature != null) {
             typeDescriptor = new TypeDescriptor();
             new SignatureReader(signature).accept(typeDescriptor);
@@ -57,6 +61,14 @@ public class FieldDescriptor extends AnnotatedElementDescriptor {
 
     public static FieldDescriptor getInstance(Field field) {
         return ClassDescriptor.getInstance(field.getDeclaringClass()).getFieldDescriptor(field.getName());
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDesc() {
+        return desc;
     }
 
     public Type getGenericType() {

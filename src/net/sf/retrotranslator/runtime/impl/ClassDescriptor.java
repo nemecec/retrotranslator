@@ -161,6 +161,10 @@ public class ClassDescriptor extends GenericDeclarationDescriptor {
         return methodDescriptors.values();
     }
 
+    public Collection<FieldDescriptor> getFieldDescriptors() {
+        return fieldDescriptors.values();
+    }
+
     public Class getTarget() {
         return target;
     }
@@ -193,7 +197,7 @@ public class ClassDescriptor extends GenericDeclarationDescriptor {
     }
 
     public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
-        FieldDescriptor fieldDescriptor = new FieldDescriptor(this, access, signature);
+        FieldDescriptor fieldDescriptor = new FieldDescriptor(this, access, name, desc, signature);
         fieldDescriptors.put(name, fieldDescriptor);
         return fieldDescriptor;
     }

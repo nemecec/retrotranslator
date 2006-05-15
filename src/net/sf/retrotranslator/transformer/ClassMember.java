@@ -40,19 +40,22 @@ class ClassMember {
     public final String owner;
     public final String name;
     public final String desc;
+    public final boolean advanced;
 
-    public ClassMember(boolean isStatic, String owner, String name, String desc) {
+    public ClassMember(boolean isStatic, String owner, String name, String desc, boolean advanced) {
         this.isStatic = isStatic;
         this.owner = owner;
         this.name = name;
         this.desc = desc;
+        this.advanced = advanced;
     }
 
     public boolean equals(Object o) {
         if (o == this) return true;
         if (o == null || o.getClass() != this.getClass()) return false;
         final ClassMember that = (ClassMember) o;
-        return isStatic == that.isStatic && owner.equals(that.owner) && name.equals(that.name) && desc.equals(that.desc);
+        return isStatic == that.isStatic && owner.equals(that.owner) &&
+                name.equals(that.name) && desc.equals(that.desc) && advanced == that.advanced;
     }
 
     public int hashCode() {

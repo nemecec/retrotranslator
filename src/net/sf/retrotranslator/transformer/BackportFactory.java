@@ -35,9 +35,7 @@ import edu.emory.mathcs.backport.java.util.Queue;
 import static net.sf.retrotranslator.runtime.asm.Opcodes.ACC_PUBLIC;
 import static net.sf.retrotranslator.runtime.asm.Opcodes.ACC_STATIC;
 import net.sf.retrotranslator.runtime.asm.Type;
-import net.sf.retrotranslator.runtime.impl.ClassDescriptor;
-import net.sf.retrotranslator.runtime.impl.Derived;
-import net.sf.retrotranslator.runtime.impl.MethodDescriptor;
+import net.sf.retrotranslator.runtime.impl.*;
 import net.sf.retrotranslator.runtime.java.util._Queue;
 
 import java.lang.annotation.Annotation;
@@ -54,6 +52,7 @@ public class BackportFactory {
     private static Map<String, Boolean> classes = new HashMap<String, Boolean>();
     private static Map<String, String[]> implementations = new HashMap<String, String[]>();
     private static Map<ClassMember, ClassMember> methods = new HashMap<ClassMember, ClassMember>();
+    private static Map<ClassMember, ClassMember> fields = new HashMap<ClassMember, ClassMember>();
 
     static {
         String queueName = Type.getInternalName(Queue.class);
@@ -69,7 +68,11 @@ public class BackportFactory {
     }
 
     public static ClassMember getMethod(boolean isStatic, String owner, String name, String desc) {
-        return isBackported(owner) ? methods.get(new ClassMember(isStatic, owner, name, desc)) : null;
+        return isBackported(owner) ? methods.get(new ClassMember(isStatic, owner, name, desc, false)) : null;
+    }
+
+    public static ClassMember getField(String owner, String name, String desc) {
+        return isBackported(owner) ? fields.get(new ClassMember(true, owner, name, desc, false)) : null;
     }
 
     private static boolean isBackported(String owner) {
@@ -99,6 +102,7 @@ public class BackportFactory {
             ClassDescriptor descriptor = ClassDescriptor.getInstance(backportClass);
             loadImplementations(descriptor, originalName);
             loadMethods(descriptor, originalName);
+            loadFields(descriptor, originalName);
             return true;
         } catch (ClassNotFoundException e) {
             return false;
@@ -124,14 +128,27 @@ public class BackportFactory {
             if (!methodDescriptor.isAccess(ACC_PUBLIC) || name.charAt(0) == '<') continue;
             boolean isStatic = methodDescriptor.isAccess(ACC_STATIC);
             String desc = methodDescriptor.getDesc();
-            ClassMember substitutionMember = new ClassMember(isStatic, descriptor.getName(), name, desc);
+            ClassMember substitutionMember = new ClassMember(isStatic, descriptor.getName(), name, desc,
+                    methodDescriptor.isAnnotationPresent(Advanced.class));
             Type[] types = Type.getArgumentTypes(desc);
             if (isStatic && types.length > 0 && types[0].equals(originalType)) {
                 isStatic = false;
                 desc = Type.getMethodDescriptor(Type.getReturnType(desc), removeFirst(types));
             }
-            ClassMember originalMember = new ClassMember(isStatic, originalType.getInternalName(), name, desc);
+            ClassMember originalMember = new ClassMember(isStatic, originalName, name, desc, false);
             methods.put(originalMember, substitutionMember);
+        }
+    }
+
+    private static void loadFields(ClassDescriptor descriptor, String originalName) {
+        for (FieldDescriptor fieldDescriptor : descriptor.getFieldDescriptors()) {
+            if (!fieldDescriptor.isAccess(ACC_PUBLIC) || !fieldDescriptor.isAccess(ACC_STATIC)) continue;
+            String name = fieldDescriptor.getName();
+            String desc = fieldDescriptor.getDesc();
+            ClassMember substitutionMember = new ClassMember(true, descriptor.getName(), name, desc, 
+                    fieldDescriptor.isAnnotationPresent(Advanced.class));
+            ClassMember originalMember = new ClassMember(true, originalName, name, desc, false);
+            fields.put(originalMember, substitutionMember);
         }
     }
 
@@ -140,5 +157,4 @@ public class BackportFactory {
         System.arraycopy(types, 1, result, 0, result.length);
         return result;
     }
-
 }
