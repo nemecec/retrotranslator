@@ -41,6 +41,8 @@
             <arg value="build/classes14"/>
             <arg value="-destdir"/>
             <arg value="build/classes"/>
+            <arg value="-srcmask"/>
+            <arg value="*.class"/>
         </java>
         <jar destfile="build/retrotranslator-runtime-${version}.jar">
             <fileset dir="build/classes" includes="net/sf/retrotranslator/runtime/**"/>
@@ -76,6 +78,9 @@
         <javac srcdir="test" destdir="build/test-classes15"
                fork="yes" debug="true" executable="${java15_home}/bin/javac"
                classpathref="classpath" classpath="build/classes15"/>
+        <copy todir="build/test-classes15">
+            <fileset dir="test" includes="**/*.properties"/>
+        </copy>
     </target>
 
     <target name="test" depends="test-translated, test-with-jit" />
@@ -91,7 +96,7 @@
     </target>
 
     <target name="retrotranslate-test-classes14">
-        <retrotranslator srcdir="build/test-classes14" advanced="true" verify="true">
+        <retrotranslator srcdir="build/test-classes14" advanced="true" verify="true" srcmask="*.class;*.properties">
             <classpath location="${java14_rt_jar}"/>
             <classpath location="build/retrotranslator-runtime-${version}.jar"/>
             <classpath refid="classpath"/>
@@ -115,7 +120,7 @@
             <classpath location="build/test-classes15"/>
             <batchtest>
                 <fileset dir="build/test-classes15" includes="**/*TestCase.class"
-                         excludes="**/BaseTestCase.class"/>
+                         excludes="**/BaseTestCase.class **/TextFileTransformerTestCase.class"/>
             </batchtest>
         </junit>
         <fail if="test.failed"/>

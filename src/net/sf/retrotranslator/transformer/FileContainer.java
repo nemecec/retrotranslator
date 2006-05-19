@@ -75,12 +75,8 @@ abstract class FileContainer {
         return location.toString();
     }
 
-    public int getClassFileCount() {
-        int result = 0;
-        for (FileEntry entry : getEntries()) {
-            if (entry.isClassFile()) result++;
-        }
-        return result;
+    public int getFileCount() {
+        return getEntries().size();
     }
 
 }

@@ -35,6 +35,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.regex.Pattern;
 
 /**
  * @author Taras Puchko
@@ -50,6 +51,7 @@ public class Retrotranslator implements MessageLogger {
     private boolean verify;
     private List<File> classpath = new ArrayList<File>();
     private MessageLogger logger = this;
+    private Pattern srcmaskPattern;
 
     public Retrotranslator() {
     }
@@ -122,6 +124,30 @@ public class Retrotranslator implements MessageLogger {
         }
     }
 
+    public void setSrcmask(String srcmask) {
+        if (srcmask == null) {
+            srcmaskPattern = null;
+            return;
+        }
+        StringBuilder builder = new StringBuilder();
+        for (String s : srcmask.split(";")) {
+            if (builder.length() > 0) builder.append('|');
+            builder.append("((./)?");
+            StringTokenizer tokenizer = new StringTokenizer(s, "*?", true);
+            while(tokenizer.hasMoreTokens()) {
+                builder.append(wildcardToRegex(tokenizer.nextToken()));
+            }
+            builder.append(")");
+        }
+        srcmaskPattern = Pattern.compile(builder.toString());
+    }
+
+    private static String wildcardToRegex(String s) {
+        if (s.equals("*")) return ".*";
+        if (s.equals("?")) return ".";
+        return Pattern.quote(s);
+    }
+
     public void setLogger(MessageLogger logger) {
         this.logger = logger;
     }
@@ -147,26 +173,44 @@ public class Retrotranslator implements MessageLogger {
     }
 
     private void transform(ClassTransformer transformer, FileContainer source, FileContainer destination) {
-        int classFileCount = source.getClassFileCount();
-        logger.log(new Message(Level.INFO, "Transforming " + classFileCount + " file(s)" +
+        logger.log(new Message(Level.INFO, "Transforming " + source.getFileCount() + " file(s)" +
                 (source == destination ? " in " + source : " from " + source + " to " + destination) + "."));
         for (FileEntry entry : source.getEntries()) {
-            if (entry.isClassFile()) {
-                String name = entry.getName();
+            String name = entry.getName();
+            if (isTransformable(name)) {
                 if (verbose) logger.log(new Message(Level.VERBOSE, "Transformation", source.getLocation(), name));
                 byte[] sourceData = entry.getContent();
-                byte[] resultData = transformer.transform(sourceData, 0, sourceData.length);
-                if (source != destination || sourceData != resultData) {
-                    String fixedName = TransformerTools.fixIdentifier(name);
-                    if (!fixedName.equals(name)) destination.removeEntry(name);
-                    destination.putEntry(fixedName, resultData);
+                if (isClassFile(sourceData)) {
+                    byte[] resultData = transformer.transform(sourceData, 0, sourceData.length);
+                    if (source != destination || sourceData != resultData) {
+                        String fixedName = TransformerTools.fixIdentifier(name);
+                        if (!fixedName.equals(name)) destination.removeEntry(name);
+                        destination.putEntry(fixedName, resultData);
+                    }
+                } else {
+                    byte[] resultData = TextFileTransformer.transform(sourceData);
+                    if (source != destination || sourceData != resultData) {
+                        destination.putEntry(name, resultData);
+                    }
                 }
             } else if (source != destination) {
                 destination.putEntry(entry.getName(), entry.getContent());
             }
         }
         source.flush();
-        logger.log(new Message(Level.INFO, "Transformation of " + classFileCount + " file(s) completed successfully."));
+        logger.log(new Message(Level.INFO, "Transformation of " + source.getFileCount() + " file(s) completed successfully."));
+    }
+
+    private boolean isTransformable(String name) {
+        return srcmaskPattern != null ? srcmaskPattern.matcher(name).matches() : name.endsWith(".class");
+    }
+
+    private static boolean isClassFile(byte[] bytes) {
+        return bytes.length >= 4 &&
+                bytes[0] == ((byte) 0xCA) &&
+                bytes[1] == ((byte) 0xFE) &&
+                bytes[2] == ((byte) 0xBA) &&
+                bytes[3] == ((byte) 0xBE);
     }
 
     private boolean verify(ClassReaderFactory factory) {
@@ -191,19 +235,21 @@ public class Retrotranslator implements MessageLogger {
     }
 
     private boolean verify(ClassReaderFactory factory, final FileContainer container) {
-        int classFileCount = container.getClassFileCount();
-        logger.log(new Message(Level.INFO, "Verifying " + classFileCount + " file(s) in " + container + "."));
+        logger.log(new Message(Level.INFO, "Verifying " + container.getFileCount() + " file(s) in " + container + "."));
         int warningCount = 0;
         for (final FileEntry entry : container.getEntries()) {
-            if (entry.isClassFile()) {
-                if (verbose) logger.log(new Message(Level.VERBOSE,
-                        "Verification", container.getLocation(), entry.getName()));
-                warningCount += new ReferenceVerifyingVisitor(factory, logger,
-                        container.getLocation(), entry.getName()).verify(entry.getContent());
+            if (isTransformable(entry.getName())) {
+                byte[] content = entry.getContent();
+                if (isClassFile(content)) {
+                    if (verbose) logger.log(new Message(Level.VERBOSE,
+                            "Verification", container.getLocation(), entry.getName()));
+                    warningCount += new ReferenceVerifyingVisitor(factory, logger,
+                            container.getLocation(), entry.getName()).verify(content);
+                }
             }
         }
         String result = warningCount != 0 ? " with " + warningCount + " warning(s)." : " successfully.";
-        logger.log(new Message(Level.INFO, "Verification of " + classFileCount + " file(s) completed" + result));
+        logger.log(new Message(Level.INFO, "Verification of " + container.getFileCount() + " file(s) completed" + result));
         return warningCount == 0;
     }
 
@@ -231,6 +277,8 @@ public class Retrotranslator implements MessageLogger {
                 setVerify(true);
             } else if (string.equals("-classpath") && i < args.length) {
                 addClasspath(args[i++]);
+            } else if (string.equals("-srcmask") && i < args.length) {
+                setSrcmask(args[i++]);
             } else {
                 throw new IllegalArgumentException("Unknown option: " + string);
             }
@@ -242,8 +290,8 @@ public class Retrotranslator implements MessageLogger {
         String version = Retrotranslator.class.getPackage().getImplementationVersion();
         String suffix = (version == null) ? "" : "-" + version;
         System.out.println("Usage: java -jar retrotranslator-transformer" + suffix + ".jar" +
-                " [-srcdir <path> | -srcjar <file>] [-destdir <path> | -destjar <file>]" +
-                " [-stripsign] [-verbose] [-lazy] [-advanced] [-verify] [-classpath <classpath>]");
+                " [-srcdir <path> | -srcjar <file>] [-destdir <path> | -destjar <file>] [-stripsign]" +
+                " [-verbose] [-lazy] [-advanced] [-verify] [-classpath <classpath>] [-srcmask <mask>]");
     }
 
     public static void main(String[] args) {

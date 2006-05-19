@@ -1,9 +1,10 @@
 Retrotranslator Changelog
 =================================
 
-  - New option -advanced allows to override Java 1.4 methods.
+  - New -advanced option allows to override Java 1.4 methods.
   - Supported in BigDecimal: ZERO, ONE, TEN, pow(int), toPlainString(), valueOf(double), valueOf(long).
   - Supported BigDecimal.setScale(int, int) for negative scales in advanced mode.
+  - Ability to process UTF-8 text files in addition to bytecode: "-srcmask *.class;*.tld".   
 
 1.0.4 (2006-04-25)
 ---------------------------------

@@ -54,6 +54,7 @@ public class RetrotranslatorTask extends Task implements MessageLogger {
     private boolean verify;
     private boolean failonwarning = true;
     private Path classpath;
+    private String srcmask;
 
     public RetrotranslatorTask() {
     }
@@ -122,6 +123,10 @@ public class RetrotranslatorTask extends Task implements MessageLogger {
         return classpath != null ? classpath : (classpath = new Path(getProject()));
     }
 
+    public void setSrcmask(String srcmask) {
+        this.srcmask = srcmask;
+    }
+
     public void log(Message message) {
         boolean info = message.getLevel().compareTo(Level.INFO) >= 0;
         log(message.toString(), info ? Project.MSG_INFO : Project.MSG_WARN);
@@ -146,6 +151,7 @@ public class RetrotranslatorTask extends Task implements MessageLogger {
         retrotranslator.setLazy(lazy);
         retrotranslator.setAdvanced(advanced);
         retrotranslator.setVerify(verify);
+        retrotranslator.setSrcmask(srcmask);
         for (String fileName : getClasspath().list()) {
             retrotranslator.addClasspathElement(getProject().resolveFile(fileName));
         }

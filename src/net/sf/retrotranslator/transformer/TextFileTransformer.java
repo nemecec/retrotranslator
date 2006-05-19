@@ -31,21 +31,57 @@
  */
 package net.sf.retrotranslator.transformer;
 
+import java.io.UnsupportedEncodingException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * @author Taras Puchko
  */
-abstract class FileEntry {
+public class TextFileTransformer {
 
-    private String name;
+    private static Pattern pattern = Pattern.compile("java(\\.[A-Za-z0-9_$]+)+\\.[A-Za-z0-9_$]+");
 
-    protected FileEntry(String name) {
-        this.name = name;
+    public static byte[] transform(byte[] bytes) {
+        boolean modified = false;
+        Matcher matcher = pattern.matcher(toString(bytes));
+        StringBuffer buffer = new StringBuffer();
+        while (matcher.find()) {
+            String name = getBackportedClassName(matcher.group());
+            if (name != null) {
+                modified = true;
+                matcher.appendReplacement(buffer, Matcher.quoteReplacement(name));
+            } else {
+                matcher.appendReplacement(buffer, "$0");
+            }
+        }
+        return modified ? toBytes(matcher.appendTail(buffer).toString()) : bytes;
     }
 
-    public abstract byte[] getContent();
+    private static String getBackportedClassName(String s) {
+        try {
+            String backport = "net.sf.retrotranslator.runtime." + s + "_";
+            Class.forName(backport);
+            return backport;
+        } catch (ClassNotFoundException e) {
+            return null;
+        }
+    }
 
-    public String getName() {
-        return name;
+    private static String toString(byte[] bytes) {
+        try {
+            return new String(bytes, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static byte[] toBytes(String s) {
+        try {
+            return s.getBytes("UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

@@ -31,21 +31,29 @@
  */
 package net.sf.retrotranslator.transformer;
 
+import net.sf.retrotranslator.tests.BaseTestCase;
+import net.sf.retrotranslator.runtime.java.lang.Enum_;
+
+import java.util.Arrays;
+import java.util.Properties;
+import java.io.InputStream;
+
+import junit.framework.ComparisonFailure;
+
 /**
  * @author Taras Puchko
  */
-abstract class FileEntry {
+public class TextFileTransformerTestCase extends BaseTestCase {
 
-    private String name;
-
-    protected FileEntry(String name) {
-        this.name = name;
+    public void testTransform() throws Exception {
+        Properties properties = new Properties();
+        InputStream inputStream = getClass().getResourceAsStream(getClass().getSimpleName() + ".properties");
+        properties.load(inputStream);
+        inputStream.close();
+        assertEquals(Enum.class.getName(), properties.getProperty("originalEnumClass"));
+        assertEquals(Enum_.class.getName(), properties.getProperty("pretranslatedEnumClass"));
+        assertEquals(String.class.getName(), properties.getProperty("stringClass"));
+        assertEquals("<name>" + Enum.class.getName() + "</name>", properties.getProperty("originalEnumClassXml"));
+        assertEquals("<name> " + Enum.class.getName() + " </name>", properties.getProperty("originalEnumClassSpaces"));
     }
-
-    public abstract byte[] getContent();
-
-    public String getName() {
-        return name;
-    }
-
 }
