@@ -40,7 +40,7 @@ import java.util.regex.Pattern;
  */
 public class TextFileTransformer {
 
-    private static Pattern pattern = Pattern.compile("java(\\.[A-Za-z0-9_$]+)+\\.[A-Za-z0-9_$]+");
+    private static Pattern pattern = Pattern.compile("([A-Za-z0-9_$]+\\.)+[A-Za-z0-9_$]+");
 
     public static byte[] transform(byte[] bytes) {
         boolean modified = false;

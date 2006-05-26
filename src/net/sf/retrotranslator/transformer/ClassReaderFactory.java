@@ -47,12 +47,12 @@ import java.util.zip.ZipFile;
  */
 class ClassReaderFactory {
 
-    private boolean useClasspath;
+    private ClassLoader classLoader;
     private List<Entry> entries = new ArrayList<Entry>();
     private Map<String, SoftReference<ClassReader>> cache = new HashMap<String, SoftReference<ClassReader>>();
 
-    public ClassReaderFactory(boolean useClasspath) {
-        this.useClasspath = useClasspath;
+    public ClassReaderFactory(ClassLoader classLoader) {
+        this.classLoader = classLoader;
     }
 
     public void appendPath(File element) {
@@ -90,7 +90,7 @@ class ClassReaderFactory {
             InputStream stream = entry.getResourceAsStream(name);
             if (stream != null) return stream;
         }
-        return useClasspath ? this.getClass().getClassLoader().getResourceAsStream(name) : null;
+        return classLoader == null ? null : classLoader.getResourceAsStream(name);
     }
 
     public void close() {

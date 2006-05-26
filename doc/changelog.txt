@@ -4,7 +4,10 @@ Retrotranslator Changelog
   - New -advanced option allows to override Java 1.4 methods.
   - Supported in BigDecimal: ZERO, ONE, TEN, pow(int), toPlainString(), valueOf(double), valueOf(long).
   - Supported BigDecimal.setScale(int, int) for negative scales in advanced mode.
-  - Ability to process UTF-8 text files in addition to bytecode: "-srcmask *.class;*.tld".   
+  - Ability to process UTF-8 text files in addition to bytecode: "-srcmask *.class;*.tld".
+  - In advanced mode intercepted Class.getMethod/getDeclaredMethod to support covariant return types
+    on several Java 1.4 implementations (JRockit 1.4.2_08-b03, partial support for Sun 1.4.1-b21).
+    Other implementations (Sun 1.4.2_05-b04, IBM 1.4.1) work well without this fix.
 
 1.0.4 (2006-04-25)
 ---------------------------------

@@ -36,7 +36,7 @@ import edu.emory.mathcs.backport.java.util.PriorityQueue;
 import edu.emory.mathcs.backport.java.util.Queue;
 import net.sf.retrotranslator.runtime.asm.ClassVisitor;
 
-import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Map;
 
 /**
@@ -48,7 +48,7 @@ class ClassSubstitutionVisitor extends GenericClassVisitor {
     private static final String BACKPORT = "edu/emory/mathcs/backport/";
     private static final ClassLoader LOADER = ClassSubstitutionVisitor.class.getClassLoader();
 
-    private static Map<String, String> map = new HashMap<String, String>();
+    private static Map<String, String> map = new Hashtable<String, String>();
 
     static {
         map.put("java/lang/StringBuilder", "java/lang/StringBuffer");

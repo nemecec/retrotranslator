@@ -52,6 +52,7 @@ public class Retrotranslator implements MessageLogger {
     private List<File> classpath = new ArrayList<File>();
     private MessageLogger logger = this;
     private Pattern srcmaskPattern;
+    private ClassLoader classLoader;
 
     public Retrotranslator() {
     }
@@ -152,6 +153,10 @@ public class Retrotranslator implements MessageLogger {
         this.logger = logger;
     }
 
+    public void setClassLoader(ClassLoader classLoader) {
+        this.classLoader = classLoader;
+    }
+
     public void log(Message message) {
         System.out.println(message);
     }
@@ -164,7 +169,11 @@ public class Retrotranslator implements MessageLogger {
         }
         if (dest != null) dest.flush();
         if (!verify) return true;
-        ClassReaderFactory factory = new ClassReaderFactory(classpath.isEmpty());
+        ClassLoader loader = classLoader;
+        if (loader == null && classpath.isEmpty()) {
+            loader = this.getClass().getClassLoader();
+        }
+        ClassReaderFactory factory = new ClassReaderFactory(loader);
         try {
             return verify(factory);
         } finally {

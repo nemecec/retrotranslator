@@ -184,8 +184,8 @@ public class _MethodTestCase extends BaseTestCase {
                 return 0;
             }
         }
-        assertTrue(getDeclaredMethod(Test.class, "compareTo", Object.class).isBridge());
-        assertFalse(getDeclaredMethod(Test.class, "compareTo", String.class).isBridge());
+        assertTrue(Test.class.getDeclaredMethod("compareTo", Object.class).isBridge());
+        assertFalse(Test.class.getDeclaredMethod("compareTo", String.class).isBridge());
     }
 
     public void testIsSynthetic() throws Exception {
@@ -194,22 +194,8 @@ public class _MethodTestCase extends BaseTestCase {
                 return 0;
             }
         }
-        assertTrue(getDeclaredMethod(Test.class, "compareTo", Object.class).isSynthetic());
-        assertFalse(getDeclaredMethod(Test.class, "compareTo", String.class).isSynthetic());
-    }
-
-    /**
-     * jrockit-j2sdk1.4.2_08:
-     * {@link Class#getDeclaredMethod(String, Class...)} throws
-     * {@link NoSuchMethodException} for synthetic methods
-     */
-    public static Method getDeclaredMethod(Class aClass, String name, Class ... parameterTypes)
-            throws NoSuchMethodException {
-        for (Method method : aClass.getDeclaredMethods()) {
-            if (method.getName().equals(name) &&
-                    Arrays.equals(method.getParameterTypes(), parameterTypes)) return method;
-        }
-        throw new NoSuchMethodException(name);
+        assertTrue(Test.class.getMethod("compareTo", Object.class).isSynthetic());
+        assertFalse(Test.class.getMethod("compareTo", String.class).isSynthetic());
     }
 
     public void testIsVarArgs() throws Exception {

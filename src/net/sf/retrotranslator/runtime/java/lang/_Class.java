@@ -31,15 +31,17 @@
  */
 package net.sf.retrotranslator.runtime.java.lang;
 
+import net.sf.retrotranslator.runtime.asm.Opcodes;
+import net.sf.retrotranslator.runtime.impl.Advanced;
 import net.sf.retrotranslator.runtime.impl.ClassDescriptor;
 import net.sf.retrotranslator.runtime.impl.MethodDescriptor;
-import net.sf.retrotranslator.runtime.asm.Opcodes;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.util.Arrays;
 
 /**
  * @author Taras Puchko
@@ -79,6 +81,13 @@ public class _Class {
         return ClassDescriptor.getInstance(aClass).getDeclaredAnnotations();
     }
 
+    @Advanced
+    public static Method getDeclaredMethod(Class aClass, String name, Class... parameterTypes)
+            throws NoSuchMethodException, SecurityException {
+        Method method = findMethod(aClass.getDeclaredMethods(), name, parameterTypes);
+        return method != null ? method : aClass.getDeclaredMethod(name, parameterTypes);
+    }
+
     public static Class getEnclosingClass(Class aClass) {
         MethodDescriptor descriptor = ClassDescriptor.getInstance(aClass).getEnclosingMethodDescriptor();
         return descriptor == null ? aClass.getDeclaringClass() : descriptor.getClassDescriptor().getTarget();
@@ -107,6 +116,13 @@ public class _Class {
     public static Type getGenericSuperclass(Class aClass) {
         Type genericSuperclass = ClassDescriptor.getInstance(aClass).getGenericSuperclass();
         return genericSuperclass != null ? genericSuperclass : aClass.getSuperclass();
+    }
+
+    @Advanced
+    public static Method getMethod(Class aClass, String name, Class... parameterTypes)
+            throws NoSuchMethodException, SecurityException {
+        Method method = findMethod(aClass.getMethods(), name, parameterTypes);
+        return method != null ? method : aClass.getMethod(name, parameterTypes);
     }
 
     public static String getSimpleName(Class aClass) {
@@ -155,5 +171,16 @@ public class _Class {
 
     public static boolean isSynthetic(Class aClass) {
         return ClassDescriptor.getInstance(aClass).isAccess(Opcodes.ACC_SYNTHETIC);
+    }
+
+    private static Method findMethod(Method[] methods, String name, Class... parameterTypes) {
+        Method result = null;
+        for (Method method : methods) {
+            if (method.getName().equals(name) && Arrays.equals(method.getParameterTypes(), parameterTypes) &&
+                    (result == null || result.getReturnType().isAssignableFrom(method.getReturnType()))) {
+                result = method;
+            }
+        }
+        return result;
     }
 }

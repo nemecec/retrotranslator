@@ -37,6 +37,10 @@ import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * @author Taras Puchko
@@ -138,6 +142,24 @@ public class _ClassTestCase extends BaseTestCase {
         assertEquals(0, int[][].class.getDeclaredAnnotations().length);
     }
 
+    public void testGetDeclaredMethod() throws Exception {
+        abstract class Getter<T> {
+            abstract T get();
+        }
+        class GetterImpl extends Getter<String> {
+            public String get() {
+                throw new UnsupportedOperationException();
+            }
+        }
+        assertEquals(String.class, GetterImpl.class.getDeclaredMethod( "get" ).getReturnType());
+        try {
+            GetterImpl.class.getDeclaredMethod( "get", int.class);
+            fail();
+        } catch (NoSuchMethodException e) {
+            //ok
+        }
+    }
+
     class TestGetEnclosingClass {
         class Inner {
         }
@@ -227,6 +249,22 @@ public class _ClassTestCase extends BaseTestCase {
         assertEquals(ThreadLocal.class, threadLocal.getRawType());
         assertNull(threadLocal.getOwnerType());
         assertEquals(Comparable.class, singleton(threadLocal.getActualTypeArguments()));
+    }
+
+    public void testGetMethod() throws Exception {
+        class StringList extends ArrayList<String> {
+            public String get(int index) {
+                return super.get(index);
+            }
+        }
+        //fails on JDK 1.4.1-b21
+        assertEquals(String.class, StringList.class.getMethod( "get", int.class).getReturnType());
+        try {
+            StringList.class.getMethod( "get", long.class);
+            fail();
+        } catch (NoSuchMethodException e) {
+            //ok
+        }
     }
 
     public void testGetSimpleName() throws Exception {

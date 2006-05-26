@@ -39,9 +39,7 @@ import net.sf.retrotranslator.runtime.impl.*;
 import net.sf.retrotranslator.runtime.java.util._Queue;
 
 import java.lang.annotation.Annotation;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Taras Puchko
@@ -49,15 +47,15 @@ import java.util.Map;
 public class BackportFactory {
 
     private static final String RUNTIME = "net/sf/retrotranslator/runtime/";
-    private static Map<String, Boolean> classes = new HashMap<String, Boolean>();
-    private static Map<String, String[]> implementations = new HashMap<String, String[]>();
-    private static Map<ClassMember, ClassMember> methods = new HashMap<ClassMember, ClassMember>();
-    private static Map<ClassMember, ClassMember> fields = new HashMap<ClassMember, ClassMember>();
+    private static final Map<String, Boolean> classes = new Hashtable<String, Boolean>();
+    private static final Map<String, String[]> implementations = new Hashtable<String, String[]>();
+    private static final Map<ClassMember, ClassMember> methods = new Hashtable<ClassMember, ClassMember>();
+    private static final Map<ClassMember, ClassMember> fields = new Hashtable<ClassMember, ClassMember>();
 
     static {
         String queueName = Type.getInternalName(Queue.class);
         for (Class aClass : new Class[]{Collection.class, _Queue.class}) {
-            loadBackport(Type.getInternalName(aClass), queueName);
+            loadBackport(new StringBuilder(Type.getInternalName(aClass)), queueName);
         }
         implementations.clear();
         classes.put(queueName, true);
@@ -85,26 +83,27 @@ public class BackportFactory {
         if (original.startsWith(RUNTIME) && original.endsWith("_")) {
             original = original.substring(RUNTIME.length(), original.length() - 1);
         }
-        StringBuilder builder = new StringBuilder(RUNTIME);
+        StringBuilder backportPath = new StringBuilder(RUNTIME);
         int index = original.lastIndexOf('/');
         if (index >= 0) {
-            builder.append(original.substring(0, index + 1));
+            backportPath.append(original.substring(0, index + 1));
         }
-        builder.append('_').append(original.substring(index + 1));
-        isBackported = loadBackport(builder.toString(), owner);
+        backportPath.append('_').append(original.substring(index + 1));
+        isBackported = loadBackport(backportPath, owner);
         classes.put(owner, isBackported);
         return isBackported;
     }
 
-    private static boolean loadBackport(String backportName, String originalName) {
+    private static boolean loadBackport(StringBuilder backportName, String originalName) {
         try {
-            Class backportClass = Class.forName(backportName.replace('/', '.'));
-            ClassDescriptor descriptor = ClassDescriptor.getInstance(backportClass);
+            String backportPath = backportName.insert(0, '/').append(".class").toString();
+            byte[] bytecode = RuntimeTools.readResourceToByteArray(BackportFactory.class, backportPath);
+            ClassDescriptor descriptor = new ClassDescriptor(BackportFactory.class, bytecode);
             loadImplementations(descriptor, originalName);
             loadMethods(descriptor, originalName);
             loadFields(descriptor, originalName);
             return true;
-        } catch (ClassNotFoundException e) {
+        } catch (MissingResourceException e) {
             return false;
         }
     }
@@ -145,7 +144,7 @@ public class BackportFactory {
             if (!fieldDescriptor.isAccess(ACC_PUBLIC) || !fieldDescriptor.isAccess(ACC_STATIC)) continue;
             String name = fieldDescriptor.getName();
             String desc = fieldDescriptor.getDesc();
-            ClassMember substitutionMember = new ClassMember(true, descriptor.getName(), name, desc, 
+            ClassMember substitutionMember = new ClassMember(true, descriptor.getName(), name, desc,
                     fieldDescriptor.isAnnotationPresent(Advanced.class));
             ClassMember originalMember = new ClassMember(true, originalName, name, desc, false);
             fields.put(originalMember, substitutionMember);

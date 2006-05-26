@@ -55,7 +55,7 @@ class ClassTransformer implements BytecodeTransformer {
         return transform(bytes, offset, length, lazy, stripsign, advanced);
     }
 
-    public static synchronized byte[] transform(byte[] bytes, int offset, int length,
+    public static byte[] transform(byte[] bytes, int offset, int length,
                                                 boolean lazy, boolean stripsign, boolean advanced) {
         if (lazy && (bytes[offset + 7] <= 48 ||
                 bytes[offset + 6] != 0 || bytes[offset + 5] != 0 || bytes[offset + 4] != 0)) {
