@@ -131,11 +131,10 @@ public class BackportFactory {
                     methodDescriptor.isAnnotationPresent(Advanced.class));
             Type[] types = Type.getArgumentTypes(desc);
             if (isStatic && types.length > 0 && types[0].equals(originalType)) {
-                isStatic = false;
-                desc = Type.getMethodDescriptor(Type.getReturnType(desc), removeFirst(types));
+                String instanceDesc = Type.getMethodDescriptor(Type.getReturnType(desc), removeFirst(types));
+                methods.put(new ClassMember(false, originalName, name, instanceDesc, false), substitutionMember);
             }
-            ClassMember originalMember = new ClassMember(isStatic, originalName, name, desc, false);
-            methods.put(originalMember, substitutionMember);
+            methods.put(new ClassMember(isStatic, originalName, name, desc, false), substitutionMember);
         }
     }
 
