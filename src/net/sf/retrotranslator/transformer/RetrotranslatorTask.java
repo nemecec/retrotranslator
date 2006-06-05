@@ -144,6 +144,9 @@ public class RetrotranslatorTask extends Task implements MessageLogger {
                 throw new BuildException("Path not found: " + file);
             }
         }
+        if (destdir != null && destjar != null) {
+            throw new BuildException("Cannot set both destdir and destjar!");
+        }
         if (destdir != null) retrotranslator.setDestdir(destdir);
         if (destjar != null) retrotranslator.setDestjar(destjar);
         retrotranslator.setVerbose(verbose);

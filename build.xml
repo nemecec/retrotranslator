@@ -1,6 +1,6 @@
 <project name="retrotranslator" default="build" basedir=".">
 
-    <property name="version" value="1.0.4"/>
+    <property name="version" value="1.0.5"/>
 
     <property file="build.properties"/>
 
@@ -71,6 +71,9 @@
                 <pathelement location="build/retrotranslator-transformer-${version}.jar"/>
             </classpath>
         </taskdef>
+        <retrotranslator srcjar="build/retrotranslator-runtime-${version}.jar"
+                         destjar="build/retrotranslator-runtime-tmp.jar" verify="true"
+                         classpath="${java14_rt_jar}" classpathref="classpath" />
     </target>
 
     <target name="compile-tests" depends="compile">

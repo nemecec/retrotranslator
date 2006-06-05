@@ -1,12 +1,17 @@
 Retrotranslator Changelog
 =================================
 
+1.0.5 (2006-05-05)
+---------------------------------
   - New -advanced option allows to override Java 1.4 methods.
   - Supported in BigDecimal: ZERO, ONE, TEN, pow(int), toPlainString(), valueOf(double), valueOf(long).
   - Supported BigDecimal.setScale(int, int) for negative scales in advanced mode.
   - Ability to process UTF-8 text files in addition to bytecode: "-srcmask *.class;*.tld".
   - getMethod(String, Class...) and getDeclaredMethod(String, Class...) are intercepted in advanced mode
     to better support generics and covariant return types on several JVM implementations, e.g. JRockit 1.4.2_08-b03.
+  - Upgraded to backport-util-concurrent 2.2.
+  - Deleted net.sf.retrotranslator.runtime.java.util.Collections_ (edu.emory.mathcs.backport.java.util.Collections is
+    used instead), so retrotranslator-runtime-1.0.5.jar is NOT binary compatible with retrotranslator-runtime-1.0.4.jar.
 
 1.0.4 (2006-04-25)
 ---------------------------------

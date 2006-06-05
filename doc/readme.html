@@ -127,9 +127,9 @@ and concurrency utilities
     </tr>
     <tr>
         <td><code>-classpath</code></td>
-        <td>The classpath to use for verification (including <code>rt.jar</code>, <code>jce.jar</code>,
+        <td>The classpath to use for verification including <code>rt.jar</code>, <code>jce.jar</code>,
             <code>jsse.jar</code> (from JRE 1.4), <code>retrotranslator-runtime-<i>n.n.n</i>.jar</code>,
-            and <code>backport-util-concurrent.jar</code>).</td>
+            and <code>backport-util-concurrent.jar</code>.</td>
         <td>Current classpath</td>
     </tr>
     <tr>
@@ -203,9 +203,9 @@ and concurrency utilities
     </tr>
     <tr>
         <td><code>classpath</code></td>
-        <td>The classpath to use for verification (including <code>rt.jar</code>, <code>jce.jar</code>,
+        <td>The classpath to use for verification including <code>rt.jar</code>, <code>jce.jar</code>,
             <code>jsse.jar</code> (from JRE 1.4), <code>retrotranslator-runtime-<i>n.n.n</i>.jar</code>,
-            and <code>backport-util-concurrent.jar</code>).
+            and <code>backport-util-concurrent.jar</code>.
         </td>
         <td>Current classpath</td>
     </tr>
@@ -253,6 +253,7 @@ and concurrency utilities
 <p>
     JIT Retrotranslator is able to translate at runtime Java classes loaded with any classloader.
     It works only on J2SE 1.4 from Sun, IBM, BEA, and Apple, on other platforms (including J2SE 5.0) it is inactive.
+    However, it consumes additional memory and processing resources.
 </p>
 <ol>
     <li>
@@ -427,7 +428,8 @@ and concurrency utilities
         - a Java bytecode weaver that enables you to take advantage
         of the new 1.5 language features in your source code,
         while still retaining compatibility with 1.4 virtual machines.</li>
-    <li><a href="http://tinyurl.com/r8xba">Declawer</a> - a customized Java compiler which reduces 1.5 Generics to equivalent 1.4 syntax.</li>
+    <li><a href="http://tinyurl.com/r8xba">Declawer</a>
+        - a customized Java compiler which reduces 1.5 Generics to equivalent 1.4 syntax.</li>
 </ul>
 
 <h4><a name="contact">Contact</a></h4>

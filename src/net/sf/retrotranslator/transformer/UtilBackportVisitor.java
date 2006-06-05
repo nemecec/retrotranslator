@@ -36,9 +36,7 @@ import edu.emory.mathcs.backport.java.util.concurrent.Delayed;
 import edu.emory.mathcs.backport.java.util.concurrent.helpers.Utils;
 import net.sf.retrotranslator.runtime.asm.*;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Taras Puchko
@@ -51,11 +49,22 @@ class UtilBackportVisitor extends ClassAdapter {
     private static final String COLLECTIONS_NAME = Type.getInternalName(Collections.class);
 
     private static final Map<String, String> FIELDS = new HashMap<String, String>();
+    private static final Map<String, String> METHODS = new HashMap<String, String>();
 
     static {
         FIELDS.put("emptyList", "EMPTY_LIST");
         FIELDS.put("emptyMap", "EMPTY_MAP");
         FIELDS.put("emptySet", "EMPTY_SET");
+        putMethod(boolean.class, "addAll", Collection.class, Object[].class);
+        putMethod(Collection.class, "checkedCollection", Collection.class, Class.class);
+        putMethod(List.class, "checkedList", List.class, Class.class);
+        putMethod(Map.class, "checkedMap", Map.class, Class.class, Class.class);
+        putMethod(Set.class, "checkedSet", Set.class, Class.class);
+        putMethod(SortedMap.class, "checkedSortedMap", SortedMap.class, Class.class, Class.class);
+        putMethod(SortedSet.class, "checkedSortedSet", SortedSet.class, Class.class);
+        putMethod(boolean.class, "disjoint", Collection.class, Collection.class);
+        putMethod(int.class, "frequency", Collection.class, Object.class);
+        putMethod(Comparator.class, "reverseOrder", Comparator.class);
     }
 
     private static DescriptorTransformer DELAYED_TRANSFORMER = new DescriptorTransformer() {
@@ -81,10 +90,21 @@ class UtilBackportVisitor extends ClassAdapter {
                         mv.visitFieldInsn(Opcodes.GETSTATIC, COLLECTIONS_NAME,
                                 field, Type.getReturnType(desc).toString());
                         return;
+                    } else if (desc.equals(METHODS.get(name))) {
+                        owner = Type.getInternalName(edu.emory.mathcs.backport.java.util.Collections.class);
                     }
                 }
                 super.visitMethodInsn(opcode, owner, name, desc);
             }
         };
     }
+
+    private static void putMethod(Class returnType, String name, Class... parameterTypes) {
+        Type[] argumentTypes = new Type[parameterTypes.length];
+        for (int i = 0; i < argumentTypes.length; i++) {
+            argumentTypes[i] = Type.getType(parameterTypes[i]);
+        }
+        METHODS.put(name, Type.getMethodDescriptor(Type.getType(returnType), argumentTypes));
+    }
+
 }
