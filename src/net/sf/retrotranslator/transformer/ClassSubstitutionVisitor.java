@@ -31,35 +31,14 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import edu.emory.mathcs.backport.java.util.AbstractQueue;
-import edu.emory.mathcs.backport.java.util.PriorityQueue;
-import edu.emory.mathcs.backport.java.util.Queue;
 import net.sf.retrotranslator.runtime.asm.ClassVisitor;
-
-import java.util.Hashtable;
-import java.util.Map;
 
 /**
  * @author Taras Puchko
  */
 class ClassSubstitutionVisitor extends GenericClassVisitor {
 
-    private static final String RUNTIME = "net/sf/retrotranslator/runtime/";
-    private static final String BACKPORT = "edu/emory/mathcs/backport/";
-    private static final ClassLoader LOADER = ClassSubstitutionVisitor.class.getClassLoader();
-
-    private static Map<String, String> map = new Hashtable<String, String>();
-
-    static {
-        map.put("java/lang/StringBuilder", "java/lang/StringBuffer");
-        map.put("net/sf/retrotranslator/transformer/ClassFileTransformer", "sun/misc/ClassFileTransformer");
-        map.put("net/sf/retrotranslator/transformer/ClassPreProcessor", "com/bea/jvm/ClassPreProcessor");
-        for (Class type : new Class[]{AbstractQueue.class, PriorityQueue.class, Queue.class}) {
-            String name = type.getName().replace('.', '/');
-            if (!name.startsWith(BACKPORT)) throw new IllegalArgumentException(name);
-            map.put(name.substring(BACKPORT.length()), name);
-        }
-    }
+    private BackportFactory backportFactory = BackportFactory.getInstance();
 
     public ClassSubstitutionVisitor(final ClassVisitor cv) {
         super(cv);
@@ -70,16 +49,7 @@ class ClassSubstitutionVisitor extends GenericClassVisitor {
     }
 
     protected String visitInternalName(String name) {
-        name = TransformerTools.fixIdentifier(name);
-        if (name.startsWith("java/util/concurrent/")) {
-            return BACKPORT + name;
-        }
-        String result = map.get(name);
-        if (result == null) {
-            String backportName = RUNTIME + name + "_";
-            result = LOADER.getResource(backportName + ".class") != null ? backportName : name;
-            map.put(name, result);
-        }
-        return result;
+        return backportFactory.getClassName(TransformerTools.fixIdentifier(name));
     }
+
 }

@@ -38,7 +38,7 @@ import java.util.regex.Pattern;
 /**
  * @author Taras Puchko
  */
-public class TextFileTransformer {
+class TextFileTransformer {
 
     private static Pattern pattern = Pattern.compile("([A-Za-z0-9_$]+\\.)+[A-Za-z0-9_$]+");
 

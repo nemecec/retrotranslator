@@ -39,6 +39,8 @@ import static net.sf.retrotranslator.runtime.asm.Opcodes.*;
  */
 class InheritanceVisitor extends ClassAdapter {
 
+    private BackportFactory backportFactory = BackportFactory.getInstance();
+
     public InheritanceVisitor(final ClassVisitor cv) {
         super(cv);
     }
@@ -64,14 +66,14 @@ class InheritanceVisitor extends ClassAdapter {
 
             private String fixArrayType(String desc) {
                 if (desc.charAt(0) != '[') {
-                    return BackportFactory.getImplementations(desc) == null ? desc : Type.getInternalName(Object.class);
+                    return backportFactory.getImplementations(desc) == null ? desc : Type.getInternalName(Object.class);
                 }
                 int first = 1;
                 while (desc.charAt(first) == '[') first++;
                 if (desc.charAt(first) != 'L') return desc;
                 int last = desc.length() - 1;
                 if (desc.charAt(last) != ';') return desc;
-                if (BackportFactory.getImplementations(desc.substring(first + 1, last)) == null) return desc;
+                if (backportFactory.getImplementations(desc.substring(first + 1, last)) == null) return desc;
                 return desc.substring(0, first) + Type.getDescriptor(Object.class);
             }
 
@@ -80,7 +82,7 @@ class InheritanceVisitor extends ClassAdapter {
                     mv.visitTypeInsn(CHECKCAST, fixArrayType(desc));
                     return;
                 }
-                String[] list = BackportFactory.getImplementations(desc);
+                String[] list = backportFactory.getImplementations(desc);
                 if (list == null) {
                     mv.visitTypeInsn(CHECKCAST, desc);
                     return;
@@ -96,7 +98,7 @@ class InheritanceVisitor extends ClassAdapter {
             }
 
             private void visitInstanceOf(String desc) {
-                String[] list = BackportFactory.getImplementations(desc);
+                String[] list = backportFactory.getImplementations(desc);
                 if (list == null) {
                     mv.visitTypeInsn(INSTANCEOF, desc);
                     return;

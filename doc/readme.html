@@ -252,12 +252,13 @@ and concurrency utilities
 
 <p>
     JIT Retrotranslator is able to translate at runtime Java classes loaded with any classloader.
-    It works only on J2SE 1.4 from Sun, IBM, BEA, and Apple, on other platforms (including J2SE 5.0) it is inactive.
-    However translation at runtime consumes additional memory and processing resources.
+    It works on J2SE 1.4 from Sun, IBM, BEA, and Apple, but does nothing on J2SE 5.0 and other platforms.
+    However translation at runtime consumes additional memory and processing resources and it will not 
+	work if your classes make use of Java 5.0 API but were compiled with "<code>-target 1.4</code>".
 </p>
-<ol>
+<ul>
     <li>
-        If you want to run a JAR file, execute:<br>
+        If you want to run a JAR file with the JIT, execute:<br>
         <code>java -cp retrotranslator-transformer-<i>n.n.n</i>.jar
             net.sf.retrotranslator.transformer.JITRetrotranslator -jar &lt;jarfile&gt; [&lt;args...&gt;]</code>
     </li>
@@ -267,10 +268,10 @@ and concurrency utilities
             net.sf.retrotranslator.transformer.JITRetrotranslator &lt;class&gt; [&lt;args...&gt;]</code>
     </li>
     <li>
-        Simply call <code>JITRetrotranslator.install()</code> from some JVM 1.4 compatible class
+        Alternatively you may simply call <code>JITRetrotranslator.install()</code> from some JVM 1.4 compatible class
         before Java 5.0 classes are loaded.
     </li>
-</ol>
+</ul>
 
 <h4><a name="supported">What Java 5.0 classes and methods are supported?</a></h4>
 <table border="1" cellspacing="0" cellpadding="5">

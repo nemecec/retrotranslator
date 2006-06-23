@@ -31,7 +31,6 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import edu.emory.mathcs.backport.java.util.Queue;
 import static net.sf.retrotranslator.runtime.asm.Opcodes.ACC_PUBLIC;
 import static net.sf.retrotranslator.runtime.asm.Opcodes.ACC_STATIC;
 import net.sf.retrotranslator.runtime.asm.Type;
@@ -39,76 +38,122 @@ import net.sf.retrotranslator.runtime.impl.*;
 import net.sf.retrotranslator.runtime.java.util._Queue;
 
 import java.lang.annotation.Annotation;
+import java.lang.ref.SoftReference;
 import java.util.*;
 
 /**
  * @author Taras Puchko
  */
-public class BackportFactory {
+class BackportFactory {
 
-    private static final String RUNTIME = "net/sf/retrotranslator/runtime/";
-    private static final Map<String, Boolean> classes = new Hashtable<String, Boolean>();
-    private static final Map<String, String[]> implementations = new Hashtable<String, String[]>();
-    private static final Map<ClassMember, ClassMember> methods = new Hashtable<ClassMember, ClassMember>();
-    private static final Map<ClassMember, ClassMember> fields = new Hashtable<ClassMember, ClassMember>();
+    public static final String CONCURRENT = "java/util/concurrent/";
+    public static final String BACKPORT = "edu/emory/mathcs/backport/";
+    public static final String RUNTIME = "net/sf/retrotranslator/runtime/";
 
-    static {
-        String queueName = Type.getInternalName(Queue.class);
+    private static SoftReference<BackportFactory> softReference = new SoftReference<BackportFactory>(null);
+
+    private final Map<String, String> replacements = new Hashtable<String, String>();
+    private final Map<String, Boolean> extensions = new Hashtable<String, Boolean>();
+    private final Map<String, String[]> implementations = new Hashtable<String, String[]>();
+    private final Map<ClassMember, ClassMember> fields = new Hashtable<ClassMember, ClassMember>();
+    private final Map<ClassMember, ClassMember> methods = new Hashtable<ClassMember, ClassMember>();
+
+    private BackportFactory() {
+        String transformer = "net/sf/retrotranslator/transformer/";
+        replacements.put(transformer + "ClassFileTransformer", "sun/misc/ClassFileTransformer");
+        replacements.put(transformer + "ClassPreProcessor", "com/bea/jvm/ClassPreProcessor");
+        replacements.put("java/lang/StringBuilder", "java/lang/StringBuffer");
+        String queue = "java/util/Queue";
+        for (String name : new String[] {queue, "java/util/AbstractQueue", "java/util/PriorityQueue"}) {
+            replacements.put(name, BACKPORT + name);
+        }
+        String backportedQueue = BACKPORT + queue;
         for (Class aClass : new Class[]{Collection.class, _Queue.class}) {
-            loadBackport(new StringBuilder(Type.getInternalName(aClass)), queueName);
+            loadExtension(new StringBuilder(Type.getInternalName(aClass)), backportedQueue);
         }
         implementations.clear();
-        classes.put(queueName, true);
+        extensions.put(backportedQueue, true);
     }
 
-    public static String[] getImplementations(String desc) {
-        return isBackported(desc) ? implementations.get(desc) : null;
+    public static BackportFactory getInstance() {
+        BackportFactory factory = readFromCache();
+        if (factory == null) {
+            factory = new BackportFactory();
+            writeToCache(factory);
+        }
+        return factory;
     }
 
-    public static ClassMember getMethod(boolean isStatic, String owner, String name, String desc) {
-        return isBackported(owner) ? methods.get(new ClassMember(isStatic, owner, name, desc, false)) : null;
+    private static synchronized BackportFactory readFromCache() {
+        return softReference.get();
     }
 
-    public static ClassMember getField(String owner, String name, String desc) {
-        return isBackported(owner) ? fields.get(new ClassMember(true, owner, name, desc, false)) : null;
+    private static synchronized void writeToCache(BackportFactory factory) {
+        softReference = new SoftReference<BackportFactory>(factory);
     }
 
-    private static boolean isBackported(String owner) {
+    public String getClassName(String name) {
+        String result = replacements.get(name);
+        if (result == null) {
+            if (name.startsWith(CONCURRENT)) {
+                result = BACKPORT + name;
+            } else {
+                String backportName = RUNTIME + name + "_";
+                result = getClass().getResource("/" + backportName + ".class") != null ? backportName : name;
+            }
+            replacements.put(name, result);
+        }
+        return result;
+    }
+
+    public String[] getImplementations(String desc) {
+        return isExtended(desc) ? implementations.get(desc) : null;
+    }
+
+    public ClassMember getMethod(boolean isStatic, String owner, String name, String desc) {
+        return isExtended(owner) ? methods.get(new ClassMember(isStatic, owner, name, desc, false)) : null;
+    }
+
+    public ClassMember getField(String owner, String name, String desc) {
+        return isExtended(owner) ? fields.get(new ClassMember(true, owner, name, desc, false)) : null;
+    }
+
+    private boolean isExtended(String owner) {
         if (owner.charAt(0) == '[') return false;
-        Boolean isBackported = classes.get(owner);
-        if (isBackported != null) {
-            return isBackported;
+        Boolean extended = extensions.get(owner);
+        if (extended != null) {
+            return extended;
         }
         String original = owner;
         if (original.startsWith(RUNTIME) && original.endsWith("_")) {
             original = original.substring(RUNTIME.length(), original.length() - 1);
         }
-        StringBuilder backportPath = new StringBuilder(RUNTIME);
+        StringBuilder extensionName = new StringBuilder(RUNTIME);
         int index = original.lastIndexOf('/');
         if (index >= 0) {
-            backportPath.append(original.substring(0, index + 1));
+            extensionName.append(original.substring(0, index + 1));
         }
-        backportPath.append('_').append(original.substring(index + 1));
-        isBackported = loadBackport(backportPath, owner);
-        classes.put(owner, isBackported);
-        return isBackported;
+        extensionName.append('_').append(original.substring(index + 1));
+        extended = loadExtension(extensionName, owner);
+        extensions.put(owner, extended);
+        return extended;
     }
 
-    private static boolean loadBackport(StringBuilder backportName, String originalName) {
+    private boolean loadExtension(StringBuilder extensionName, String originalName) {
         try {
-            String backportPath = backportName.insert(0, '/').append(".class").toString();
+            String backportPath = extensionName.insert(0, '/').append(".class").toString();
             byte[] bytecode = RuntimeTools.readResourceToByteArray(BackportFactory.class, backportPath);
             ClassDescriptor descriptor = new ClassDescriptor(BackportFactory.class, bytecode);
             loadImplementations(descriptor, originalName);
-            loadMethods(descriptor, originalName);
             loadFields(descriptor, originalName);
+            loadMethods(descriptor, originalName);
             return true;
         } catch (MissingResourceException e) {
             return false;
         }
     }
 
-    private static void loadImplementations(ClassDescriptor descriptor, String originalName) {
+    private void loadImplementations(ClassDescriptor descriptor, String originalName) {
         if (originalName.startsWith(RUNTIME)) return;
         Annotation annotation = descriptor.getAnnotation(Derived.class);
         if (annotation == null) return;
@@ -120,7 +165,19 @@ public class BackportFactory {
         implementations.put(originalName, internalNames);
     }
 
-    private static void loadMethods(ClassDescriptor descriptor, String originalName) {
+    private void loadFields(ClassDescriptor descriptor, String originalName) {
+        for (FieldDescriptor fieldDescriptor : descriptor.getFieldDescriptors()) {
+            if (!fieldDescriptor.isAccess(ACC_PUBLIC) || !fieldDescriptor.isAccess(ACC_STATIC)) continue;
+            String name = fieldDescriptor.getName();
+            String desc = fieldDescriptor.getDesc();
+            ClassMember substitutionMember = new ClassMember(true, descriptor.getName(), name, desc,
+                    fieldDescriptor.isAnnotationPresent(Advanced.class));
+            ClassMember originalMember = new ClassMember(true, originalName, name, desc, false);
+            fields.put(originalMember, substitutionMember);
+        }
+    }
+
+    private void loadMethods(ClassDescriptor descriptor, String originalName) {
         Type originalType = TransformerTools.getTypeByInternalName(originalName);
         for (MethodDescriptor methodDescriptor : descriptor.getMethodDescriptors()) {
             String name = methodDescriptor.getName();
@@ -138,21 +195,10 @@ public class BackportFactory {
         }
     }
 
-    private static void loadFields(ClassDescriptor descriptor, String originalName) {
-        for (FieldDescriptor fieldDescriptor : descriptor.getFieldDescriptors()) {
-            if (!fieldDescriptor.isAccess(ACC_PUBLIC) || !fieldDescriptor.isAccess(ACC_STATIC)) continue;
-            String name = fieldDescriptor.getName();
-            String desc = fieldDescriptor.getDesc();
-            ClassMember substitutionMember = new ClassMember(true, descriptor.getName(), name, desc,
-                    fieldDescriptor.isAnnotationPresent(Advanced.class));
-            ClassMember originalMember = new ClassMember(true, originalName, name, desc, false);
-            fields.put(originalMember, substitutionMember);
-        }
-    }
-
     private static Type[] removeFirst(Type[] types) {
         Type[] result = new Type[types.length - 1];
         System.arraycopy(types, 1, result, 0, result.length);
         return result;
     }
+
 }

@@ -31,9 +31,6 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import edu.emory.mathcs.backport.java.util.concurrent.DelayQueue;
-import edu.emory.mathcs.backport.java.util.concurrent.Delayed;
-import edu.emory.mathcs.backport.java.util.concurrent.helpers.Utils;
 import net.sf.retrotranslator.runtime.asm.*;
 
 import java.util.*;
@@ -43,10 +40,13 @@ import java.util.*;
  */
 class UtilBackportVisitor extends ClassAdapter {
 
-    private static final String DELAY_QUEUE_NAME = Type.getInternalName(DelayQueue.class);
-    private static final String DELAYED_NAME = Type.getInternalName(Delayed.class);
+    private static final String BACKPORT_CONCURRENT = BackportFactory.BACKPORT + BackportFactory.CONCURRENT;
+    private static final String DELAY_QUEUE_NAME = BACKPORT_CONCURRENT + "DelayQueue";
+    private static final String DELAYED_NAME = BACKPORT_CONCURRENT + "Delayed";
+    private static final String UTILS_NAME = BACKPORT_CONCURRENT + "helpers/Utils";
     private static final String SYSTEM_NAME = Type.getInternalName(System.class);
     private static final String COLLECTIONS_NAME = Type.getInternalName(Collections.class);
+    private static final String BACKPORTED_COLLECTIONS_NAME = BackportFactory.BACKPORT + COLLECTIONS_NAME;
 
     private static final Map<String, String> FIELDS = new HashMap<String, String>();
     private static final Map<String, String> METHODS = new HashMap<String, String>();
@@ -83,7 +83,7 @@ class UtilBackportVisitor extends ClassAdapter {
                 if (owner.equals(DELAY_QUEUE_NAME)) {
                     desc = DELAYED_TRANSFORMER.transformDescriptor(desc);
                 } else if (owner.equals(SYSTEM_NAME) & name.equals("nanoTime")) {
-                    owner = Type.getInternalName(Utils.class);
+                    owner = UTILS_NAME;
                 } else if (owner.equals(COLLECTIONS_NAME)) {
                     String field = FIELDS.get(name);
                     if (field != null) {
@@ -91,7 +91,7 @@ class UtilBackportVisitor extends ClassAdapter {
                                 field, Type.getReturnType(desc).toString());
                         return;
                     } else if (desc.equals(METHODS.get(name))) {
-                        owner = Type.getInternalName(edu.emory.mathcs.backport.java.util.Collections.class);
+                        owner = BACKPORTED_COLLECTIONS_NAME;
                     }
                 }
                 super.visitMethodInsn(opcode, owner, name, desc);

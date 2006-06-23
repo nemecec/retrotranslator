@@ -1,6 +1,8 @@
 Retrotranslator Changelog
 =================================
 
+  - Cached data used by the transformer can be garbage collected.
+
 1.0.5 (2006-06-05)
 ---------------------------------
   - New -advanced option allows to override Java 1.4 methods.
