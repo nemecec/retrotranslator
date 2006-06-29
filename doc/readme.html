@@ -25,6 +25,7 @@
     <li><a href="#jit">How to use Just-in-Time Retrotranslator?</a></li>
     <li><a href="#supported">What Java 5.0 classes and methods are supported?</a></li>
     <li><a href="#extension">How to write an extension for Retrotranslator?</a></li>
+    <li><a href="#limitations">What are the limitations?</a></li>
     <li><a href="#alternative">Alternative tools</a></li>
     <li><a href="#contact">Contact</a></li>
     <li><a href="#license">License</a></li>
@@ -422,6 +423,18 @@ and concurrency utilities
     If you can release your extension under the <a href="#license">Retrotranslator license</a>
     please consider sending a <a href="http://sourceforge.net/tracker/?group_id=153566&atid=788281">patch</a>.
 </p>
+
+<h4><a name="limitations">What are the limitations?</a></h4>
+
+<p>
+    Basically, only classes, methods, and fields listed <a href="#supported">above</a> should work, and other features,
+    like formatted input/output, are not supported. Known issues:
+</p>
+<ul>
+    <li>Reflection-based tools may not be able to find additional classes and methods introduced in Java 5.0 when running on JRE 1.4.</li>
+    <li>Translated code running on JRE 5.0 may be incompatible with other Java 5.0 code, especially when enumerated types or annotations are used.</li>
+    <li>Serialized objects produced by translated code may be incompatible with Java 5.0.</li>
+</ul>
 
 <h4><a name="alternative">Alternative tools</a></h4>
 <ul>

@@ -38,16 +38,15 @@ import net.sf.retrotranslator.runtime.asm.Opcodes;
 import net.sf.retrotranslator.runtime.asm.signature.SignatureReader;
 import net.sf.retrotranslator.runtime.asm.signature.SignatureVisitor;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Inherited;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.MalformedParameterizedTypeException;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Taras Puchko
@@ -55,6 +54,7 @@ import java.util.Map;
 public class ClassDescriptor extends GenericDeclarationDescriptor {
 
     private static SoftReference<Map<Class, ClassDescriptor>> cache;
+    private static Properties signatures = getSignatures();
     private static BytecodeTransformer bytecodeTransformer;
 
     private String name;
@@ -65,6 +65,20 @@ public class ClassDescriptor extends GenericDeclarationDescriptor {
     private LazyValue<TypeDescriptor, Type> genericSuperclass;
     private Map<String, FieldDescriptor> fieldDescriptors = new HashMap<String, FieldDescriptor>();
     private Map<String, MethodDescriptor> methodDescriptors = new HashMap<String, MethodDescriptor>();
+
+    private static Properties getSignatures() {
+        try {
+            Properties properties = new Properties();
+            InputStream stream = ClassDescriptor.class.getResourceAsStream("signatures.properties");
+            if (stream != null) {
+                properties.load(stream);
+                stream.close();
+            }
+            return properties;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public ClassDescriptor(Class target, byte[] bytecode) {
         this.target = target;
@@ -182,6 +196,7 @@ public class ClassDescriptor extends GenericDeclarationDescriptor {
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
         this.access = access;
         this.name = name;
+        if (signature == null) signature = signatures.getProperty(name);
         if (signature != null) new SignatureReader(signature).accept(this);
     }
 

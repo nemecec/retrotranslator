@@ -37,16 +37,61 @@ import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
-import java.lang.reflect.Method;
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.RandomAccess;
 
 /**
  * @author Taras Puchko
  */
 @MyFormatter(tabPositions = {}, numbers = {1})
 public class _ClassTestCase extends BaseTestCase {
+
+    private static Class[] CLASSES_14 = {
+            java.util.Collection.class,
+            java.util.Set.class,
+            java.util.List.class,
+            java.util.Queue.class,
+            java.util.Map.class,
+            java.util.SortedSet.class,
+            java.util.SortedMap.class,
+            java.util.concurrent.BlockingQueue.class,
+            java.util.concurrent.ConcurrentMap.class,
+            java.util.HashSet.class,
+            java.util.TreeSet.class,
+            java.util.LinkedHashSet.class,
+            java.util.ArrayList.class,
+            java.util.LinkedList.class,
+            java.util.PriorityQueue.class,
+            java.util.HashMap.class,
+            java.util.TreeMap.class,
+            java.util.LinkedHashMap.class,
+            java.util.Vector.class,
+            java.util.Hashtable.class,
+            java.util.WeakHashMap.class,
+            java.util.IdentityHashMap.class,
+            java.util.concurrent.CopyOnWriteArrayList.class,
+            java.util.concurrent.CopyOnWriteArraySet.class,
+            java.util.EnumSet.class,
+            java.util.EnumMap.class,
+            java.util.concurrent.ConcurrentLinkedQueue.class,
+            java.util.concurrent.LinkedBlockingQueue.class,
+            java.util.concurrent.ArrayBlockingQueue.class,
+            java.util.concurrent.PriorityBlockingQueue.class,
+            java.util.concurrent.DelayQueue.class,
+            java.util.concurrent.SynchronousQueue.class,
+            java.util.concurrent.ConcurrentHashMap.class,
+            java.util.AbstractCollection.class,
+            java.util.AbstractSet.class,
+            java.util.AbstractList.class,
+            java.util.AbstractSequentialList.class,
+            java.util.AbstractQueue.class,
+            java.util.AbstractMap.class,
+            java.util.Enumeration.class,
+            java.util.Iterator.class,
+            java.util.ListIterator.class,
+            java.lang.Comparable.class,
+            java.util.Comparator.class
+    };
 
     @MyStyle("bold")
     @MyFormatter(lang = "uk")
@@ -89,7 +134,7 @@ public class _ClassTestCase extends BaseTestCase {
             //ok
         }
 
-        Integer[].class.cast(new Integer[] {});
+        Integer[].class.cast(new Integer[]{});
         try {
             boolean[].class.cast(boolean[].class);
             fail();
@@ -124,7 +169,8 @@ public class _ClassTestCase extends BaseTestCase {
     public void testGetCanonicalName() throws Exception {
         class Test {
         }
-        Serializable anonymous = new Serializable() { };
+        Serializable anonymous = new Serializable() {
+        };
         assertEquals("net.sf.retrotranslator.runtime.java.lang._ClassTestCase", this.getClass().getCanonicalName());
         assertEquals("net.sf.retrotranslator.runtime.java.lang._ClassTestCase.A", A.class.getCanonicalName());
         assertNull(Test.class.getCanonicalName());
@@ -151,9 +197,9 @@ public class _ClassTestCase extends BaseTestCase {
                 throw new UnsupportedOperationException();
             }
         }
-        assertEquals(String.class, GetterImpl.class.getDeclaredMethod( "get" ).getReturnType());
+        assertEquals(String.class, GetterImpl.class.getDeclaredMethod("get").getReturnType());
         try {
-            GetterImpl.class.getDeclaredMethod( "get", int.class);
+            GetterImpl.class.getDeclaredMethod("get", int.class);
             fail();
         } catch (NoSuchMethodException e) {
             //ok
@@ -230,6 +276,38 @@ public class _ClassTestCase extends BaseTestCase {
         assertEquals(0, void.class.getGenericInterfaces().length);
     }
 
+    public void testGetGenericInterfaces_Classes14() throws Exception {
+        for (Class aClass : CLASSES_14) {
+            Class[] interfaces = aClass.getInterfaces();
+            Type[] genericInterfaces = aClass.getGenericInterfaces();
+            assertEquals(aClass.getName(), interfaces.length, genericInterfaces.length);
+            for (int i = 0; i < interfaces.length; i++) {
+                assertEqualClasses(aClass, interfaces[i], genericInterfaces[i]);
+            }
+        }
+    }
+
+    public void testGetGenericSuperclass_Classes14() throws Exception {
+        for (Class aClass : CLASSES_14) {
+            Class superclass = aClass.getSuperclass();
+            Type genericSuperclass = aClass.getGenericSuperclass();
+            if (superclass != null || genericSuperclass != null) {
+                assertEqualClasses(aClass, superclass, genericSuperclass);
+            }
+        }
+    }
+
+    private void assertEqualClasses(Class owner, Class rawClass, Type genericType) {
+        if (genericType instanceof ParameterizedType) {
+            Type rawType = ((ParameterizedType) genericType).getRawType();
+            assertSame(owner.getName(), rawClass, rawType);
+        } else {
+            assertSame(owner.getName(), rawClass, genericType);
+            assertTrue(rawClass.getName(), rawClass == Object.class || rawClass == Cloneable.class ||
+                    rawClass == Serializable.class || rawClass == RandomAccess.class);
+        }
+    }
+
     public void testGetGenericSuperclass_FullyParameterized() throws Exception {
         class Test extends ThreadLocal<Comparable<String>> {
         }
@@ -259,10 +337,10 @@ public class _ClassTestCase extends BaseTestCase {
         }
         if (!System.getProperty("java.vm.version").equals("1.4.1-b21")) {
             //fails on JDK 1.4.1-b21
-            assertEquals(String.class, StringList.class.getMethod( "get", int.class).getReturnType());
+            assertEquals(String.class, StringList.class.getMethod("get", int.class).getReturnType());
         }
         try {
-            StringList.class.getMethod( "get", long.class);
+            StringList.class.getMethod("get", long.class);
             fail();
         } catch (NoSuchMethodException e) {
             //ok

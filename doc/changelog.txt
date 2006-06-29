@@ -1,6 +1,9 @@
 Retrotranslator Changelog
 =================================
 
+1.0.6 (2006-06-27)
+---------------------------------
+  - Emulated generic signatures for the collections framework classes (useful for JAXB).
   - Cached data used by the transformer can be garbage collected.
 
 1.0.5 (2006-06-05)

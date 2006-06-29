@@ -1,6 +1,6 @@
 <project name="retrotranslator" default="build" basedir=".">
 
-    <property name="version" value="1.0.5"/>
+    <property name="version" value="1.0.6"/>
 
     <property file="build.properties"/>
 
@@ -44,6 +44,14 @@
             <arg value="-srcmask"/>
             <arg value="*.class"/>
         </java>
+        <copy todir="build/classes" overwrite="true">
+            <fileset dir="build/classes15" includes="**/SignatureListGenerator.class"/>
+        </copy>
+        <java classname="net.sf.retrotranslator.transformer.SignatureListGenerator"
+              classpathref="classpath" classpath="build/classes" failonerror="true"
+              jvm="${java15_home}/bin/java.exe">
+            <arg value="build/classes/net/sf/retrotranslator/runtime/impl/signatures.properties"/>
+        </java>
         <jar destfile="build/retrotranslator-runtime-${version}.jar">
             <fileset dir="build/classes" includes="net/sf/retrotranslator/runtime/**"/>
             <zipfileset file="doc/LICENSE.txt" fullpath="RETROTRANSLATOR-LICENSE.txt"/>
@@ -54,7 +62,8 @@
             </manifest>
         </jar>
         <jar destfile="build/retrotranslator-transformer-${version}.jar">
-            <fileset dir="build/classes" includes="net/sf/retrotranslator/transformer/**"/>
+            <fileset dir="build/classes" includes="net/sf/retrotranslator/transformer/**"
+                    excludes="net/sf/retrotranslator/transformer/SignatureListGenerator.class"/>
             <zipfileset file="doc/LICENSE.txt" fullpath="RETROTRANSLATOR-LICENSE.txt"/>
             <manifest>
                 <attribute name="Implementation-Title" value="Retrotranslator Transformer"/>
@@ -71,9 +80,8 @@
                 <pathelement location="build/retrotranslator-transformer-${version}.jar"/>
             </classpath>
         </taskdef>
-        <retrotranslator srcjar="build/retrotranslator-runtime-${version}.jar"
-                         destjar="build/retrotranslator-runtime-tmp.jar" verify="true"
-                         classpath="${java14_rt_jar}" classpathref="classpath" />
+        <delete dir="build/classes" includes="**/*JITRetrotranslator* **/RetrotranslatorTask*" />
+        <retrotranslator srcdir="build/classes" verify="true" classpath="${java14_rt_jar}" classpathref="classpath" />
     </target>
 
     <target name="compile-tests" depends="compile">
