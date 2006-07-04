@@ -75,8 +75,10 @@ class JarFileContainer extends FileContainer {
                 ZipInputStream stream = new ZipInputStream(fileInputStream);
                 ZipEntry entry;
                 while ((entry = stream.getNextEntry()) != null) {
-                    byte[] content = entry.isDirectory() ? null : readFully(stream, (int) entry.getSize());
-                    entries.put(entry.getName(), new JarFileEntry(entry.getName(), content));
+                    if (!entry.isDirectory()) {
+                        byte[] content = readFully(stream, (int) entry.getSize());
+                        entries.put(entry.getName(), new JarFileEntry(entry.getName(), content));
+                    }
                 }
             } finally {
                 fileInputStream.close();

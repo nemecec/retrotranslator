@@ -125,9 +125,7 @@ public class RuntimeTools {
 
     public static byte[] readResourceToByteArray(Class loader, String resourceName) throws MissingResourceException {
         InputStream inputStream = loader.getResourceAsStream(resourceName);
-        if (inputStream == null) {
-            throw new MissingResourceException(resourceName, loader.getName(), resourceName);
-        }
+        if (inputStream == null) return null;
         try {
             try {
                 byte[] buffer = new byte[0x1000];

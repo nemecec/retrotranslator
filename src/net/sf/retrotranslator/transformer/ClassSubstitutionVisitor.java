@@ -45,11 +45,11 @@ class ClassSubstitutionVisitor extends GenericClassVisitor {
     }
 
     protected String visitIdentifier(String identifier) {
-        return TransformerTools.fixIdentifier(identifier);
+        return identifier.replace('+', '$');
     }
 
     protected String visitInternalName(String name) {
-        return backportFactory.getClassName(TransformerTools.fixIdentifier(name));
+        return backportFactory.getClassName(name);
     }
 
 }

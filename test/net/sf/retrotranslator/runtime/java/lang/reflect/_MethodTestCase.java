@@ -47,6 +47,17 @@ public class _MethodTestCase extends BaseTestCase {
 
     private static final String NAME = "doAction";
 
+    private static Method PROXY_METHOD = getProxyMethod();
+
+    private static Method getProxyMethod() {
+        try {
+            return Proxy.getProxyClass(_MethodTestCase.class.getClassLoader(),
+                    Comparable.class) .getMethod("compareTo", Object.class);
+        } catch (NoSuchMethodException e) {
+            throw new Error(e);
+        }
+    }
+
     @MyStyle("bold")
     public void doAction() {
     }
@@ -56,6 +67,10 @@ public class _MethodTestCase extends BaseTestCase {
     }
 
     public void doAction(@MyStyle("glass") String string, int i) {
+    }
+
+    public void testGetAnnotationForAbsent() throws Exception {
+        assertNull(PROXY_METHOD.getAnnotation(MyStyle.class));
     }
 
     public void testGetAnnotationForNoParam() throws Exception {
@@ -76,11 +91,13 @@ public class _MethodTestCase extends BaseTestCase {
     public void testGetAnnotations() throws Exception {
         Method noParamMethod = _MethodTestCase.class.getMethod(NAME);
         assertEquals("bold", ((MyStyle) noParamMethod.getAnnotations()[0]).value());
+        assertEquals(0, PROXY_METHOD.getAnnotations().length);
     }
 
     public void testGetDeclaredAnnotations() throws Exception {
         Method oneParamMethod = _MethodTestCase.class.getMethod(NAME, String.class);
         assertEquals("italic", ((MyStyle) oneParamMethod.getDeclaredAnnotations()[0]).value());
+        assertEquals(0, PROXY_METHOD.getDeclaredAnnotations().length);
     }
 
     public void testGetDefaultValue() throws Exception {
@@ -106,6 +123,7 @@ public class _MethodTestCase extends BaseTestCase {
             }
         }
         assertEquals(RuntimeException.class, singleton(Test.class.getMethod("m").getGenericExceptionTypes()));
+        assertEqualElements(PROXY_METHOD.getExceptionTypes(), (Object[]) PROXY_METHOD.getGenericExceptionTypes());
     }
 
     public void testGetGenericParameterTypes() throws Exception {
@@ -136,6 +154,7 @@ public class _MethodTestCase extends BaseTestCase {
         assertEquals(Object.class, singleton(argument.getUpperBounds()));
 
         assertEquals(String.class, s);
+        assertEqualElements(PROXY_METHOD.getParameterTypes(), (Object[]) PROXY_METHOD.getGenericParameterTypes());
     }
 
     public void testGetGenericReturnType() throws Exception {
@@ -150,6 +169,7 @@ public class _MethodTestCase extends BaseTestCase {
         assertEquals("T", variable.getName());
         assertEquals(Test.class, variable.getGenericDeclaration());
         assertEquals(RuntimeException.class, singleton(variable.getBounds()));
+        assertEquals(PROXY_METHOD.getReturnType(), PROXY_METHOD.getGenericReturnType());
     }
 
     public void testGetParameterAnnotationsForTwoParam() throws Exception {
@@ -159,6 +179,7 @@ public class _MethodTestCase extends BaseTestCase {
         assertEquals(1, annotations[0].length);
         assertEquals(0, annotations[1].length);
         assertEquals("glass", ((MyStyle) annotations[0][0]).value());
+        assertEquals(0, singleton(PROXY_METHOD.getParameterAnnotations()).length);
     }
 
     public void testGetTypeParameters() throws Exception {
@@ -171,11 +192,13 @@ public class _MethodTestCase extends BaseTestCase {
         assertEquals("E", variable.getName());
         assertEquals(Number.class, singleton(variable.getBounds()));
         assertEquals(method, variable.getGenericDeclaration());
+        assertEquals(0, PROXY_METHOD.getTypeParameters().length);
     }
 
     public void testIsAnnotationPresent() throws Exception {
         assertTrue(_MethodTestCase.class.getMethod(NAME).isAnnotationPresent(MyStyle.class));
         assertFalse(_MethodTestCase.class.getMethod(NAME).isAnnotationPresent(MyFormatter.class));
+        assertFalse(PROXY_METHOD.isAnnotationPresent(MyFormatter.class));
     }
 
     public void testIsBridge() throws Exception {
@@ -186,6 +209,7 @@ public class _MethodTestCase extends BaseTestCase {
         }
         assertTrue(Test.class.getDeclaredMethod("compareTo", Object.class).isBridge());
         assertFalse(Test.class.getDeclaredMethod("compareTo", String.class).isBridge());
+        assertFalse(PROXY_METHOD.isBridge());
     }
 
     public void testIsSynthetic() throws Exception {
@@ -196,6 +220,7 @@ public class _MethodTestCase extends BaseTestCase {
         }
         assertTrue(Test.class.getMethod("compareTo", Object.class).isSynthetic());
         assertFalse(Test.class.getMethod("compareTo", String.class).isSynthetic());
+        assertFalse(PROXY_METHOD.isSynthetic());
     }
 
     public void testIsVarArgs() throws Exception {
@@ -207,6 +232,7 @@ public class _MethodTestCase extends BaseTestCase {
         }
         assertTrue(Test.class.getMethod("m1", String[].class).isVarArgs());
         assertFalse(Test.class.getMethod("m2", String.class).isVarArgs());
+        assertFalse(PROXY_METHOD.isVarArgs());
     }
 
     class Test<T extends String, RE extends RuntimeException> {
@@ -215,9 +241,11 @@ public class _MethodTestCase extends BaseTestCase {
     }
 
     public void testGetGenericString() throws Exception {
-        assertEquals("public <E> void net.sf.retrotranslator.runtime.java.lang.reflect." +
-                "_MethodTestCase$Test.m(T,E,java.lang.String[])" +
+        assertEquals("public <E> void " +
+                this.getClass().getName() +
+                "$Test.m(T,E,java.lang.String[])" +
                 " throws RE,java.lang.ClassNotFoundException",
                 Test.class.getDeclaredMethods()[0].toGenericString());
+        assertEquals(PROXY_METHOD.toString(), PROXY_METHOD.toGenericString());
     }
 }

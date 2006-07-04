@@ -45,7 +45,11 @@ public class _BooleanTestCase extends TestCase {
 
     public void testParseBoolean() throws Exception {
         assertTrue(Boolean.parseBoolean("True"));
+        assertTrue(Boolean.parseBoolean("true"));
+        assertFalse(Boolean.parseBoolean("False"));
+        assertFalse(Boolean.parseBoolean("false"));
         assertFalse(Boolean.parseBoolean("Yes"));
+        assertFalse(Boolean.parseBoolean("No"));
     }
 
     public void testCompareTo() throws Exception {

@@ -37,9 +37,7 @@ import net.sf.retrotranslator.runtime.java.lang.MyStyle;
 import net.sf.retrotranslator.tests.BaseTestCase;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.WildcardType;
+import java.lang.reflect.*;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -50,6 +48,16 @@ import java.util.Map;
  * @author Taras Puchko
  */
 public class _FieldTestCase extends BaseTestCase {
+
+    private static Field PROXY_FIELD = getProxyField();
+
+    private static Field getProxyField() {
+        try {
+            return Proxy.getProxyClass(_FieldTestCase.class.getClassLoader(), Comparable.class).getDeclaredField("m0");
+        } catch (NoSuchFieldException e) {
+            throw new Error(e);
+        }
+    }
 
     @MyFormatter(
             pattern = "aabbcc",
@@ -102,6 +110,7 @@ public class _FieldTestCase extends BaseTestCase {
         assertEquals(2, styles.length);
         assertEquals("bold", styles[0].value());
         assertEquals("small", styles[1].value());
+        assertNull(PROXY_FIELD.getAnnotation(MyFormatter.class));
     }
 
     public void testGetAnnotation_Equals() throws Exception {
@@ -123,14 +132,14 @@ public class _FieldTestCase extends BaseTestCase {
         delete(buffer, "lang=en");
         delete(buffer, "format=class java.text.SimpleDateFormat");
         delete(buffer, "backgroundColor=BLUE");
-        delete(buffer, "backgroundStyle=@net.sf.retrotranslator.runtime.java.lang.MyStyle(value=italic)");
+        delete(buffer, "backgroundStyle=@" + MyStyle.class.getName() + "(value=italic)");
         delete(buffer, "tabPositions=[10, 20, 30]");
         delete(buffer, "keywords=[my, formatter]");
         delete(buffer, "colors=[RED, GREEN]");
-        delete(buffer, "styles=[@net.sf.retrotranslator.runtime.java.lang.MyStyle(value=bold), @net.sf.retrotranslator.runtime.java.lang.MyStyle(value=small)]");
+        delete(buffer, "styles=[@" + MyStyle.class.getName() + "(value=bold), @" + MyStyle.class.getName() + "(value=small)]");
         delete(buffer, "numbers=[1, 2, 3]");
         delete(buffer, "isPlain=false");
-        assertEquals("@net.sf.retrotranslator.runtime.java.lang.MyFormatter(, , , , , , , , , , )", buffer.toString());
+        assertEquals("@" + MyFormatter.class.getName() + "(, , , , , , , , , , )", buffer.toString());
     }
 
     private static void delete(StringBuffer buffer, String substring) {
@@ -143,10 +152,12 @@ public class _FieldTestCase extends BaseTestCase {
         Annotation[] annotations = field.getAnnotations();
         assertEquals(1, annotations.length);
         assertEquals(getAnnotation(), annotations[0]);
+        assertEquals(0, PROXY_FIELD.getAnnotations().length);
     }
 
     public void testGetDeclaredAnnotations() throws Exception {
         assertTrue(Arrays.equals(field.getDeclaredAnnotations(), field.getAnnotations()));
+        assertEquals(0, PROXY_FIELD.getDeclaredAnnotations().length);
     }
 
     public void testGetGenericType() throws Exception {
@@ -186,22 +197,26 @@ public class _FieldTestCase extends BaseTestCase {
         assertEquals(Object.class, singleton(comparableParam.getUpperBounds()));
         assertEquals(Integer.class, singleton(comparableParam.getLowerBounds()));
         assertEquals(Outer.class, top.getOwnerType());
+        assertEquals(PROXY_FIELD.getType(), PROXY_FIELD.getGenericType());
     }
 
     public void testIsAnnotationPresent() throws Exception {
         assertTrue(field.isAnnotationPresent(MyFormatter.class));
         assertFalse(field.isAnnotationPresent(MyStyle.class));
+        assertFalse(PROXY_FIELD.isAnnotationPresent(MyStyle.class));
     }
 
     public void testIsEnumConstant() throws Exception {
         assertTrue(MyColor.class.getField(MyColor.BLUE.name()).isEnumConstant());
         assertFalse(field.isEnumConstant());
+        assertFalse(PROXY_FIELD.isEnumConstant());
     }
 
     public void testIsSynthetic() throws Exception {
         class Test {
         }
         assertTrue(Test.class.getDeclaredFields()[0].isSynthetic());
+        assertFalse(PROXY_FIELD.isSynthetic());
     }
 
     static class Test<T extends Map> {
@@ -213,16 +228,13 @@ public class _FieldTestCase extends BaseTestCase {
     }
 
     public void testToGenericString() throws Exception {
-        assertEquals("public java.lang.Comparable<T>[]" +
-                " net.sf.retrotranslator.runtime.java.lang.reflect._FieldTestCase$Test.c",
+        String name = this.getClass().getName();
+        assertEquals("public java.lang.Comparable<T>[] " + name + "$Test.c", 
                 Test.class.getField("c").toGenericString());
-        assertEquals("public static boolean" +
-                " net.sf.retrotranslator.runtime.java.lang.reflect._FieldTestCase$Test.b",
+        assertEquals("public static boolean " + name + "$Test.b",
                 Test.class.getField("b").toGenericString());
-        assertEquals("public static net.sf.retrotranslator.runtime.java.lang.reflect." +
-                "_FieldTestCase.net.sf.retrotranslator.runtime.java.lang.reflect." +
-                "_FieldTestCase$Test<java.util.HashMap>.Inner" +
-                " net.sf.retrotranslator.runtime.java.lang.reflect._FieldTestCase$Test.i",
+        assertEquals("public static " + name + "." + name + "$Test<java.util.HashMap>.Inner " + name + "$Test.i",
                 Test.class.getField("i").toGenericString());
+        assertEquals(PROXY_FIELD.toString(), PROXY_FIELD.toGenericString());
     }
 }

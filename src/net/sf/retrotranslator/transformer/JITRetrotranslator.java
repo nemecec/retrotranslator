@@ -45,7 +45,7 @@ public class JITRetrotranslator {
 
     public static synchronized boolean install() {
         if (System.getProperty("java.version").startsWith("1.4")) {
-            ClassDescriptor.setBytecodeTransformer(new ClassTransformer(true, false, true));
+            ClassDescriptor.setBytecodeTransformer(new ClassTransformer(true, false, true, null));
             return JRockitJITRetrotranslator.install() || SunJITRetrotranslator.install();
         } else {
             return true;

@@ -139,16 +139,24 @@ and concurrency utilities
             Only three special characters are supported: "<code>*?;</code>".</td>
         <td>*.class</td>
     </tr>
+    <tr>
+        <td><code>-embed</code></td>
+        <td>Package name for a private copy of <code>retrotranslator-runtime-<i>n.n.n</i>.jar</code> and
+            <code>backport-util-concurrent.jar</code> to be put into <code>-destdir</code> or <code>-destjar</code>.
+            This makes your application independent of other versions of Retrotranslator present in the classpath.
+            </td>
+        <td>-</td>
+    </tr>
 </table>
 <p>
     For example, if you have Java 5 application <code>myapplication5.jar</code> you can use the following command
-    to produce <code>myapplication4.jar</code> that will run on J2SE 1.4. Since the file
-    <code>retrotranslator-runtime-<i>n.n.n</i>.jar</code> will be added to your application,
-    <code>myapplication4.jar</code> will not depend on the Retrotranslator runtime library.
+    to produce <code>myapplication4.jar</code> that will run on J2SE 1.4. Since the files
+    <code>retrotranslator-runtime-<i>n.n.n</i>.jar</code> and <code>backport-util-concurrent.jar</code> will be added
+    to your application, it will not depend on the Retrotranslator runtime library.
 </p>
 <p>
     <code>java -jar retrotranslator-transformer-<i>n.n.n</i>.jar
-    -srcjar retrotranslator-runtime-<i>n.n.n</i>.jar -srcjar myapplication5.jar -destjar myapplication4.jar</code><br>
+    -srcjar myapplication5.jar -destjar myapplication4.jar -embed com.mycompany.internal</code><br>
 </p>
 
 <h4><a name="ant">How to use Retrotranslator from Apache Ant or Maven?</a></h4>
@@ -215,6 +223,14 @@ and concurrency utilities
         <td>Files to translate (either bytecode or UTF-8 text) , e.g. "<code>*.class;*.tld</code>".
             Only three special characters are supported: "<code>*?;</code>".</td>
         <td>*.class</td>
+    </tr>
+    <tr>
+        <td><code>embed</code></td>
+        <td>Package name for a private copy of <code>retrotranslator-runtime-<i>n.n.n</i>.jar</code> and
+            <code>backport-util-concurrent.jar</code> to be put into <code>-destdir</code> or <code>-destjar</code>.
+            This makes your application independent of other versions of Retrotranslator present in the classpath.
+            </td>
+        <td>-</td>
     </tr>
     <tr>
         <td><code>failonwarning</code></td>
@@ -432,8 +448,9 @@ and concurrency utilities
 </p>
 <ul>
     <li>Reflection-based tools may not be able to find additional classes and methods introduced in Java 5.0 when running on JRE 1.4.</li>
-    <li>Translated code running on JRE 5.0 may be incompatible with other Java 5.0 code, especially when enumerated types or annotations are used.</li>
+    <li>Translated code running on JRE 5.0 may be incompatible with other Java 5.0 code when Java 5.0 API classes are used.</li>
     <li>Serialized objects produced by translated code may be incompatible with Java 5.0.</li>
+    <li>Reflection on generics and metadata may not work for dynamically generated classes.</li>
 </ul>
 
 <h4><a name="alternative">Alternative tools</a></h4>

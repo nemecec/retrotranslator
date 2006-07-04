@@ -210,103 +210,143 @@ abstract class GenericClassVisitor implements ClassVisitor {
     private class GenericMethodVisitor implements MethodVisitor {
 
         private MethodVisitor methodVisitor;
+        private String deferredConstant;
 
         public GenericMethodVisitor(final MethodVisitor methodVisitor) {
             this.methodVisitor = methodVisitor;
         }
 
         public AnnotationVisitor visitAnnotationDefault() {
+            flush();
             return wrap(methodVisitor.visitAnnotationDefault());
         }
 
         public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
+            flush();
             return wrap(methodVisitor.visitAnnotation(descriptor(desc), visible));
         }
 
         public AnnotationVisitor visitParameterAnnotation(final int parameter, final String desc, final boolean visible) {
+            flush();
             return wrap(methodVisitor.visitParameterAnnotation(parameter, descriptor(desc), visible));
         }
 
         public void visitTypeInsn(final int opcode, final String desc) {
+            flush();
             methodVisitor.visitTypeInsn(opcode, internalNameOrDescriptor(desc));
         }
 
         public void visitFieldInsn(final int opcode, final String owner, final String name, final String desc) {
+            flush();
             visitFieldRef(opcode, owner, name, desc);
             methodVisitor.visitFieldInsn(opcode, internalName(owner), identifier(name), descriptor(desc));
         }
 
         public void visitMethodInsn(final int opcode, final String owner, final String name, final String desc) {
+            if (deferredConstant != null && deferredConstant.indexOf('/') < 0 &&
+                    opcode == Opcodes.INVOKESTATIC && name.equals("class$") &&
+                    desc.equals(TransformerTools.descriptor(Class.class, String.class))) {
+                deferredConstant = internalNameOrDescriptor(deferredConstant.replace('.', '/')).replace('/', '.');
+            }
+            flush();
             visitMethodRef(opcode, owner, name, desc);
             methodVisitor.visitMethodInsn(opcode, internalNameOrDescriptor(owner), identifier(name), descriptor(desc));
         }
 
         public void visitLdcInsn(final Object cst) {
-            methodVisitor.visitLdcInsn(type(cst));
+            flush();
+            if (cst instanceof String) {
+                deferredConstant = (String) cst;
+            } else {
+                methodVisitor.visitLdcInsn(type(cst));
+            }
         }
 
         public void visitMultiANewArrayInsn(final String desc, final int dims) {
+            flush();
             methodVisitor.visitMultiANewArrayInsn(descriptor(desc), dims);
         }
 
         public void visitTryCatchBlock(final Label start, final Label end, final Label handler, final String type) {
+            flush();
             methodVisitor.visitTryCatchBlock(start, end, handler, internalName(type));
         }
 
         public void visitLocalVariable(final String name, final String desc, final String signature, final Label start, final Label end, final int index) {
+            flush();
             methodVisitor.visitLocalVariable(identifier(name), descriptor(desc), typeSignature(signature), start, end, index);
         }
 
         public void visitAttribute(Attribute attr) {
+            flush();
             methodVisitor.visitAttribute(attr);
         }
 
         public void visitCode() {
+            flush();
             methodVisitor.visitCode();
         }
 
         public void visitInsn(int opcode) {
+            flush();
             methodVisitor.visitInsn(opcode);
         }
 
         public void visitIntInsn(int opcode, int operand) {
+            flush();
             methodVisitor.visitIntInsn(opcode, operand);
         }
 
         public void visitVarInsn(int opcode, int var) {
+            flush();
             methodVisitor.visitVarInsn(opcode, var);
         }
 
         public void visitJumpInsn(int opcode, Label label) {
+            flush();
             methodVisitor.visitJumpInsn(opcode, label);
         }
 
         public void visitLabel(Label label) {
+            flush();
             methodVisitor.visitLabel(label);
         }
 
         public void visitIincInsn(int var, int increment) {
+            flush();
             methodVisitor.visitIincInsn(var, increment);
         }
 
         public void visitTableSwitchInsn(int min, int max, Label dflt, Label[] labels) {
+            flush();
             methodVisitor.visitTableSwitchInsn(min, max, dflt, labels);
         }
 
         public void visitLookupSwitchInsn(Label dflt, int[] keys, Label[] labels) {
+            flush();
             methodVisitor.visitLookupSwitchInsn(dflt, keys, labels);
         }
 
         public void visitLineNumber(int line, Label start) {
+            flush();
             methodVisitor.visitLineNumber(line, start);
         }
 
         public void visitMaxs(int maxStack, int maxLocals) {
+            flush();
             methodVisitor.visitMaxs(maxStack, maxLocals);
         }
 
         public void visitEnd() {
+            flush();
             methodVisitor.visitEnd();
+        }
+
+        private void flush() {
+            if (deferredConstant != null) {
+                methodVisitor.visitLdcInsn(deferredConstant);
+                deferredConstant = null;
+            }
         }
     }
 

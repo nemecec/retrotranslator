@@ -120,17 +120,25 @@ public class MethodDescriptor extends GenericDeclarationDescriptor {
     }
 
     public static MethodDescriptor getInstance(Method method) {
-        String key = method.getName() + net.sf.retrotranslator.runtime.asm.Type.getMethodDescriptor(method);
-        MethodDescriptor descriptor = ClassDescriptor.getInstance(method.getDeclaringClass()).getMethodDescriptor(key);
-        descriptor.method.provide(method);
-        return descriptor;
+        ClassDescriptor classDescriptor = ClassDescriptor.getInstance(method.getDeclaringClass());
+        String desc = net.sf.retrotranslator.runtime.asm.Type.getMethodDescriptor(method);
+        MethodDescriptor methodDescriptor = classDescriptor.getMethodDescriptor(method.getName() + desc);
+        if (methodDescriptor == null) {
+            methodDescriptor = new MethodDescriptor(classDescriptor, method.getModifiers(), method.getName(), desc, null);
+        }
+        methodDescriptor.method.provide(method);
+        return methodDescriptor;
     }
 
     public static MethodDescriptor getInstance(Constructor constructor) {
-        String key = RuntimeTools.CONSTRUCTOR_NAME + RuntimeTools.getConstructorDescriptor(constructor);
-        MethodDescriptor descriptor = ClassDescriptor.getInstance(constructor.getDeclaringClass()).getMethodDescriptor(key);
-        descriptor.constructor.provide(constructor);
-        return descriptor;
+        ClassDescriptor classDescriptor = ClassDescriptor.getInstance(constructor.getDeclaringClass());
+        String desc = RuntimeTools.getConstructorDescriptor(constructor);
+        MethodDescriptor methodDescriptor = classDescriptor.getMethodDescriptor(RuntimeTools.CONSTRUCTOR_NAME + desc);
+        if (methodDescriptor == null) {
+            methodDescriptor = new MethodDescriptor(classDescriptor, constructor.getModifiers(), constructor.getName(), desc, null);
+        }
+        methodDescriptor.constructor.provide(constructor);
+        return methodDescriptor;
     }
 
     public GenericDeclaration getTarget() {

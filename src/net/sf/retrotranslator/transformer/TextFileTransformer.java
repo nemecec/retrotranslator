@@ -42,30 +42,22 @@ class TextFileTransformer {
 
     private static Pattern pattern = Pattern.compile("([A-Za-z0-9_$]+\\.)+[A-Za-z0-9_$]+");
 
-    public static byte[] transform(byte[] bytes) {
+    public static byte[] transform(byte[] bytes, String backportPrefix) {
         boolean modified = false;
         Matcher matcher = pattern.matcher(toString(bytes));
         StringBuffer buffer = new StringBuffer();
         while (matcher.find()) {
-            String name = getBackportedClassName(matcher.group());
-            if (name != null) {
-                modified = true;
-                matcher.appendReplacement(buffer, Matcher.quoteReplacement(name));
-            } else {
+            String originalName = matcher.group().replace('.', '/');
+            String backportName = BackportFactory.getInstance().getClassName(originalName);
+            String name = TransformerTools.prefixBackportName(backportName, backportPrefix);
+            if (originalName.equals(name)) {
                 matcher.appendReplacement(buffer, "$0");
+            } else {
+                modified = true;
+                matcher.appendReplacement(buffer, Matcher.quoteReplacement(name.replace('/', '.')));
             }
         }
         return modified ? toBytes(matcher.appendTail(buffer).toString()) : bytes;
-    }
-
-    private static String getBackportedClassName(String s) {
-        try {
-            String backport = "net.sf.retrotranslator.runtime." + s + "_";
-            Class.forName(backport);
-            return backport;
-        } catch (ClassNotFoundException e) {
-            return null;
-        }
     }
 
     private static String toString(byte[] bytes) {

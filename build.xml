@@ -1,6 +1,6 @@
 <project name="retrotranslator" default="build" basedir=".">
 
-    <property name="version" value="1.0.6"/>
+    <property name="version" value="1.0.7"/>
 
     <property file="build.properties"/>
 
@@ -94,7 +94,7 @@
         </copy>
     </target>
 
-    <target name="test" depends="test-translated, test-with-jit" />
+    <target name="test" depends="test-translated, test-with-jit, test-embedded" />
 
     <target name="test-translated" depends="compile-tests">
         <mkdir dir="build/test-classes14"/>
@@ -104,6 +104,26 @@
         <antcall target="retrotranslate-test-classes14" />
         <!-- test twice -->
         <antcall target="retrotranslate-test-classes14" />
+    </target>
+
+    <target name="test-embedded" depends="compile-tests">
+        <mkdir dir="build/test-embedded"/>
+        <retrotranslator srcdir="build/test-classes15" destdir="build/test-embedded" advanced="true"
+                         embed="com.mycompany.internal" verify="true" srcmask="*.class;*.properties">
+            <classpath location="${java14_rt_jar}"/>
+            <classpath location="lib/junit.jar"/>
+        </retrotranslator>
+        <echo message="Running classes in build/test-embedded on ${java14_home}"/>
+        <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
+               jvm="${java14_home}/bin/java" failureproperty="test.failed">
+            <jvmarg value="-Xfuture"/>
+            <classpath location="build/test-embedded" />
+            <formatter type="brief" usefile="false"/>
+            <batchtest>
+                <fileset dir="build/test-embedded" includes="**/*TestCase.class" excludes="**/BaseTestCase.class"/>
+            </batchtest>
+        </junit>
+        <fail if="test.failed"/>
     </target>
 
     <target name="retrotranslate-test-classes14">

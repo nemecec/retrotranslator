@@ -1,6 +1,11 @@
 Retrotranslator Changelog
 =================================
 
+1.0.7 (2006-07-04)
+---------------------------------
+  - Bug fixed: MissingResourceException when Java 5.0 API is used for classes generated at runtime.
+  - Ability to specify a package name for embedding retrotranslator-runtime-x.x.x.jar and backport-util-concurrent.jar.
+
 1.0.6 (2006-06-27)
 ---------------------------------
   - Emulated generic signatures for the collections framework classes (useful for JAXB).

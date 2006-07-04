@@ -37,6 +37,7 @@ import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.RandomAccess;
 
@@ -45,6 +46,9 @@ import java.util.RandomAccess;
  */
 @MyFormatter(tabPositions = {}, numbers = {1})
 public class _ClassTestCase extends BaseTestCase {
+
+    private static final Class<?> PROXY_CLASS = Proxy.getProxyClass(
+            _ClassTestCase.class.getClassLoader(), Comparable.class);
 
     private static Class[] CLASSES_14 = {
             java.util.Collection.class,
@@ -157,6 +161,7 @@ public class _ClassTestCase extends BaseTestCase {
         assertNull(int.class.getAnnotation(MyFormatter.class));
         assertNull(boolean[].class.getAnnotation(MyFormatter.class));
         assertNull(String[][].class.getAnnotation(MyFormatter.class));
+        assertNull(PROXY_CLASS.getAnnotation(MyFormatter.class));
     }
 
     public void testGetAnnotations() throws Exception {
@@ -164,6 +169,7 @@ public class _ClassTestCase extends BaseTestCase {
         assertEqualElements(B.class.getAnnotations(), B.class.getAnnotation(MyStyle.class));
         assertEqualElements(C.class.getAnnotations(), C.class.getAnnotation(MyStyle.class));
         assertEquals(0, void.class.getAnnotations().length);
+        assertEquals(0, PROXY_CLASS.getAnnotations().length);
     }
 
     public void testGetCanonicalName() throws Exception {
@@ -171,14 +177,15 @@ public class _ClassTestCase extends BaseTestCase {
         }
         Serializable anonymous = new Serializable() {
         };
-        assertEquals("net.sf.retrotranslator.runtime.java.lang._ClassTestCase", this.getClass().getCanonicalName());
-        assertEquals("net.sf.retrotranslator.runtime.java.lang._ClassTestCase.A", A.class.getCanonicalName());
+        assertEquals(this.getClass().getName(), this.getClass().getCanonicalName());
+        assertEquals(this.getClass().getName() + ".A", A.class.getCanonicalName());
         assertNull(Test.class.getCanonicalName());
         assertNull(anonymous.getClass().getCanonicalName());
         assertEquals("java.lang.String[]", String[].class.getCanonicalName());
         assertNull(Test[].class.getCanonicalName());
         assertEquals("void", void.class.getCanonicalName());
         assertEquals("boolean[][]", boolean[][].class.getCanonicalName());
+        assertEquals(PROXY_CLASS.getName(), PROXY_CLASS.getCanonicalName());
     }
 
     public void testGetDeclaredAnnotations() throws Exception {
@@ -186,6 +193,7 @@ public class _ClassTestCase extends BaseTestCase {
         assertEquals(0, B.class.getDeclaredAnnotations().length);
         assertEqualElements(C.class.getAnnotations(), C.class.getAnnotation(MyStyle.class));
         assertEquals(0, int[][].class.getDeclaredAnnotations().length);
+        assertEquals(0, PROXY_CLASS.getDeclaredAnnotations().length);
     }
 
     public void testGetDeclaredMethod() throws Exception {
@@ -204,6 +212,7 @@ public class _ClassTestCase extends BaseTestCase {
         } catch (NoSuchMethodException e) {
             //ok
         }
+        assertEquals(int.class, PROXY_CLASS.getDeclaredMethod("compareTo", Object.class).getReturnType());
     }
 
     class TestGetEnclosingClass {
@@ -224,6 +233,7 @@ public class _ClassTestCase extends BaseTestCase {
         assertEquals(this.getClass(), anonymous.getClass().getEnclosingClass());
         assertNull(void.class.getEnclosingClass());
         assertNull(int[][].class.getEnclosingClass());
+        assertNull(PROXY_CLASS.getEnclosingClass());
     }
 
     public void testGetEnclosingConstructor() throws Exception {
@@ -236,6 +246,7 @@ public class _ClassTestCase extends BaseTestCase {
         }
         new Test();
         assertNull(float.class.getEnclosingConstructor());
+        assertNull(PROXY_CLASS.getEnclosingConstructor());
     }
 
     public void testGetEnclosingMethod() throws Exception {
@@ -244,14 +255,15 @@ public class _ClassTestCase extends BaseTestCase {
         Object anonymous = new Object() {};
         assertEquals("testGetEnclosingMethod", anonymous.getClass().getEnclosingMethod().getName());
         assertNull(double.class.getEnclosingMethod());
+        assertNull(PROXY_CLASS.getEnclosingMethod());
     }
-
 
     public void testGetEnumConstants() throws Exception {
         MyColor[] constants = MyColor.class.getEnumConstants();
         assertEqualElements(constants, MyColor.RED, MyColor.GREEN, MyColor.BLUE);
         assertNull(void.class.getEnumConstants());
         assertNull(int[].class.getEnumConstants());
+        assertNull(PROXY_CLASS.getEnumConstants());
     }
 
     public void testGetGenericInterfaces_Parameterized() throws Exception {
@@ -274,6 +286,7 @@ public class _ClassTestCase extends BaseTestCase {
         }
         assertEquals(Comparable.class, singleton(Test.class.getGenericInterfaces()));
         assertEquals(0, void.class.getGenericInterfaces().length);
+        assertEquals(Comparable.class, singleton(PROXY_CLASS.getGenericInterfaces()));
     }
 
     public void testGetGenericInterfaces_Classes14() throws Exception {
@@ -327,6 +340,7 @@ public class _ClassTestCase extends BaseTestCase {
         assertEquals(ThreadLocal.class, threadLocal.getRawType());
         assertNull(threadLocal.getOwnerType());
         assertEquals(Comparable.class, singleton(threadLocal.getActualTypeArguments()));
+        assertEquals(Proxy.class, PROXY_CLASS.getGenericSuperclass());
     }
 
     public void testGetMethod() throws Exception {
@@ -358,6 +372,7 @@ public class _ClassTestCase extends BaseTestCase {
         assertEquals("String[]", String[].class.getSimpleName());
         assertEquals("void", void.class.getSimpleName());
         assertEquals("boolean[]", boolean[].class.getSimpleName());
+        assertEquals(PROXY_CLASS.getName(), PROXY_CLASS.getSimpleName());
     }
 
     public void testGetTypeParameters() throws Exception {
@@ -388,6 +403,7 @@ public class _ClassTestCase extends BaseTestCase {
         }
         assertEquals(0, Test.class.getTypeParameters().length);
         assertEquals(0, boolean[].class.getTypeParameters().length);
+        assertEquals(0, PROXY_CLASS.getTypeParameters().length);
     }
 
     public void testIsAnnotation() throws Exception {
@@ -395,6 +411,7 @@ public class _ClassTestCase extends BaseTestCase {
         assertFalse(MyColor.class.isAnnotation());
         assertFalse(void.class.isAnnotation());
         assertFalse(int[].class.isAnnotation());
+        assertFalse(PROXY_CLASS.isAnnotation());
     }
 
     public void testIsAnnotationPresent() throws Exception {
@@ -409,6 +426,7 @@ public class _ClassTestCase extends BaseTestCase {
 
         assertFalse(void.class.isAnnotationPresent(MyStyle.class));
         assertFalse(long[].class.isAnnotationPresent(MyFormatter.class));
+        assertFalse(PROXY_CLASS.isAnnotationPresent(MyFormatter.class));
     }
 
     public void testIsAnonymousClass() throws Exception {
@@ -421,6 +439,7 @@ public class _ClassTestCase extends BaseTestCase {
         assertFalse(_ClassTestCase.class.isAnonymousClass());
         assertFalse(void.class.isAnonymousClass());
         assertFalse(short[].class.isAnonymousClass());
+        assertFalse(PROXY_CLASS.isAnonymousClass());
     }
 
     enum Case {
@@ -444,6 +463,7 @@ public class _ClassTestCase extends BaseTestCase {
         assertFalse(short[].class.isEnum());
         assertTrue(Case.class.isEnum());
         assertFalse(Case.UPPER.getClass().isEnum());
+        assertFalse(PROXY_CLASS.isEnum());
     }
 
     public void testIsLocalClass() throws Exception {
@@ -456,6 +476,7 @@ public class _ClassTestCase extends BaseTestCase {
         assertFalse(_ClassTestCase.class.isLocalClass());
         assertFalse(void.class.isLocalClass());
         assertFalse(short[].class.isLocalClass());
+        assertFalse(PROXY_CLASS.isLocalClass());
     }
 
     public void testIsMemberClass() throws Exception {
@@ -468,5 +489,7 @@ public class _ClassTestCase extends BaseTestCase {
         assertFalse(_ClassTestCase.class.isMemberClass());
         assertFalse(void.class.isMemberClass());
         assertFalse(short[].class.isMemberClass());
+        assertFalse(PROXY_CLASS.isMemberClass());
     }
+
 }

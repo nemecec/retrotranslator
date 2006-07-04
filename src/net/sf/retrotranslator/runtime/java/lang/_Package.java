@@ -61,36 +61,35 @@ public class _Package {
 
     private static ClassDescriptor getPackageInfo(Package aPackage) {
         String resourceName = "/" + aPackage.getName().replace('.', '/') + "/package-info.class";
-        try {
-            return createPackageInfo(_Package.class, resourceName);
-        } catch (Throwable t) {
-            return getPrivilegedInfo(resourceName);
-        }
+        ClassDescriptor packageInfo = createPackageInfo(_Package.class, resourceName);
+        return packageInfo != null ? packageInfo : getPrivilegedInfo(resourceName);
     }
 
     private static ClassDescriptor createPackageInfo(Class loader, String resourceName) {
-        return new ClassDescriptor(loader, RuntimeTools.readResourceToByteArray(loader, resourceName));
+        byte[] bytecode = RuntimeTools.readResourceToByteArray(loader, resourceName);
+        return bytecode == null ? null : new ClassDescriptor(loader, bytecode);
     }
 
     private static ClassDescriptor getPrivilegedInfo(final String resourceName) {
         return AccessController.doPrivileged(new PrivilegedAction<ClassDescriptor>() {
             public ClassDescriptor run() {
-                try {
-                    return getContextInfo(resourceName);
-                } catch (Throwable e) {
-                    return ClassDescriptor.getInstance(_Package.class);
-                }
+                return getContextInfo(resourceName);
             }
         });
     }
 
     private static ClassDescriptor getContextInfo(String resourceName) {
-        for (Class contextClass : new ExecutionContext().getClassContext()) {
-            try {
-                return createPackageInfo(contextClass, resourceName);
-            } catch (Throwable e) {
-                //continue;
+        try {
+            for (Class contextClass : new ExecutionContext().getClassContext()) {
+                try {
+                    ClassDescriptor packageInfo = createPackageInfo(contextClass, resourceName);
+                    if (packageInfo != null) return packageInfo;
+                } catch (Throwable e) {
+                    //continue;
+                }
             }
+        } catch (Throwable e) {
+            //continue;
         }
         return ClassDescriptor.getInstance(_Package.class);
     }

@@ -31,46 +31,21 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import net.sf.retrotranslator.runtime.asm.ClassReader;
 import net.sf.retrotranslator.runtime.asm.ClassVisitor;
-import net.sf.retrotranslator.runtime.asm.ClassWriter;
-import net.sf.retrotranslator.runtime.impl.BytecodeTransformer;
 
 /**
  * @author Taras Puchko
  */
-class ClassTransformer implements BytecodeTransformer {
+class PrefixingVisitor extends GenericClassVisitor {
 
-    private boolean lazy;
-    private boolean stripsign;
-    private boolean advanced;
     private String backportPrefix;
 
-    public ClassTransformer(boolean lazy, boolean stripsign, boolean advanced, String backportPrefix) {
-        this.lazy = lazy;
-        this.stripsign = stripsign;
-        this.advanced = advanced;
+    public PrefixingVisitor(ClassVisitor visitor, String backportPrefix) {
+        super(visitor);
         this.backportPrefix = backportPrefix;
     }
 
-    public byte[] transform(byte[] bytes, int offset, int length) {
-        if (lazy && (bytes[offset + 7] <= 48 ||
-                bytes[offset + 6] != 0 || bytes[offset + 5] != 0 || bytes[offset + 4] != 0)) {
-            if (offset == 0 && length == bytes.length) return bytes;
-            byte[] result = new byte[length];
-            System.arraycopy(bytes, offset, result, 0, length);
-            return result;
-        }
-        ClassWriter classWriter = new ClassWriter(true);
-        ClassVisitor visitor = new ArrayCloningVisitor(classWriter);
-
-        if (backportPrefix != null) visitor = new PrefixingVisitor(visitor, backportPrefix);
-        visitor = new ConstructorSubstitutionVisitor(new EnumVisitor(new ClassLiteralVisitor(visitor)));
-        visitor = new UtilBackportVisitor(new MemberSubstitutionVisitor(advanced, visitor));
-        visitor = new VersionVisitor(new InheritanceVisitor(new ClassSubstitutionVisitor(visitor)));
-        if (stripsign) visitor = new SignatureStrippingVisitor(visitor);
-
-        new ClassReader(bytes, offset, length).accept(visitor, false);
-        return classWriter.toByteArray();
+    protected String visitInternalName(String name) {
+        return TransformerTools.prefixBackportName(name, backportPrefix);
     }
 }

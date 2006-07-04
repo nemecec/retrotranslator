@@ -105,11 +105,12 @@ public class SignatureListGenerator extends EmptyVisitor {
     }
 
     private void execute(String fileName) throws Exception {
+        ClassTransformer classTransformer = new ClassTransformer(false, false, false, null);
         for (Object[] objects : CLASSES_14) {
             Class aClass = (Class) objects[0];
             specialSignature = objects.length > 1 ? (String) objects[1] : null;
             byte[] bytes = RuntimeTools.readResourceToByteArray(aClass, aClass.getSimpleName() + ".class");
-            bytes = ClassTransformer.transform(bytes, 0, bytes.length, false, false, false);
+            bytes = classTransformer.transform(bytes, 0, bytes.length);
             new ClassReader(bytes).accept(this, true);
         }
         OutputStream outputStream = new FileOutputStream(fileName);

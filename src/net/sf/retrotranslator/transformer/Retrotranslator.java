@@ -31,10 +31,15 @@
  */
 package net.sf.retrotranslator.transformer;
 
+import edu.emory.mathcs.backport.java.util.Queue;
+import net.sf.retrotranslator.runtime.impl.BytecodeTransformer;
+
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ByteArrayOutputStream;
+import java.net.URL;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -42,7 +47,7 @@ import java.util.regex.Pattern;
  */
 public class Retrotranslator implements MessageLogger {
 
-    private List<FileContainer> src = new ArrayList<FileContainer>();
+    private LinkedList<FileContainer> src = new LinkedList<FileContainer>();
     private FileContainer dest;
     private boolean stripsign;
     private boolean verbose;
@@ -52,6 +57,7 @@ public class Retrotranslator implements MessageLogger {
     private List<File> classpath = new ArrayList<File>();
     private MessageLogger logger = this;
     private Pattern srcmaskPattern;
+    private String embed;
     private ClassLoader classLoader;
 
     public Retrotranslator() {
@@ -135,7 +141,7 @@ public class Retrotranslator implements MessageLogger {
             if (builder.length() > 0) builder.append('|');
             builder.append("((./)?");
             StringTokenizer tokenizer = new StringTokenizer(s, "*?", true);
-            while(tokenizer.hasMoreTokens()) {
+            while (tokenizer.hasMoreTokens()) {
                 builder.append(wildcardToRegex(tokenizer.nextToken()));
             }
             builder.append(")");
@@ -147,6 +153,10 @@ public class Retrotranslator implements MessageLogger {
         if (s.equals("*")) return ".*";
         if (s.equals("?")) return ".";
         return Pattern.quote(s);
+    }
+
+    public void setEmbed(String embed) {
+        this.embed = embed;
     }
 
     public void setLogger(MessageLogger logger) {
@@ -163,9 +173,16 @@ public class Retrotranslator implements MessageLogger {
 
     public boolean run() {
         if (src.isEmpty()) throw new IllegalArgumentException("Source not set.");
-        ClassTransformer transformer = new ClassTransformer(lazy, stripsign, advanced);
+        String backportPrefix = null;
+        if (embed != null) {
+            if (dest == null) throw new IllegalArgumentException("Destination not set.");
+            backportPrefix = embed.replace('.', '/') + '/';
+            prependLocationToSource(Queue.class);
+            prependLocationToSource(BytecodeTransformer.class);
+        }
+        ClassTransformer classTransformer = new ClassTransformer(lazy, stripsign, advanced, backportPrefix);
         for (FileContainer container : src) {
-            transform(transformer, container, dest != null ? dest : container);
+            transform(classTransformer, backportPrefix, container, dest != null ? dest : container);
         }
         if (dest != null) dest.flush();
         if (!verify) return true;
@@ -181,26 +198,23 @@ public class Retrotranslator implements MessageLogger {
         }
     }
 
-    private void transform(ClassTransformer transformer, FileContainer source, FileContainer destination) {
+    private void transform(ClassTransformer transformer, String backportPrefix, FileContainer source, FileContainer destination) {
         logger.log(new Message(Level.INFO, "Transforming " + source.getFileCount() + " file(s)" +
                 (source == destination ? " in " + source : " from " + source + " to " + destination) + "."));
         for (FileEntry entry : source.getEntries()) {
             String name = entry.getName();
-            if (isTransformable(name)) {
+            if (backportPrefix != null && name.equals("net/sf/retrotranslator/runtime/impl/signatures.properties")) {
+                destination.putEntry(backportPrefix + name, transformSignatures(entry.getContent(), backportPrefix));
+            } else if (isTransformable(name)) {
                 if (verbose) logger.log(new Message(Level.VERBOSE, "Transformation", source.getLocation(), name));
                 byte[] sourceData = entry.getContent();
-                if (isClassFile(sourceData)) {
-                    byte[] resultData = transformer.transform(sourceData, 0, sourceData.length);
-                    if (source != destination || sourceData != resultData) {
-                        String fixedName = TransformerTools.fixIdentifier(name);
-                        if (!fixedName.equals(name)) destination.removeEntry(name);
-                        destination.putEntry(fixedName, resultData);
-                    }
-                } else {
-                    byte[] resultData = TextFileTransformer.transform(sourceData);
-                    if (source != destination || sourceData != resultData) {
-                        destination.putEntry(name, resultData);
-                    }
+                byte[] resultData = isClassFile(sourceData)
+                        ? transformer.transform(sourceData, 0, sourceData.length)
+                        : TextFileTransformer.transform(sourceData, backportPrefix);
+                String fixedName = TransformerTools.prefixBackportName(name, backportPrefix);
+                if (source != destination || sourceData != resultData || !fixedName.equals(name)) {
+                    if (!fixedName.equals(name)) destination.removeEntry(name);
+                    destination.putEntry(fixedName, resultData);
                 }
             } else if (source != destination) {
                 destination.putEntry(entry.getName(), entry.getContent());
@@ -212,6 +226,29 @@ public class Retrotranslator implements MessageLogger {
 
     private boolean isTransformable(String name) {
         return srcmaskPattern != null ? srcmaskPattern.matcher(name).matches() : name.endsWith(".class");
+    }
+
+    private byte[] transformSignatures(byte[] content, final String backportPrefix) {
+        try {
+            DescriptorTransformer transformer = new DescriptorTransformer() {
+                protected String transformInternalName(String internalName) {
+                    return TransformerTools.prefixBackportName(internalName, backportPrefix);
+                }
+            };
+            Properties source = new Properties();
+            source.load(new ByteArrayInputStream(content));
+            Properties target = new Properties();
+            for (Map.Entry entry : source.entrySet()) {
+                String key = TransformerTools.prefixBackportName((String) entry.getKey(), backportPrefix);
+                String value = transformer.transformDescriptor((String) entry.getValue());
+                target.put(key, value);
+            }
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            target.store(stream, null);
+            return stream.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static boolean isClassFile(byte[] bytes) {
@@ -288,6 +325,8 @@ public class Retrotranslator implements MessageLogger {
                 addClasspath(args[i++]);
             } else if (string.equals("-srcmask") && i < args.length) {
                 setSrcmask(args[i++]);
+            } else if (string.equals("-embed") && i < args.length) {
+                setEmbed(args[i++]);
             } else {
                 throw new IllegalArgumentException("Unknown option: " + string);
             }
@@ -299,8 +338,8 @@ public class Retrotranslator implements MessageLogger {
         String version = Retrotranslator.class.getPackage().getImplementationVersion();
         String suffix = (version == null) ? "" : "-" + version;
         System.out.println("Usage: java -jar retrotranslator-transformer" + suffix + ".jar" +
-                " [-srcdir <path> | -srcjar <file>] [-destdir <path> | -destjar <file>] [-stripsign]" +
-                " [-verbose] [-lazy] [-advanced] [-verify] [-classpath <classpath>] [-srcmask <mask>]");
+                " [-srcdir <path> | -srcjar <file>] [-destdir <path> | -destjar <file>] [-stripsign] [-verbose]" +
+                " [-lazy] [-advanced] [-verify] [-classpath <classpath>] [-srcmask <mask>] [-embed <package>]");
     }
 
     public static void main(String[] args) {
@@ -317,4 +356,22 @@ public class Retrotranslator implements MessageLogger {
         }
     }
 
+    private void prependLocationToSource(Class aClass) {
+        String path = "/" + aClass.getName().replace('.', '/') + ".class";
+        URL resource = aClass.getResource(path);
+        if (resource == null) {
+            throw new IllegalArgumentException("Location not found: " + aClass);
+        }
+        String url = resource.toExternalForm();
+        String prefix = "jar:file:/";
+        String suffix = "!" + path;
+        if (!url.startsWith(prefix) || !url.endsWith(suffix)) {
+            throw new IllegalArgumentException("Not in a jar file: " + aClass);
+        }
+        File file = new File(url.substring(prefix.length(), url.length() - suffix.length()));
+        if (!file.isFile()) {
+            throw new IllegalArgumentException("File not found: " + file);
+        }
+        src.addFirst(new JarFileContainer(file));
+    }
 }

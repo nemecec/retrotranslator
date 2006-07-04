@@ -59,8 +59,15 @@ public class FieldDescriptor extends AnnotatedElementDescriptor {
         }
     }
 
+    public FieldDescriptor(ClassDescriptor classDescriptor, Field field) {
+        this(classDescriptor, field.getModifiers(), field.getName(),
+                net.sf.retrotranslator.runtime.asm.Type.getDescriptor(field.getType()), null);
+    }
+
     public static FieldDescriptor getInstance(Field field) {
-        return ClassDescriptor.getInstance(field.getDeclaringClass()).getFieldDescriptor(field.getName());
+        ClassDescriptor classDescriptor = ClassDescriptor.getInstance(field.getDeclaringClass());
+        FieldDescriptor fieldDescriptor = classDescriptor.getFieldDescriptor(field.getName());
+        return fieldDescriptor != null ? fieldDescriptor : new FieldDescriptor(classDescriptor, field);
     }
 
     public String getName() {

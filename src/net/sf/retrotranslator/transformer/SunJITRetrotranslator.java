@@ -38,11 +38,13 @@ class SunJITRetrotranslator {
 
     private static class ClassFileTransformerImpl extends ClassFileTransformer {
 
+        private ClassTransformer transformer = new ClassTransformer(false, false, true, null);
+
         public ClassFileTransformerImpl() {
         }
 
         public byte[] transform(byte[] bytes, int offset, int length) {
-            return ClassTransformer.transform(bytes, offset, length, false, false, true);
+            return transformer.transform(bytes, offset, length);
         }
     }
 

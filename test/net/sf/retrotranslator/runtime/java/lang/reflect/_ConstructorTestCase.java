@@ -140,8 +140,10 @@ public class _ConstructorTestCase extends BaseTestCase {
             public <E extends Number> Test(T t, E e, String[] strings) throws RE, ClassNotFoundException {
             }
         }
-        assertEquals("public <E> net.sf.retrotranslator.runtime.java.lang.reflect." +
-                "_ConstructorTestCase$1Test(T,E,java.lang.String[])" +
+
+        assertEquals("public <E> " +
+                this.getClass().getName() +
+                "$1Test(T,E,java.lang.String[])" +
                 " throws RE,java.lang.ClassNotFoundException",
                 Test.class.getConstructors()[0].toGenericString());
     }
