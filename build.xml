@@ -109,10 +109,7 @@
     <target name="test-embedded" depends="compile-tests">
         <mkdir dir="build/test-embedded"/>
         <retrotranslator srcdir="build/test-classes15" destdir="build/test-embedded" advanced="true"
-                         embed="com.mycompany.internal" verify="true" srcmask="*.class;*.properties">
-            <classpath location="${java14_rt_jar}"/>
-            <classpath location="lib/junit.jar"/>
-        </retrotranslator>
+                         embed="com.mycompany.internal" srcmask="*.class;*.properties" />
         <echo message="Running classes in build/test-embedded on ${java14_home}"/>
         <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
                jvm="${java14_home}/bin/java" failureproperty="test.failed">
