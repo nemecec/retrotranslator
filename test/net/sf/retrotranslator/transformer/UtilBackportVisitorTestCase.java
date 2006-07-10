@@ -34,11 +34,22 @@ package net.sf.retrotranslator.transformer;
 import net.sf.retrotranslator.tests.BaseTestCase;
 
 import java.util.*;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * @author Taras Puchko
  */
 public class UtilBackportVisitorTestCase extends BaseTestCase {
+
+    public void testReentrantReadWriteLock() throws Exception {
+        ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+        ReentrantReadWriteLock.ReadLock readLock = readWriteLock.readLock();
+        ReentrantReadWriteLock.WriteLock writeLock = readWriteLock.writeLock();
+        assertTrue(readLock.tryLock());
+        readLock.unlock();
+        assertTrue(writeLock.tryLock());
+        writeLock.unlock();
+    }
 
     public void testCheckedCollection() throws Exception {
         Collection strings = Collections.checkedCollection(new ArrayList(), String.class);

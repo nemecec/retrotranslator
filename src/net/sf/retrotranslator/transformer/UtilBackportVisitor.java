@@ -32,6 +32,14 @@
 package net.sf.retrotranslator.transformer;
 
 import net.sf.retrotranslator.runtime.asm.*;
+import static net.sf.retrotranslator.runtime.asm.Opcodes.CHECKCAST;
+
+
+import edu.emory.mathcs.backport.java.util.concurrent.locks.ReentrantReadWriteLock;
+import edu.emory.mathcs.backport.java.util.concurrent.locks.Lock;
+import edu.emory.mathcs.backport.java.util.concurrent.DelayQueue;
+import edu.emory.mathcs.backport.java.util.concurrent.Delayed;
+import edu.emory.mathcs.backport.java.util.concurrent.helpers.Utils;
 
 import java.util.*;
 
@@ -40,21 +48,18 @@ import java.util.*;
  */
 class UtilBackportVisitor extends ClassAdapter {
 
-    private static final String BACKPORT_CONCURRENT = BackportFactory.BACKPORT + BackportFactory.CONCURRENT;
-    private static final String DELAY_QUEUE_NAME = BACKPORT_CONCURRENT + "DelayQueue";
-    private static final String DELAYED_NAME = BACKPORT_CONCURRENT + "Delayed";
-    private static final String UTILS_NAME = BACKPORT_CONCURRENT + "helpers/Utils";
     private static final String SYSTEM_NAME = Type.getInternalName(System.class);
-    private static final String COLLECTIONS_NAME = Type.getInternalName(Collections.class);
-    private static final String BACKPORTED_COLLECTIONS_NAME = BackportFactory.BACKPORT + COLLECTIONS_NAME;
+    private static final String DELAY_QUEUE_NAME = Type.getInternalName(DelayQueue.class);
+    private static final String COLLECTIONS_NAME = Type.getInternalName(java.util.Collections.class);
+    private static final String REENTRANT_READ_WRITE_LOCK_NAME = Type.getInternalName(ReentrantReadWriteLock.class);
 
-    private static final Map<String, String> FIELDS = new HashMap<String, String>();
-    private static final Map<String, String> METHODS = new HashMap<String, String>();
+    private static final Map<String, String> COLLECTIONS_FIELDS = new HashMap<String, String>();
+    private static final Map<String, String> COLLECTIONS_METHODS = new HashMap<String, String>();
 
     static {
-        FIELDS.put("emptyList", "EMPTY_LIST");
-        FIELDS.put("emptyMap", "EMPTY_MAP");
-        FIELDS.put("emptySet", "EMPTY_SET");
+        COLLECTIONS_FIELDS.put("emptyList", "EMPTY_LIST");
+        COLLECTIONS_FIELDS.put("emptyMap", "EMPTY_MAP");
+        COLLECTIONS_FIELDS.put("emptySet", "EMPTY_SET");
         putMethod(boolean.class, "addAll", Collection.class, Object[].class);
         putMethod(Collection.class, "checkedCollection", Collection.class, Class.class);
         putMethod(List.class, "checkedList", List.class, Class.class);
@@ -67,12 +72,6 @@ class UtilBackportVisitor extends ClassAdapter {
         putMethod(Comparator.class, "reverseOrder", Comparator.class);
     }
 
-    private static DescriptorTransformer DELAYED_TRANSFORMER = new DescriptorTransformer() {
-        protected String transformInternalName(String internalName) {
-            return DELAYED_NAME.equals(internalName) ? Type.getInternalName(Object.class) : internalName;
-        }
-    };
-
     public UtilBackportVisitor(final ClassVisitor cv) {
         super(cv);
     }
@@ -80,18 +79,32 @@ class UtilBackportVisitor extends ClassAdapter {
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         return new MethodAdapter(super.visitMethod(access, name, desc, signature, exceptions)) {
             public void visitMethodInsn(int opcode, String owner, String name, String desc) {
-                if (owner.equals(DELAY_QUEUE_NAME)) {
-                    desc = DELAYED_TRANSFORMER.transformDescriptor(desc);
-                } else if (owner.equals(SYSTEM_NAME) & name.equals("nanoTime")) {
-                    owner = UTILS_NAME;
+                if (owner.equals(SYSTEM_NAME) & name.equals("nanoTime")) {
+                    owner = Type.getInternalName(Utils.class);
+                } else if (owner.equals(DELAY_QUEUE_NAME)) {
+                    desc = new DescriptorTransformer() {
+                        protected String transformInternalName(String internalName) {
+                            return Type.getInternalName(Delayed.class).equals(internalName)
+                                    ? Type.getInternalName(Object.class) : internalName;
+                        }
+                    }.transformDescriptor(desc);
                 } else if (owner.equals(COLLECTIONS_NAME)) {
-                    String field = FIELDS.get(name);
+                    String field = COLLECTIONS_FIELDS.get(name);
                     if (field != null) {
                         mv.visitFieldInsn(Opcodes.GETSTATIC, COLLECTIONS_NAME,
                                 field, Type.getReturnType(desc).toString());
                         return;
-                    } else if (desc.equals(METHODS.get(name))) {
-                        owner = BACKPORTED_COLLECTIONS_NAME;
+                    } else if (desc.equals(COLLECTIONS_METHODS.get(name))) {
+                        owner = Type.getInternalName(edu.emory.mathcs.backport.java.util.Collections.class);
+                    }
+                } else if (owner.equals(REENTRANT_READ_WRITE_LOCK_NAME)) {
+                    Type returnType = Type.getReturnType(desc);
+                    if (returnType.equals(Type.getType(ReentrantReadWriteLock.ReadLock.class)) ||
+                            returnType.equals(Type.getType(ReentrantReadWriteLock.WriteLock.class))) {
+                        desc = Type.getMethodDescriptor(Type.getType(Lock.class), Type.getArgumentTypes(desc));
+                        super.visitMethodInsn(opcode, owner, name, desc);
+                        mv.visitTypeInsn(CHECKCAST, returnType.getInternalName());
+                        return;
                     }
                 }
                 super.visitMethodInsn(opcode, owner, name, desc);
@@ -104,7 +117,7 @@ class UtilBackportVisitor extends ClassAdapter {
         for (int i = 0; i < argumentTypes.length; i++) {
             argumentTypes[i] = Type.getType(parameterTypes[i]);
         }
-        METHODS.put(name, Type.getMethodDescriptor(Type.getType(returnType), argumentTypes));
+        COLLECTIONS_METHODS.put(name, Type.getMethodDescriptor(Type.getType(returnType), argumentTypes));
     }
 
 }
