@@ -49,7 +49,7 @@ class TextFileTransformer {
         while (matcher.find()) {
             String originalName = matcher.group().replace('.', '/');
             String backportName = BackportFactory.getInstance().getClassName(originalName);
-            String name = TransformerTools.prefixBackportName(backportName, backportPrefix);
+            String name = BackportFactory.prefixBackportName(backportName, backportPrefix);
             if (originalName.equals(name)) {
                 matcher.appendReplacement(buffer, "$0");
             } else {

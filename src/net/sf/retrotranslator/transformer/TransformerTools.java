@@ -31,7 +31,6 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import static net.sf.retrotranslator.transformer.BackportFactory.*;
 import net.sf.retrotranslator.runtime.asm.Type;
 
 /**
@@ -51,8 +50,4 @@ class TransformerTools {
         return Type.getType("L" + name + ";");
     }
 
-    public static String prefixBackportName(String className, String backportPrefix) {
-        return backportPrefix != null && (className.startsWith(RUNTIME) || className.startsWith(BACKPORT))
-                ? backportPrefix + className : className;
-    }
 }

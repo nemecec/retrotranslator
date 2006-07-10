@@ -46,6 +46,6 @@ class PrefixingVisitor extends GenericClassVisitor {
     }
 
     protected String visitInternalName(String name) {
-        return TransformerTools.prefixBackportName(name, backportPrefix);
+        return BackportFactory.prefixBackportName(name, backportPrefix);
     }
 }

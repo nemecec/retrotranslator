@@ -211,7 +211,7 @@ public class Retrotranslator implements MessageLogger {
                 byte[] resultData = isClassFile(sourceData)
                         ? transformer.transform(sourceData, 0, sourceData.length)
                         : TextFileTransformer.transform(sourceData, backportPrefix);
-                String fixedName = TransformerTools.prefixBackportName(name, backportPrefix);
+                String fixedName = BackportFactory.prefixBackportName(name, backportPrefix);
                 if (source != destination || sourceData != resultData || !fixedName.equals(name)) {
                     if (!fixedName.equals(name)) destination.removeEntry(name);
                     destination.putEntry(fixedName, resultData);
@@ -232,14 +232,14 @@ public class Retrotranslator implements MessageLogger {
         try {
             DescriptorTransformer transformer = new DescriptorTransformer() {
                 protected String transformInternalName(String internalName) {
-                    return TransformerTools.prefixBackportName(internalName, backportPrefix);
+                    return BackportFactory.prefixBackportName(internalName, backportPrefix);
                 }
             };
             Properties source = new Properties();
             source.load(new ByteArrayInputStream(content));
             Properties target = new Properties();
             for (Map.Entry entry : source.entrySet()) {
-                String key = TransformerTools.prefixBackportName((String) entry.getKey(), backportPrefix);
+                String key = BackportFactory.prefixBackportName((String) entry.getKey(), backportPrefix);
                 String value = transformer.transformDescriptor((String) entry.getValue());
                 target.put(key, value);
             }

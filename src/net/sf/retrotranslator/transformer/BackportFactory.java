@@ -31,6 +31,7 @@
  */
 package net.sf.retrotranslator.transformer;
 
+import edu.emory.mathcs.backport.java.util.concurrent.Callable;
 import static net.sf.retrotranslator.runtime.asm.Opcodes.ACC_PUBLIC;
 import static net.sf.retrotranslator.runtime.asm.Opcodes.ACC_STATIC;
 import net.sf.retrotranslator.runtime.asm.Type;
@@ -39,16 +40,19 @@ import net.sf.retrotranslator.runtime.java.util._Queue;
 
 import java.lang.annotation.Annotation;
 import java.lang.ref.SoftReference;
-import java.util.*;
+import java.util.Collection;
+import java.util.Hashtable;
+import java.util.Map;
+import java.util.MissingResourceException;
 
 /**
  * @author Taras Puchko
  */
 class BackportFactory {
 
-    public static final String CONCURRENT = "java/util/concurrent/";
-    public static final String BACKPORT = "edu/emory/mathcs/backport/";
-    public static final String RUNTIME = "net/sf/retrotranslator/runtime/";
+    private static final String CONCURRENT = "java/util/concurrent/";
+    private static final String BACKPORT = getPrefix(Callable.class, CONCURRENT + "Callable");
+    private static final String RUNTIME = getPrefix(Derived.class, "impl/Derived");
 
     private static SoftReference<BackportFactory> softReference = new SoftReference<BackportFactory>(null);
 
@@ -59,12 +63,12 @@ class BackportFactory {
     private final Map<ClassMember, ClassMember> methods = new Hashtable<ClassMember, ClassMember>();
 
     private BackportFactory() {
-        String transformer = "net/sf/retrotranslator/transformer/";
+        String transformer = getPrefix(BackportFactory.class, "BackportFactory");
         replacements.put(transformer + "ClassFileTransformer", "sun/misc/ClassFileTransformer");
         replacements.put(transformer + "ClassPreProcessor", "com/bea/jvm/ClassPreProcessor");
         replacements.put("java/lang/StringBuilder", "java/lang/StringBuffer");
         String queue = "java/util/Queue";
-        for (String name : new String[] {queue, "java/util/AbstractQueue", "java/util/PriorityQueue"}) {
+        for (String name : new String[]{queue, "java/util/AbstractQueue", "java/util/PriorityQueue"}) {
             replacements.put(name, BACKPORT + name);
         }
         String backportedQueue = BACKPORT + queue;
@@ -90,6 +94,11 @@ class BackportFactory {
 
     private static synchronized void writeToCache(BackportFactory factory) {
         softReference = new SoftReference<BackportFactory>(factory);
+    }
+
+    public static String prefixBackportName(String className, String backportPrefix) {
+        return backportPrefix != null && (className.startsWith(RUNTIME) || className.startsWith(BACKPORT))
+                ? backportPrefix + className : className;
     }
 
     public String getClassName(String name) {
@@ -201,4 +210,9 @@ class BackportFactory {
         return result;
     }
 
+    private static String getPrefix(Class aClass, String suffix) {
+        String name = Type.getInternalName(aClass);
+        if (name.endsWith(suffix)) return name.substring(0, name.length() - suffix.length());
+        throw new IllegalArgumentException(name + " does not end with " + suffix);
+    }
 }

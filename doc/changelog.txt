@@ -1,6 +1,8 @@
 Retrotranslator Changelog
 =================================
 
+  - Bug fixed: Translation did not work for ReentrantReadWriteLock.readLock() and ReentrantReadWriteLock.writeLock().
+
 1.0.7 (2006-07-04)
 ---------------------------------
   - Bug fixed: MissingResourceException when Java 5.0 API is used for classes generated at runtime.
