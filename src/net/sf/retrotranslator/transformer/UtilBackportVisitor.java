@@ -76,6 +76,10 @@ class UtilBackportVisitor extends ClassAdapter {
         super(cv);
     }
 
+    private static void putMethod(Class returnType, String name, Class... parameterTypes) {
+        COLLECTIONS_METHODS.put(name, TransformerTools.descriptor(returnType, parameterTypes));
+    }
+
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         return new MethodAdapter(super.visitMethod(access, name, desc, signature, exceptions)) {
             public void visitMethodInsn(int opcode, String owner, String name, String desc) {
@@ -110,14 +114,6 @@ class UtilBackportVisitor extends ClassAdapter {
                 super.visitMethodInsn(opcode, owner, name, desc);
             }
         };
-    }
-
-    private static void putMethod(Class returnType, String name, Class... parameterTypes) {
-        Type[] argumentTypes = new Type[parameterTypes.length];
-        for (int i = 0; i < argumentTypes.length; i++) {
-            argumentTypes[i] = Type.getType(parameterTypes[i]);
-        }
-        COLLECTIONS_METHODS.put(name, Type.getMethodDescriptor(Type.getType(returnType), argumentTypes));
     }
 
 }
