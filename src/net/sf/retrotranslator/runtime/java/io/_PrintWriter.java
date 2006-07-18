@@ -29,36 +29,31 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.runtime.java.lang;
+package net.sf.retrotranslator.runtime.java.io;
 
-import junit.framework.*;
+import java.io.*;
 
 /**
  * @author Taras Puchko
  */
-public class _StringBufferTestCase extends TestCase {
+public class _PrintWriter {
 
-    public void testConvertConstructorArguments() throws Exception {
-        CharSequence sequence = "abc";
-        assertEquals("abc", new StringBuffer(sequence).toString());
-        sequence = null;
-        try {
-            new StringBuffer(sequence);
-            fail();
-        } catch (NullPointerException e) {
-            //ok
-        }
+    public static Writer convertConstructorArguments(File file) throws FileNotFoundException {
+        return new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
     }
 
-    public void testAppend() throws Exception {
-        CharSequence sequence = "xyz";
-        assertEquals("abcxyz", new StringBuffer("abc").append(sequence).toString());
-        assertEquals("abcy", new StringBuffer("abc").append(sequence, 1, 2).toString());
+    public static Writer convertConstructorArguments(File file, String csn)
+            throws FileNotFoundException, UnsupportedEncodingException {
+        return new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), csn));
     }
 
-    public void testInsert() throws Exception {
-        CharSequence sequence = "xyz";
-        assertEquals("axyzbc", new StringBuffer("abc").insert(1, sequence).toString());
-        assertEquals("aybc", new StringBuffer("abc").insert(1, sequence, 1, 2).toString());
+    public static Writer convertConstructorArguments(String fileName) throws FileNotFoundException {
+        return new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName)));
     }
+
+    public static Writer convertConstructorArguments(String fileName, String csn)
+            throws FileNotFoundException, UnsupportedEncodingException {
+        return new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName), csn));
+    }
+
 }

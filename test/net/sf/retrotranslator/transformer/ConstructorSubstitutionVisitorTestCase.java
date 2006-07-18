@@ -40,22 +40,6 @@ import java.math.BigDecimal;
  */
 public class ConstructorSubstitutionVisitorTestCase extends TestCase {
 
-    public void testBigDecimal() throws Exception {
-        assertEquals(10L, new BigDecimal(10L).longValue());
-        assertEquals(20, new BigDecimal(20).intValue());
-        class MyDecimal extends BigDecimal {
-            public MyDecimal(int val) {
-                super(val);
-            }
-
-            public MyDecimal(long val) {
-                super(val);
-            }
-        }
-        assertEquals(10L, new MyDecimal(10L).longValue());
-        assertEquals(20, new MyDecimal(20).intValue());
-    }
-
     public void testIllegalStateExceptionOneParam() throws Exception {
         IllegalStateException exception = new IllegalStateException(new ClassNotFoundException("123"));
         assertEquals("java.lang.ClassNotFoundException: 123", exception.getMessage());
@@ -96,18 +80,6 @@ public class ConstructorSubstitutionVisitorTestCase extends TestCase {
         Ex ex = new Ex("qwerty", new IllegalArgumentException());
         assertEquals("qwerty", ex.getMessage());
         assertTrue(ex.getCause() instanceof IllegalArgumentException);
-    }
-
-    public void testStringBuffer() {
-        CharSequence sequence = "abc";
-        assertEquals("abc", new StringBuffer(sequence).toString());
-        sequence = null;
-        try {
-            new StringBuffer(sequence);
-            fail();
-        } catch (NullPointerException e) {
-            //ok
-        }
     }
 
 }

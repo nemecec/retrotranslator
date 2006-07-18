@@ -31,48 +31,38 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import net.sf.retrotranslator.runtime.impl.RuntimeTools;
 import net.sf.retrotranslator.runtime.asm.*;
 import static net.sf.retrotranslator.runtime.asm.Opcodes.*;
-
-import java.math.BigDecimal;
-import java.math.BigInteger;
+import net.sf.retrotranslator.runtime.impl.RuntimeTools;
 
 /**
  * @author Taras Puchko
  */
 class ConstructorSubstitutionVisitor extends ClassAdapter {
 
-    private static final String BIG_DECIMAL = Type.getInternalName(BigDecimal.class);
     private static final String ILLEGAL_STATE_EXCEPTION = Type.getInternalName(IllegalStateException.class);
-    private static final String STRING_BUFFER = Type.getInternalName(StringBuffer.class);
 
-    public ConstructorSubstitutionVisitor(final ClassVisitor cv) {
+    private BackportFactory backportFactory = BackportFactory.getInstance();
+    private boolean advanced;
+
+    public ConstructorSubstitutionVisitor(final ClassVisitor cv, boolean advanced) {
         super(cv);
+        this.advanced = advanced;
     }
 
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         return new MethodAdapter(super.visitMethod(access, name, desc, signature, exceptions)) {
 
-            public void visitMethodInsn(final int opcode, final String owner, final String name, final String desc) {
+            public void visitMethodInsn(final int opcode, final String owner, final String name, String desc) {
                 if (opcode == INVOKESPECIAL && name.equals(RuntimeTools.CONSTRUCTOR_NAME)) {
-                    if (owner.equals(BIG_DECIMAL) && initBigDecimal(desc)) return;
                     if (owner.equals(ILLEGAL_STATE_EXCEPTION) && initIllegalStateException(desc)) return;
-                    if (owner.equals(STRING_BUFFER) && initStringBuffer(desc)) return;
+                    ClassMember converter = backportFactory.getConverter(owner, desc);
+                    if (converter != null && (advanced | !converter.advanced)) {
+                        mv.visitMethodInsn(INVOKESTATIC, converter.owner, converter.name, converter.desc);
+                        desc = Type.getMethodDescriptor(Type.VOID_TYPE, new Type[] {Type.getReturnType(converter.desc)});
+                    }
                 }
                 super.visitMethodInsn(opcode, owner, name, desc);
-            }
-
-            private boolean initBigDecimal(String desc) {
-                boolean longParameter = desc.equals(TransformerTools.descriptor(void.class, long.class));
-                boolean intParameter = desc.equals(TransformerTools.descriptor(void.class, int.class));
-                if (!longParameter && !intParameter) return false;
-                if (intParameter) mv.visitInsn(I2L);
-                mv.visitMethodInsn(INVOKESTATIC, Type.getInternalName(BigInteger.class),
-                        "valueOf", TransformerTools.descriptor(BigInteger.class, long.class));
-                mv.visitMethodInsn(INVOKESPECIAL, BIG_DECIMAL,
-                        RuntimeTools.CONSTRUCTOR_NAME, TransformerTools.descriptor(void.class, BigInteger.class));
-                return true;
             }
 
             private boolean initIllegalStateException(String desc) {
@@ -104,16 +94,6 @@ class ConstructorSubstitutionVisitor extends ClassAdapter {
                 mv.visitMethodInsn(INVOKEVIRTUAL, ILLEGAL_STATE_EXCEPTION,
                         "initCause", TransformerTools.descriptor(Throwable.class, Throwable.class));
                 mv.visitInsn(POP);
-                return true;
-            }
-
-
-            private boolean initStringBuffer(String desc) {
-                if (!desc.equals(TransformerTools.descriptor(void.class, CharSequence.class))) return false;
-                mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(Object.class),
-                        "toString", TransformerTools.descriptor(String.class));
-                mv.visitMethodInsn(INVOKESPECIAL, STRING_BUFFER,
-                        RuntimeTools.CONSTRUCTOR_NAME, TransformerTools.descriptor(void.class, String.class));
                 return true;
             }
         };

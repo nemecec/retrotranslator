@@ -61,6 +61,7 @@ class BackportFactory {
     private final Map<String, String[]> implementations = new Hashtable<String, String[]>();
     private final Map<ClassMember, ClassMember> fields = new Hashtable<ClassMember, ClassMember>();
     private final Map<ClassMember, ClassMember> methods = new Hashtable<ClassMember, ClassMember>();
+    private final Map<ClassMember, ClassMember> converters = new Hashtable<ClassMember, ClassMember>();
 
     private BackportFactory() {
         String transformer = getPrefix(BackportFactory.class, "BackportFactory");
@@ -125,6 +126,11 @@ class BackportFactory {
 
     public ClassMember getField(String owner, String name, String desc) {
         return isExtended(owner) ? fields.get(new ClassMember(true, owner, name, desc, false)) : null;
+    }
+
+    public ClassMember getConverter(String owner, String desc) {
+        return isExtended(owner) ? converters.get(
+                new ClassMember(false, owner, RuntimeTools.CONSTRUCTOR_NAME, desc, false)) : null;
     }
 
     private boolean isExtended(String owner) {
@@ -201,6 +207,11 @@ class BackportFactory {
                 methods.put(new ClassMember(false, originalName, name, instanceDesc, false), substitutionMember);
             }
             methods.put(new ClassMember(isStatic, originalName, name, desc, false), substitutionMember);
+            if (name.equals("convertConstructorArguments")) {
+                ClassMember constructorMember = new ClassMember(false, originalName, RuntimeTools.CONSTRUCTOR_NAME,
+                        Type.getMethodDescriptor(Type.VOID_TYPE, Type.getArgumentTypes(desc)), false);
+                converters.put(constructorMember, substitutionMember);
+            }
         }
     }
 

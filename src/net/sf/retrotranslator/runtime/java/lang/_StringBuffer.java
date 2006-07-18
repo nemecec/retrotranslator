@@ -36,6 +36,10 @@ package net.sf.retrotranslator.runtime.java.lang;
  */
 public class _StringBuffer {
 
+    public static String convertConstructorArguments(CharSequence s) {
+        return s == null ? null : s.toString();
+    }
+
     public static StringBuffer append(StringBuffer buffer, CharSequence s) {
         return s instanceof StringBuffer ? buffer.append((StringBuffer) s) : buffer.append((Object) s);
     }

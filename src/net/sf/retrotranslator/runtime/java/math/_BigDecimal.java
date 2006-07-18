@@ -34,6 +34,7 @@ package net.sf.retrotranslator.runtime.java.math;
 import net.sf.retrotranslator.runtime.impl.Advanced;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 
 /**
  * @author Taras Puchko
@@ -43,6 +44,14 @@ public class _BigDecimal {
     public static final BigDecimal ZERO = BigDecimal.valueOf(0);
     public static final BigDecimal ONE = BigDecimal.valueOf(1);
     public static final BigDecimal TEN = BigDecimal.valueOf(10);
+
+    public static BigInteger convertConstructorArguments(int value) {
+        return BigInteger.valueOf(value);
+    }
+
+    public static BigInteger convertConstructorArguments(long value) {
+        return BigInteger.valueOf(value);
+    }
 
     public static BigDecimal pow(BigDecimal bigDecimal, int n) {
         if (n < 0 || n > 999999999) {

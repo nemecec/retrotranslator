@@ -42,6 +42,22 @@ import java.math.RoundingMode;
  */
 public class _BigDecimalTestCase extends BaseTestCase {
 
+    public void testConvertConstructorArguments() throws Exception {
+        assertEquals(10L, new BigDecimal(10L).longValue());
+        assertEquals(20, new BigDecimal(20).intValue());
+        class MyDecimal extends BigDecimal {
+            public MyDecimal(int val) {
+                super(val);
+            }
+
+            public MyDecimal(long val) {
+                super(val);
+            }
+        }
+        assertEquals(10L, new MyDecimal(10L).longValue());
+        assertEquals(20, new MyDecimal(20).intValue());
+    }
+
     public void testConstants() throws Exception {
         assertEquals(0, BigDecimal.ZERO.intValue());
         assertEquals(1, BigDecimal.ONE.intValue());

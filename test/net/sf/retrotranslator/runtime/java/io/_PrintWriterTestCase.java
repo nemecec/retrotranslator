@@ -29,36 +29,53 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.runtime.java.lang;
+package net.sf.retrotranslator.runtime.java.io;
 
-import junit.framework.*;
+import net.sf.retrotranslator.tests.BaseTestCase;
+
+import java.io.*;
 
 /**
  * @author Taras Puchko
  */
-public class _StringBufferTestCase extends TestCase {
+public class _PrintWriterTestCase extends BaseTestCase {
 
     public void testConvertConstructorArguments() throws Exception {
-        CharSequence sequence = "abc";
-        assertEquals("abc", new StringBuffer(sequence).toString());
-        sequence = null;
+        File file = File.createTempFile("retrotranslator", ".tmp");
         try {
-            new StringBuffer(sequence);
-            fail();
-        } catch (NullPointerException e) {
-            //ok
+            writeAndClose(new PrintWriter(file), "test1");
+            assertEquals("test1", readLine(file, null));
+
+            writeAndClose(new PrintWriter(file, "UTF-16"), "test2");
+            assertEquals("test2", readLine(file, "UTF-16"));
+
+            writeAndClose(new PrintWriter(file.getPath()), "test3");
+            assertEquals("test3", readLine(file, null));
+
+            writeAndClose(new PrintWriter(file.getPath(), "UTF-16"), "test4");
+            assertEquals("test4", readLine(file, "UTF-16"));
+        } finally {
+            file.delete();
         }
     }
 
-    public void testAppend() throws Exception {
-        CharSequence sequence = "xyz";
-        assertEquals("abcxyz", new StringBuffer("abc").append(sequence).toString());
-        assertEquals("abcy", new StringBuffer("abc").append(sequence, 1, 2).toString());
+    private static void writeAndClose(PrintWriter writer, String s) throws Exception {
+        try {
+            writer.write(s);
+        } finally {
+            writer.close();
+        }
     }
 
-    public void testInsert() throws Exception {
-        CharSequence sequence = "xyz";
-        assertEquals("axyzbc", new StringBuffer("abc").insert(1, sequence).toString());
-        assertEquals("aybc", new StringBuffer("abc").insert(1, sequence, 1, 2).toString());
+    private static String readLine(File file, String csn) throws Exception {
+        FileInputStream stream = new FileInputStream(file);
+        BufferedReader reader = new BufferedReader(csn == null
+                ? new InputStreamReader(stream) : new InputStreamReader(stream, csn) );
+        try {
+            return reader.readLine();
+        } finally {
+            reader.close();
+        }
     }
+
 }
