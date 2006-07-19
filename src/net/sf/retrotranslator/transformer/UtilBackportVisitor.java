@@ -32,11 +32,11 @@
 package net.sf.retrotranslator.transformer;
 
 import net.sf.retrotranslator.runtime.asm.*;
-import static net.sf.retrotranslator.runtime.asm.Opcodes.CHECKCAST;
 
 
 import edu.emory.mathcs.backport.java.util.concurrent.locks.ReentrantReadWriteLock;
 import edu.emory.mathcs.backport.java.util.concurrent.locks.Lock;
+import edu.emory.mathcs.backport.java.util.concurrent.locks.Condition;
 import edu.emory.mathcs.backport.java.util.concurrent.DelayQueue;
 import edu.emory.mathcs.backport.java.util.concurrent.Delayed;
 import edu.emory.mathcs.backport.java.util.concurrent.helpers.Utils;
@@ -49,6 +49,7 @@ import java.util.*;
 class UtilBackportVisitor extends ClassAdapter {
 
     private static final String SYSTEM_NAME = Type.getInternalName(System.class);
+    private static final String CONDITION_NAME = Type.getInternalName(Condition.class);
     private static final String DELAY_QUEUE_NAME = Type.getInternalName(DelayQueue.class);
     private static final String COLLECTIONS_NAME = Type.getInternalName(java.util.Collections.class);
     private static final String REENTRANT_READ_WRITE_LOCK_NAME = Type.getInternalName(ReentrantReadWriteLock.class);
@@ -85,6 +86,10 @@ class UtilBackportVisitor extends ClassAdapter {
             public void visitMethodInsn(int opcode, String owner, String name, String desc) {
                 if (owner.equals(SYSTEM_NAME) & name.equals("nanoTime")) {
                     owner = Type.getInternalName(Utils.class);
+                } else if (owner.equals(CONDITION_NAME) & name.equals("awaitNanos")) {
+                    opcode = Opcodes.INVOKESTATIC;
+                    owner = Type.getInternalName(Utils.class);
+                    desc = TransformerTools.descriptor(long.class, Condition.class, long.class);
                 } else if (owner.equals(DELAY_QUEUE_NAME)) {
                     desc = new DescriptorTransformer() {
                         protected String transformInternalName(String internalName) {
@@ -107,7 +112,7 @@ class UtilBackportVisitor extends ClassAdapter {
                             returnType.equals(Type.getType(ReentrantReadWriteLock.WriteLock.class))) {
                         desc = Type.getMethodDescriptor(Type.getType(Lock.class), Type.getArgumentTypes(desc));
                         super.visitMethodInsn(opcode, owner, name, desc);
-                        mv.visitTypeInsn(CHECKCAST, returnType.getInternalName());
+                        mv.visitTypeInsn(Opcodes.CHECKCAST, returnType.getInternalName());
                         return;
                     }
                 }

@@ -35,6 +35,7 @@ import net.sf.retrotranslator.tests.BaseTestCase;
 
 import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author Taras Puchko
@@ -49,6 +50,19 @@ public class UtilBackportVisitorTestCase extends BaseTestCase {
         readLock.unlock();
         assertTrue(writeLock.tryLock());
         writeLock.unlock();
+    }
+
+    public void testCondition_awaitNanos() throws Exception {
+        ReentrantLock lock = new ReentrantLock();
+        lock.lock();
+        lock.newCondition().awaitNanos(1000);
+        lock.unlock();
+        try {
+            lock.newCondition().awaitNanos(1000);
+            fail();
+        } catch (IllegalMonitorStateException e) {
+            //ok
+        }
     }
 
     public void testCheckedCollection() throws Exception {

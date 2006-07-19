@@ -1,8 +1,9 @@
 Retrotranslator Changelog
 =================================
 
-  - Bug fixed: Translation did not work for ReentrantReadWriteLock.readLock() and ReentrantReadWriteLock.writeLock().
-  - Supported: PrintWriter(File), PrintWriter(File, String), PrintWriter(String), PrintWriter(String, String).   
+  - Supported: all constructors of java.io.PrintWriter.
+  - Supported: java.util.concurrent.locks.Condition.awaitNanos(long) with very little accuracy guarantees.   
+  - Bug fixed: translation did not work for ReentrantReadWriteLock.readLock() and ReentrantReadWriteLock.writeLock().
 
 1.0.7 (2006-07-04)
 ---------------------------------
