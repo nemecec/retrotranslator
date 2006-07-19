@@ -143,4 +143,11 @@ public class RuntimeTools {
         }
     }
 
+    public static byte[] getBytecode(Class target) {
+        if (target.isPrimitive() || target.isArray()) return null;
+        String targetName = target.getName();
+        int index = targetName.lastIndexOf('.');
+        String simpleName = index < 0 ? targetName : targetName.substring(index + 1);
+        return readResourceToByteArray(target, simpleName + ".class");
+    }
 }

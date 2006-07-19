@@ -32,6 +32,7 @@
 package net.sf.retrotranslator.transformer;
 
 import net.sf.retrotranslator.runtime.impl.ClassDescriptor;
+import net.sf.retrotranslator.runtime.impl.RuntimeTools;
 
 import java.io.File;
 
@@ -44,11 +45,24 @@ public class JITRetrotranslator {
     }
 
     public static synchronized boolean install() {
-        if (System.getProperty("java.version").startsWith("1.4")) {
-            ClassDescriptor.setBytecodeTransformer(new ClassTransformer(true, false, true, null));
-            return JRockitJITRetrotranslator.install() || SunJITRetrotranslator.install();
-        } else {
+        if (isJava5Supported()) return true;
+        ClassDescriptor.setBytecodeTransformer(new ClassTransformer(true, false, true, null));
+        return (JRockitJITRetrotranslator.install() || SunJITRetrotranslator.install()) && isJava5Supported();
+    }
+
+    private static boolean isJava5Supported() {
+        class ClassFactory extends ClassLoader {
+            public Class defineClass(String name, byte[] bytes) {
+                return defineClass(name, bytes, 0, bytes.length);
+            }
+        }
+        byte[] bytes = RuntimeTools.getBytecode(JITRetrotranslator.class);
+        System.arraycopy(new byte[]{0, 0, 0, 49}, 0, bytes, 4, 4);
+        try {
+            new ClassFactory().defineClass(JITRetrotranslator.class.getName(), bytes);
             return true;
+        } catch (ClassFormatError e) {
+            return false;
         }
     }
 

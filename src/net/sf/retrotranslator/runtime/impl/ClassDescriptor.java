@@ -98,17 +98,9 @@ public class ClassDescriptor extends GenericDeclarationDescriptor {
         Map<Class, ClassDescriptor> map = getMap();
         ClassDescriptor descriptor = map.get(target);
         if (descriptor != null) return descriptor;
-        descriptor = new ClassDescriptor(target, getBytecode(target));
+        descriptor = new ClassDescriptor(target, RuntimeTools.getBytecode(target));
         map.put(target, descriptor);
         return descriptor;
-    }
-
-    private static byte[] getBytecode(Class target) {
-        if (target.isPrimitive() || target.isArray()) return null;
-        String targetName = target.getName();
-        int index = targetName.lastIndexOf('.');
-        String simpleName = index < 0 ? targetName : targetName.substring(index + 1);
-        return RuntimeTools.readResourceToByteArray(target, simpleName + ".class");
     }
 
     private static synchronized Map<Class, ClassDescriptor> getMap() {
