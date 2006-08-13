@@ -40,7 +40,7 @@
             <groupId>ant</groupId>
             <artifactId>ant</artifactId>
             <version>1.6.5</version>
-            <scope>compile</scope>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
