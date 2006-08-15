@@ -35,6 +35,7 @@ package net.sf.retrotranslator.runtime.asm;
  * instruction to a byte vector, in the order these methods are called.
  * 
  * @author Eric Bruneton
+ * @author Eugene Kuleshov
  */
 class MethodWriter implements MethodVisitor {
 
@@ -1055,6 +1056,15 @@ class MethodWriter implements MethodVisitor {
                 .putShort(cw.newUTF8(name))
                 .putShort(cw.newUTF8(desc))
                 .putShort(index);
+        
+        if(computeMaxs) {
+            // updates max locals
+            char c = desc.charAt(0);
+            int n = index + ( c=='L' || c=='D' ? 2 : 1);
+            if (n > maxLocals) {
+                maxLocals = n;
+            }
+        }
     }
 
     public void visitLineNumber(final int line, final Label start) {
@@ -1982,7 +1992,7 @@ class MethodWriter implements MethodVisitor {
         }
         return offset;
     }
-
+    
     /**
      * Updates the offset of the given label.
      * 

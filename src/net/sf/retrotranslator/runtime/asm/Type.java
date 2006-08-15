@@ -29,8 +29,6 @@
  */
 package net.sf.retrotranslator.runtime.asm;
 
-import net.sf.retrotranslator.runtime.asm.Opcodes;
-
 import java.lang.reflect.Method;
 
 /**

@@ -29,9 +29,6 @@
  */
 package net.sf.retrotranslator.runtime.asm;
 
-import net.sf.retrotranslator.runtime.asm.ByteVector;
-import net.sf.retrotranslator.runtime.asm.Edge;
-
 /**
  * A label represents a position in the bytecode of a method. Labels are used
  * for jump, goto, and switch instructions, and for try catch blocks.
@@ -103,8 +100,8 @@ public class Label {
 
     /**
      * The successors of this node in the control flow graph. These successors
-     * are stored in a linked list of {@link net.sf.retrotranslator.runtime.asm.Edge Edge} objects, linked to each
-     * other by their {@link net.sf.retrotranslator.runtime.asm.Edge#next} field.
+     * are stored in a linked list of {@link Edge Edge} objects, linked to each
+     * other by their {@link Edge#next} field.
      */
     Edge successors;
 
@@ -137,7 +134,7 @@ public class Label {
     /**
      * Returns the offset corresponding to this label. This offset is computed
      * from the start of the method's bytecode. <i>This method is intended for
-     * {@link net.sf.retrotranslator.runtime.asm.Attribute} sub classes, and is normally not needed by class
+     * {@link Attribute} sub classes, and is normally not needed by class
      * generators or adapters.</i>
      * 
      * @return the offset corresponding to this label.

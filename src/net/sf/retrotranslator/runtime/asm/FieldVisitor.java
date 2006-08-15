@@ -29,9 +29,6 @@
  */
 package net.sf.retrotranslator.runtime.asm;
 
-import net.sf.retrotranslator.runtime.asm.AnnotationVisitor;
-import net.sf.retrotranslator.runtime.asm.Attribute;
-
 /**
  * A visitor to visit a Java field. The methods of this interface must be called
  * in the following order: ( <tt>visitAnnotation</tt> |

@@ -29,8 +29,6 @@
  */
 package net.sf.retrotranslator.runtime.asm;
 
-import net.sf.retrotranslator.runtime.asm.ClassWriter;
-
 /**
  * A constant pool item. Constant pool items can be created with the 'newXXX'
  * methods in the {@link ClassWriter} class.

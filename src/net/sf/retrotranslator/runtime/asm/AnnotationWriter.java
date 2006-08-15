@@ -29,8 +29,6 @@
  */
 package net.sf.retrotranslator.runtime.asm;
 
-import net.sf.retrotranslator.runtime.asm.AnnotationVisitor;
-
 /**
  * An {@link AnnotationVisitor} that generates annotations in bytecode form.
  * 

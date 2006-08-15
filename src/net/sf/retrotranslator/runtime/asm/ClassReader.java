@@ -29,9 +29,6 @@
  */
 package net.sf.retrotranslator.runtime.asm;
 
-import net.sf.retrotranslator.runtime.asm.AnnotationVisitor;
-import net.sf.retrotranslator.runtime.asm.Attribute;
-
 import java.io.InputStream;
 import java.io.IOException;
 

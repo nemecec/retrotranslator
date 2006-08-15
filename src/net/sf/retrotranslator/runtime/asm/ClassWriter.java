@@ -498,10 +498,10 @@ public class ClassWriter implements ClassVisitor {
      * saves a <i>lot</i> of time. Untransformed methods are detected by the
      * fact that the {@link ClassReader} receives {@link MethodVisitor} objects
      * that come from a {@link ClassWriter} (and not from a custom
-     * {@link net.sf.retrotranslator.runtime.asm.ClassAdapter} or any other {@link ClassVisitor} instance).</li>
+     * {@link ClassAdapter} or any other {@link ClassVisitor} instance).</li>
      * </ul>
      * 
-     * @param classReader the {@link net.sf.retrotranslator.runtime.asm.ClassReader} used to read the original
+     * @param classReader the {@link ClassReader} used to read the original
      *        class. It will be used to copy the entire constant pool from the
      *        original class and also to copy other fragments of original
      *        bytecode where applicable.
@@ -556,8 +556,7 @@ public class ClassWriter implements ClassVisitor {
             sourceFile = newUTF8(file);
         }
         if (debug != null) {
-            sourceDebug = new ByteVector();
-            sourceDebug.putUTF8(debug);
+            sourceDebug = new ByteVector().putUTF8(debug);
         }
     }
 
@@ -676,7 +675,7 @@ public class ClassWriter implements ClassVisitor {
         }
         if (sourceDebug != null) {
             ++attributeCount;
-            size += sourceDebug.length;
+            size += sourceDebug.length + 4;
             newUTF8("SourceDebugExtension");
         }
         if (enclosingMethodOwner != 0) {
@@ -758,9 +757,9 @@ public class ClassWriter implements ClassVisitor {
             out.putShort(newUTF8("SourceFile")).putInt(2).putShort(sourceFile);
         }
         if (sourceDebug != null) {
-            int len = sourceDebug.length;
+            int len = sourceDebug.length - 2;
             out.putShort(newUTF8("SourceDebugExtension")).putInt(len);
-            out.putByteArray(sourceDebug.data, 0, len);
+            out.putByteArray(sourceDebug.data, 2, len);
         }
         if (enclosingMethodOwner != 0) {
             out.putShort(newUTF8("EnclosingMethod")).putInt(4);
@@ -855,7 +854,7 @@ public class ClassWriter implements ClassVisitor {
     /**
      * Adds a number or string constant to the constant pool of the class being
      * build. Does nothing if the constant pool already contains a similar item.
-     * <i>This method is intended for {@link net.sf.retrotranslator.runtime.asm.Attribute} sub classes, and is
+     * <i>This method is intended for {@link Attribute} sub classes, and is
      * normally not needed by class generators or adapters.</i>
      * 
      * @param cst the value of the constant to be added to the constant pool.
@@ -871,7 +870,7 @@ public class ClassWriter implements ClassVisitor {
     /**
      * Adds an UTF8 string to the constant pool of the class being build. Does
      * nothing if the constant pool already contains a similar item. <i>This
-     * method is intended for {@link net.sf.retrotranslator.runtime.asm.Attribute} sub classes, and is normally not
+     * method is intended for {@link Attribute} sub classes, and is normally not
      * needed by class generators or adapters.</i>
      * 
      * @param value the String value.
@@ -891,7 +890,7 @@ public class ClassWriter implements ClassVisitor {
     /**
      * Adds a class reference to the constant pool of the class being build.
      * Does nothing if the constant pool already contains a similar item.
-     * <i>This method is intended for {@link net.sf.retrotranslator.runtime.asm.Attribute} sub classes, and is
+     * <i>This method is intended for {@link Attribute} sub classes, and is
      * normally not needed by class generators or adapters.</i>
      * 
      * @param value the internal name of the class.
@@ -904,7 +903,7 @@ public class ClassWriter implements ClassVisitor {
     /**
      * Adds a class reference to the constant pool of the class being build.
      * Does nothing if the constant pool already contains a similar item.
-     * <i>This method is intended for {@link net.sf.retrotranslator.runtime.asm.Attribute} sub classes, and is
+     * <i>This method is intended for {@link Attribute} sub classes, and is
      * normally not needed by class generators or adapters.</i>
      * 
      * @param value the internal name of the class.
@@ -924,7 +923,7 @@ public class ClassWriter implements ClassVisitor {
     /**
      * Adds a field reference to the constant pool of the class being build.
      * Does nothing if the constant pool already contains a similar item.
-     * <i>This method is intended for {@link net.sf.retrotranslator.runtime.asm.Attribute} sub classes, and is
+     * <i>This method is intended for {@link Attribute} sub classes, and is
      * normally not needed by class generators or adapters.</i>
      * 
      * @param owner the internal name of the field's owner class.
@@ -974,7 +973,7 @@ public class ClassWriter implements ClassVisitor {
     /**
      * Adds a method reference to the constant pool of the class being build.
      * Does nothing if the constant pool already contains a similar item.
-     * <i>This method is intended for {@link net.sf.retrotranslator.runtime.asm.Attribute} sub classes, and is
+     * <i>This method is intended for {@link Attribute} sub classes, and is
      * normally not needed by class generators or adapters.</i>
      * 
      * @param owner the internal name of the method's owner class.

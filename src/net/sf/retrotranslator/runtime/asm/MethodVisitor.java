@@ -29,10 +29,6 @@
  */
 package net.sf.retrotranslator.runtime.asm;
 
-import net.sf.retrotranslator.runtime.asm.AnnotationVisitor;
-import net.sf.retrotranslator.runtime.asm.Attribute;
-import net.sf.retrotranslator.runtime.asm.Label;
-
 /**
  * A visitor to visit a Java method. The methods of this interface must be
  * called in the following order: [ <tt>visitAnnotationDefault</tt> ] (
@@ -210,7 +206,7 @@ public interface MethodVisitor {
      * Visits a label. A label designates the instruction that will be visited
      * just after it.
      * 
-     * @param label a {@link net.sf.retrotranslator.runtime.asm.Label Label} object.
+     * @param label a {@link Label Label} object.
      */
     void visitLabel(Label label);
 

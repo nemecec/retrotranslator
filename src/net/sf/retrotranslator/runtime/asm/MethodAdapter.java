@@ -29,10 +29,6 @@
  */
 package net.sf.retrotranslator.runtime.asm;
 
-import net.sf.retrotranslator.runtime.asm.AnnotationVisitor;
-import net.sf.retrotranslator.runtime.asm.Attribute;
-import net.sf.retrotranslator.runtime.asm.Label;
-
 /**
  * An empty {@link MethodVisitor} that delegates to another
  * {@link MethodVisitor}. This class can be used as a super class to quickly
