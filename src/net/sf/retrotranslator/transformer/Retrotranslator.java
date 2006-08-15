@@ -50,6 +50,7 @@ public class Retrotranslator implements MessageLogger {
     private LinkedList<FileContainer> src = new LinkedList<FileContainer>();
     private FileContainer dest;
     private boolean stripsign;
+    private boolean retainapi;
     private boolean verbose;
     private boolean lazy;
     private boolean advanced;
@@ -102,6 +103,10 @@ public class Retrotranslator implements MessageLogger {
 
     public void setStripsign(boolean stripsign) {
         this.stripsign = stripsign;
+    }
+
+    public void setRetainapi(boolean retainapi) {
+        this.retainapi = retainapi;
     }
 
     public void setVerbose(boolean verbose) {
@@ -180,7 +185,7 @@ public class Retrotranslator implements MessageLogger {
             prependLocationToSource(Queue.class);
             prependLocationToSource(BytecodeTransformer.class);
         }
-        ClassTransformer classTransformer = new ClassTransformer(lazy, stripsign, advanced, backportPrefix);
+        ClassTransformer classTransformer = new ClassTransformer(lazy, advanced, stripsign, retainapi, backportPrefix);
         for (FileContainer container : src) {
             transform(classTransformer, backportPrefix, container, dest != null ? dest : container);
         }
@@ -313,6 +318,8 @@ public class Retrotranslator implements MessageLogger {
                 setDestjar(new File(args[i++]));
             } else if (string.equals("-stripsign")) {
                 setStripsign(true);
+            } else if (string.equals("-retainapi")) {
+                setRetainapi(true);
             } else if (string.equals("-verbose")) {
                 setVerbose(true);
             } else if (string.equals("-lazy")) {
@@ -338,8 +345,9 @@ public class Retrotranslator implements MessageLogger {
         String version = Retrotranslator.class.getPackage().getImplementationVersion();
         String suffix = (version == null) ? "" : "-" + version;
         System.out.println("Usage: java -jar retrotranslator-transformer" + suffix + ".jar" +
-                " [-srcdir <path> | -srcjar <file>] [-destdir <path> | -destjar <file>] [-stripsign] [-verbose]" +
-                " [-lazy] [-advanced] [-verify] [-classpath <classpath>] [-srcmask <mask>] [-embed <package>]");
+                " [-srcdir <path> | -srcjar <file>] [-destdir <path> | -destjar <file>]" +
+                " [-stripsign] [-verbose] [-lazy] [-advanced] [-retainapi] [-verify]" +
+                " [-classpath <classpath>] [-srcmask <mask>] [-embed <package>]");
     }
 
     public static void main(String[] args) {

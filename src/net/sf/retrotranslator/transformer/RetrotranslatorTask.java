@@ -49,6 +49,7 @@ public class RetrotranslatorTask extends Task implements MessageLogger {
     private File destjar;
     private boolean verbose;
     private boolean stripsign;
+    private boolean retainapi;
     private boolean lazy;
     private boolean advanced;
     private boolean verify;
@@ -90,6 +91,10 @@ public class RetrotranslatorTask extends Task implements MessageLogger {
 
     public void setStripsign(boolean stripsign) {
         this.stripsign = stripsign;
+    }
+
+    public void setRetainapi(boolean retainapi) {
+        this.retainapi = retainapi;
     }
 
     public void setVerify(boolean verify) {
@@ -156,6 +161,7 @@ public class RetrotranslatorTask extends Task implements MessageLogger {
         if (destjar != null) retrotranslator.setDestjar(destjar);
         retrotranslator.setVerbose(verbose);
         retrotranslator.setStripsign(stripsign);
+        retrotranslator.setRetainapi(retainapi);
         retrotranslator.setLazy(lazy);
         retrotranslator.setAdvanced(advanced);
         retrotranslator.setVerify(verify);

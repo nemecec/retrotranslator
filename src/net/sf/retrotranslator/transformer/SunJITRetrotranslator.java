@@ -38,7 +38,7 @@ class SunJITRetrotranslator {
 
     private static class ClassFileTransformerImpl extends ClassFileTransformer {
 
-        private ClassTransformer transformer = new ClassTransformer(false, false, true, null);
+        private ClassTransformer transformer = new ClassTransformer(false, true, false, false, null);
 
         public ClassFileTransformerImpl() {
         }

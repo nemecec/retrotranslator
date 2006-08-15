@@ -5,6 +5,7 @@ Retrotranslator Changelog
   - Supported: java.rmi.server.RemoteObjectInvocationHandler. 
   - Supported: java.util.concurrent.locks.Condition.awaitNanos(long) but with very little accuracy guarantees.
   - Bug fixed: translation did not work for ReentrantReadWriteLock.readLock() and ReentrantReadWriteLock.writeLock().
+  - New -retainapi option to make classes compatible with JVM 1.4 but keep Java 5 API uses. 
 
 1.0.7 (2006-07-04)
 ---------------------------------

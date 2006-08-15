@@ -42,14 +42,16 @@ import net.sf.retrotranslator.runtime.impl.BytecodeTransformer;
 class ClassTransformer implements BytecodeTransformer {
 
     private boolean lazy;
-    private boolean stripsign;
     private boolean advanced;
+    private boolean stripsign;
+    private boolean retainapi;
     private String backportPrefix;
 
-    public ClassTransformer(boolean lazy, boolean stripsign, boolean advanced, String backportPrefix) {
+    public ClassTransformer(boolean lazy, boolean advanced, boolean stripsign, boolean retainapi, String backportPrefix) {
         this.lazy = lazy;
-        this.stripsign = stripsign;
         this.advanced = advanced;
+        this.stripsign = stripsign;
+        this.retainapi = retainapi;
         this.backportPrefix = backportPrefix;
     }
 
@@ -62,14 +64,14 @@ class ClassTransformer implements BytecodeTransformer {
             return result;
         }
         ClassWriter classWriter = new ClassWriter(true);
-        ClassVisitor visitor = new ArrayCloningVisitor(classWriter);
-
+        ClassVisitor visitor = new VersionVisitor(new ArrayCloningVisitor(new ClassLiteralVisitor(classWriter)));
         if (backportPrefix != null) visitor = new PrefixingVisitor(visitor, backportPrefix);
-        visitor = new ConstructorSubstitutionVisitor(new EnumVisitor(new ClassLiteralVisitor(visitor)), advanced);
-        visitor = new UtilBackportVisitor(new MemberSubstitutionVisitor(advanced, visitor));
-        visitor = new VersionVisitor(new InheritanceVisitor(new ClassSubstitutionVisitor(visitor)));
+        if (!retainapi) {
+            visitor = new ConstructorSubstitutionVisitor(new EnumVisitor(visitor), advanced);
+            visitor = new UtilBackportVisitor(new MemberSubstitutionVisitor(advanced, visitor));
+            visitor = new InheritanceVisitor(new ClassSubstitutionVisitor(visitor));
+        }
         if (stripsign) visitor = new SignatureStrippingVisitor(visitor);
-
         new ClassReader(bytes, offset, length).accept(visitor, false);
         return classWriter.toByteArray();
     }
