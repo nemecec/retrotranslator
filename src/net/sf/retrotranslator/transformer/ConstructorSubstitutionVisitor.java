@@ -41,6 +41,7 @@ import net.sf.retrotranslator.runtime.impl.RuntimeTools;
 class ConstructorSubstitutionVisitor extends ClassAdapter {
 
     private static final String ILLEGAL_STATE_EXCEPTION = Type.getInternalName(IllegalStateException.class);
+    private static final String ILLEGAL_ARGUMENT_EXCEPTION = Type.getInternalName(IllegalArgumentException.class);
 
     private BackportFactory backportFactory = BackportFactory.getInstance();
     private boolean advanced;
@@ -55,7 +56,9 @@ class ConstructorSubstitutionVisitor extends ClassAdapter {
 
             public void visitMethodInsn(final int opcode, final String owner, final String name, String desc) {
                 if (opcode == INVOKESPECIAL && name.equals(RuntimeTools.CONSTRUCTOR_NAME)) {
-                    if (owner.equals(ILLEGAL_STATE_EXCEPTION) && initIllegalStateException(desc)) return;
+                    if (owner.equals(ILLEGAL_STATE_EXCEPTION) || owner.equals(ILLEGAL_ARGUMENT_EXCEPTION)) {
+                        if (initException(desc, owner)) return;
+                    }
                     ClassMember converter = backportFactory.getConverter(owner, desc);
                     if (converter != null && (advanced | !converter.advanced)) {
                         mv.visitMethodInsn(INVOKESTATIC, converter.owner, converter.name, converter.desc);
@@ -65,11 +68,8 @@ class ConstructorSubstitutionVisitor extends ClassAdapter {
                 super.visitMethodInsn(opcode, owner, name, desc);
             }
 
-            private boolean initIllegalStateException(String desc) {
-                boolean oneParameter = desc.equals(TransformerTools.descriptor(void.class, Throwable.class));
-                boolean twoParameters = desc.equals(TransformerTools.descriptor(void.class, String.class, Throwable.class));
-                if (!oneParameter && !twoParameters) return false;
-                if (oneParameter) {
+            private boolean initException(String desc, String owner) {
+                if (desc.equals(TransformerTools.descriptor(void.class, Throwable.class))) {
                     Label toStringLabel = new Label();
                     Label continueLabel = new Label();
                     mv.visitInsn(DUP2);
@@ -82,16 +82,18 @@ class ConstructorSubstitutionVisitor extends ClassAdapter {
                     mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(Throwable.class),
                             "toString", TransformerTools.descriptor(String.class));
                     mv.visitLabel(continueLabel);
-                } else {
+                } else if (desc.equals(TransformerTools.descriptor(void.class, String.class, Throwable.class))) {
                     mv.visitInsn(DUP_X2);
                     mv.visitInsn(POP);
                     mv.visitInsn(SWAP);
                     mv.visitInsn(DUP_X2);
                     mv.visitInsn(SWAP);
+                } else {
+                    return false;
                 }
-                mv.visitMethodInsn(INVOKESPECIAL, ILLEGAL_STATE_EXCEPTION,
+                mv.visitMethodInsn(INVOKESPECIAL, owner,
                         RuntimeTools.CONSTRUCTOR_NAME, TransformerTools.descriptor(void.class, String.class));
-                mv.visitMethodInsn(INVOKEVIRTUAL, ILLEGAL_STATE_EXCEPTION,
+                mv.visitMethodInsn(INVOKEVIRTUAL, owner,
                         "initCause", TransformerTools.descriptor(Throwable.class, Throwable.class));
                 mv.visitInsn(POP);
                 return true;

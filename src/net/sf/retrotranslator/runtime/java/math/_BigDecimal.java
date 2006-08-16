@@ -53,6 +53,22 @@ public class _BigDecimal {
         return BigInteger.valueOf(value);
     }
 
+    public static BigDecimal[] divideAndRemainder(BigDecimal dividend, BigDecimal divisor) {
+        BigDecimal[] result = new BigDecimal[2];
+        BigDecimal quotient = divideToIntegralValue(dividend, divisor);
+        result[0] = quotient;
+        result[1] = dividend.subtract(quotient.multiply(divisor));
+        return result;
+    }
+
+    public static BigDecimal divideToIntegralValue(BigDecimal dividend, BigDecimal divisor) {
+        BigDecimal quotient = dividend.divide(divisor, 0, BigDecimal.ROUND_DOWN);
+        if (dividend.scale() > divisor.scale()) {
+            quotient = quotient.setScale(dividend.scale() - divisor.scale());
+        }
+        return quotient;
+    }
+
     public static BigDecimal pow(BigDecimal bigDecimal, int n) {
         if (n < 0 || n > 999999999) {
             throw new ArithmeticException("Invalid operation");
@@ -62,6 +78,10 @@ public class _BigDecimal {
             result = result.multiply(bigDecimal);
         }
         return result;
+    }
+
+    public static BigDecimal remainder(BigDecimal dividend, BigDecimal divisor) {
+        return dividend.subtract(divideToIntegralValue(dividend, divisor).multiply(divisor));
     }
 
     @Advanced

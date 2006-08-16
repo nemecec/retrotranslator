@@ -35,12 +35,17 @@ import net.sf.retrotranslator.tests.BaseTestCase;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.RoundingMode;
 
 /**
  * @author Taras Puchko
  */
 public class _BigDecimalTestCase extends BaseTestCase {
+
+    public void testConstants() throws Exception {
+        assertEquals(0, BigDecimal.ZERO.intValue());
+        assertEquals(1, BigDecimal.ONE.intValue());
+        assertEquals(10, BigDecimal.TEN.intValue());
+    }
 
     public void testConvertConstructorArguments() throws Exception {
         assertEquals(10L, new BigDecimal(10L).longValue());
@@ -58,10 +63,60 @@ public class _BigDecimalTestCase extends BaseTestCase {
         assertEquals(20, new MyDecimal(20).intValue());
     }
 
-    public void testConstants() throws Exception {
-        assertEquals(0, BigDecimal.ZERO.intValue());
-        assertEquals(1, BigDecimal.ONE.intValue());
-        assertEquals(10, BigDecimal.TEN.intValue());
+    public void testDivideAndRemainder() throws Exception {
+        BigDecimal dividend = BigDecimal.valueOf(123.4567);
+        assertEquals(4, dividend.scale());
+        BigDecimal divisor = BigDecimal.valueOf(8.9);
+        assertEquals(1, divisor.scale());
+        BigDecimal[] result = dividend.divideAndRemainder(divisor);
+        BigDecimal quotient = result[0];
+        BigDecimal remainder = result[1];
+        assertEquals(13.0, quotient.doubleValue());
+        assertEquals(3, quotient.scale());
+        assertEquals(7.7567, remainder.doubleValue());
+        assertEquals(4, remainder.scale());
+
+    }
+
+    public void testDivideToIntegralValue_scale2() throws Exception {
+        BigDecimal dividend = BigDecimal.valueOf(123.456);
+        assertEquals(3, dividend.scale());
+        BigDecimal divisor = BigDecimal.valueOf(7.8);
+        assertEquals(1, divisor.scale());
+        BigDecimal quotient = dividend.divideToIntegralValue(divisor);
+        assertEquals(15.0, quotient.doubleValue());
+        assertEquals(2, quotient.scale());
+    }
+
+    public void testDivideToIntegralValue_scale0() throws Exception {
+        BigDecimal dividend = BigDecimal.valueOf(123.4);
+        assertEquals(1, dividend.scale());
+        BigDecimal divisor = BigDecimal.valueOf(5.678);
+        assertEquals(3, divisor.scale());
+        BigDecimal quotient = dividend.divideToIntegralValue(divisor);
+        assertEquals(21.0, quotient.doubleValue());
+        assertEquals(0, quotient.scale());
+    }
+
+    public void testDivideToIntegralValue_zeroDividend() throws Exception {
+        BigDecimal dividend = BigDecimal.valueOf(0, 10);
+        assertEquals(10, dividend.scale());
+        BigDecimal divisor = BigDecimal.valueOf(1, 5);
+        assertEquals(5, divisor.scale());
+        BigDecimal quotient = dividend.divideToIntegralValue(divisor);
+        assertEquals(0.0, quotient.doubleValue());
+        assertEquals(5, quotient.scale());
+    }
+
+    public void testDivideToIntegralValue_zeroDivider() throws Exception {
+        BigDecimal dividend = BigDecimal.valueOf(1);
+        BigDecimal divisor = BigDecimal.valueOf(0);
+        try {
+            dividend.divideToIntegralValue(divisor);
+            fail();
+        } catch (ArithmeticException e) {
+            //ok
+        }
     }
 
     public void testPow() throws Exception {
@@ -82,6 +137,16 @@ public class _BigDecimalTestCase extends BaseTestCase {
         assertEquals("120", new BigDecimal(123).setScale(-1, BigDecimal.ROUND_HALF_EVEN).toPlainString());
     }
 
+    public void testRemainder() throws Exception {
+        BigDecimal dividend = BigDecimal.valueOf(12.3);
+        assertEquals(1, dividend.scale());
+        BigDecimal divisor = BigDecimal.valueOf(4.5678);
+        assertEquals(4, divisor.scale());
+        BigDecimal remainder = dividend.remainder(divisor);
+        assertEquals(3.1644, remainder.doubleValue());
+        assertEquals(4, remainder.scale());
+    }
+
     public void testToPlainString() throws Exception {
         assertEquals("1230", new BigDecimal(1230).toPlainString());
         assertEquals("1.23", new BigDecimal(BigInteger.valueOf(123), 2).toPlainString());
@@ -91,4 +156,5 @@ public class _BigDecimalTestCase extends BaseTestCase {
         assertEquals(1.23, BigDecimal.valueOf(1.23).doubleValue());
         assertEquals(123, BigDecimal.valueOf(123).longValue());
     }
+
 }

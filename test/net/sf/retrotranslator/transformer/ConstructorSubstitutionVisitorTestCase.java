@@ -33,12 +33,52 @@ package net.sf.retrotranslator.transformer;
 
 import junit.framework.TestCase;
 
-import java.math.BigDecimal;
-
 /**
  * @author Taras Puchko
  */
 public class ConstructorSubstitutionVisitorTestCase extends TestCase {
+
+    public void testIllegalArgumentExceptionOneParam() throws Exception {
+        IllegalArgumentException exception = new IllegalArgumentException(new ClassNotFoundException("123"));
+        assertEquals("java.lang.ClassNotFoundException: 123", exception.getMessage());
+        Throwable cause = exception.getCause();
+        assertTrue(cause instanceof ClassNotFoundException);
+        assertEquals("123", cause.getMessage());
+        class Ex extends IllegalArgumentException {
+            public Ex(Throwable cause) {
+                super(cause);
+            }
+        }
+        Ex ex = new Ex(new IllegalArgumentException());
+        assertEquals("java.lang.IllegalArgumentException", ex.getMessage());
+        assertTrue(ex.getCause() instanceof IllegalArgumentException);
+
+        IllegalArgumentException nullCausedEx = new IllegalArgumentException((Throwable) null);
+        assertNull(nullCausedEx.getMessage());
+        assertNull(nullCausedEx.getCause());
+        try {
+            nullCausedEx.initCause(new Throwable());
+            fail();
+        } catch (IllegalStateException e) {
+            //ok
+        }
+    }
+
+    public void testIllegalArgumentExceptionTwoParam() throws Exception {
+        IllegalArgumentException exception = new IllegalArgumentException("abc", new ClassNotFoundException("123"));
+        assertEquals("abc", exception.getMessage());
+        Throwable cause = exception.getCause();
+        assertTrue(cause instanceof ClassNotFoundException);
+        assertEquals("123", cause.getMessage());
+        class Ex extends IllegalArgumentException {
+            public Ex(String message, Throwable cause) {
+                super(message, cause);
+            }
+        }
+        Ex ex = new Ex("qwerty", new IllegalArgumentException());
+        assertEquals("qwerty", ex.getMessage());
+        assertTrue(ex.getCause() instanceof IllegalArgumentException);
+    }
 
     public void testIllegalStateExceptionOneParam() throws Exception {
         IllegalStateException exception = new IllegalStateException(new ClassNotFoundException("123"));
