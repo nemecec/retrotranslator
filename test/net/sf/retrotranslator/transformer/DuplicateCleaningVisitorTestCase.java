@@ -1,0 +1,81 @@
+/***
+ * Retrotranslator: a Java bytecode transformer that translates Java classes
+ * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
+ * 
+ * Copyright (c) 2005, 2006 Taras Puchko
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the copyright holders nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ */
+package net.sf.retrotranslator.transformer;
+
+import junit.framework.*;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Arrays;
+
+import net.sf.retrotranslator.runtime.java.io.Closeable_;
+import net.sf.retrotranslator.runtime.java.lang.TypeNotPresentException_;
+
+/**
+ * @author Taras Puchko
+ */
+public class DuplicateCleaningVisitorTestCase extends TestCase {
+
+    public void testInterfaces() throws Exception {
+        class Test implements Closeable, Closeable_ {
+            public void close() throws IOException {
+            }
+        }
+        Closeable closeable = new Test();
+        closeable.close();
+    }
+
+    public void testMethods() throws Exception {
+        class Test {
+            public StringBuffer append(StringBuffer buffer, String s)  {
+                return buffer.append(s);
+            }
+            public StringBuilder append(StringBuilder builder, String s)  {
+                return builder.append(s);
+            }
+        }
+        assertEquals("Hello", new Test().append(new StringBuffer(), "Hello").toString());
+        assertEquals("Hi", new Test().append(new StringBuilder(), "Hi").toString());
+    }
+
+    public void testExceptions() throws Exception {
+        class Test {
+            public String echo(String s) throws TypeNotPresentException, TypeNotPresentException_ {
+                return s;
+            }
+        }
+        assertEquals("Hello", new Test().echo("Hello"));
+        Class[] exceptionTypes = Test.class.getMethod("echo", String.class).getExceptionTypes();
+        assertEquals(exceptionTypes.length, new HashSet<Class>(Arrays.asList(exceptionTypes)).size());
+    }
+}
