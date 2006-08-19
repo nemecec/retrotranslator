@@ -34,6 +34,7 @@
             <artifactId>backport-util-concurrent</artifactId>
             <version>2.2</version>
             <scope>compile</scope>
+            <optional/>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

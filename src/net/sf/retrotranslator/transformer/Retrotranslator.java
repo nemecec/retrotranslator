@@ -185,9 +185,11 @@ public class Retrotranslator implements MessageLogger {
             prependLocationToSource(Queue.class);
             prependLocationToSource(BytecodeTransformer.class);
         }
-        ClassTransformer classTransformer = new ClassTransformer(lazy, advanced, stripsign, retainapi, backportPrefix);
+        FileInfoLogger fileInfoLogger = new FileInfoLogger(this.logger);
+        ClassTransformer classTransformer = new ClassTransformer(
+                lazy, advanced, stripsign, retainapi, backportPrefix, fileInfoLogger);
         for (FileContainer container : src) {
-            transform(classTransformer, backportPrefix, container, dest != null ? dest : container);
+            transform(classTransformer, backportPrefix, container, dest != null ? dest : container, fileInfoLogger);
         }
         if (dest != null) dest.flush();
         if (!verify) return true;
@@ -203,15 +205,17 @@ public class Retrotranslator implements MessageLogger {
         }
     }
 
-    private void transform(ClassTransformer transformer, String backportPrefix, FileContainer source, FileContainer destination) {
-        logger.log(new Message(Level.INFO, "Transforming " + source.getFileCount() + " file(s)" +
+    private void transform(ClassTransformer transformer, String backportPrefix, FileContainer source,
+                           FileContainer destination, FileInfoLogger fileInfoLogger) {
+        this.logger.log(new Message(Level.INFO, "Transforming " + source.getFileCount() + " file(s)" +
                 (source == destination ? " in " + source : " from " + source + " to " + destination) + "."));
         for (FileEntry entry : source.getEntries()) {
             String name = entry.getName();
             if (backportPrefix != null && name.equals("net/sf/retrotranslator/runtime/impl/signatures.properties")) {
                 destination.putEntry(backportPrefix + name, transformSignatures(entry.getContent(), backportPrefix));
             } else if (isTransformable(name)) {
-                if (verbose) logger.log(new Message(Level.VERBOSE, "Transformation", source.getLocation(), name));
+                fileInfoLogger.setFileInfo(source.getLocation(), name);
+                if (verbose) this.logger.log(new Message(Level.VERBOSE, "Transformation", source.getLocation(), name));
                 byte[] sourceData = entry.getContent();
                 byte[] resultData = isClassFile(sourceData)
                         ? transformer.transform(sourceData, 0, sourceData.length)
@@ -226,7 +230,7 @@ public class Retrotranslator implements MessageLogger {
             }
         }
         source.flush();
-        logger.log(new Message(Level.INFO, "Transformation of " + source.getFileCount() + " file(s) completed successfully."));
+        this.logger.log(new Message(Level.INFO, "Transformation of " + source.getFileCount() + " file(s) completed successfully."));
     }
 
     private boolean isTransformable(String name) {

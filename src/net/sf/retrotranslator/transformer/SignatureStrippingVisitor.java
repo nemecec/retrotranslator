@@ -51,7 +51,8 @@ class SignatureStrippingVisitor extends ClassAdapter {
     }
 
     public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature, final String[] exceptions) {
-        return new MethodAdapter(super.visitMethod(access, name, desc, null, exceptions)) {
+        MethodVisitor visitor = super.visitMethod(access, name, desc, null, exceptions);
+        return visitor == null ? null : new MethodAdapter(visitor) {
             public void visitLocalVariable(final String name, final String desc, final String signature, final Label start, final Label end, final int index) {
                 super.visitLocalVariable(name, desc, null, start, end, index);
             }

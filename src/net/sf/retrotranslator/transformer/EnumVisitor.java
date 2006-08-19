@@ -62,9 +62,9 @@ class EnumVisitor extends ClassAdapter {
 
     public MethodVisitor visitMethod(final int access, final String name,
                                      final String desc, final String signature, final String[] exceptions) {
-        MethodVisitor methodVisitor = super.visitMethod(access, name, desc, signature, exceptions);
-        if (type == null || !name.equals(RuntimeTools.STATIC_NAME)) return methodVisitor;
-        return new MethodAdapter(methodVisitor) {
+        MethodVisitor visitor = super.visitMethod(access, name, desc, signature, exceptions);
+        if (visitor == null || type == null || !name.equals(RuntimeTools.STATIC_NAME)) return visitor;
+        return new MethodAdapter(visitor) {
 
             private boolean alreadyProcessed;
 

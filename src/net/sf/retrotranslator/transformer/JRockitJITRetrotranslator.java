@@ -39,7 +39,7 @@ class JRockitJITRetrotranslator {
     private static class ClassPreProcessorImpl implements ClassPreProcessor {
 
         private ClassPreProcessor delegate;
-        private ClassTransformer transformer = new ClassTransformer(true, true, false, false, null);
+        private ClassTransformer transformer = new ClassTransformer(true, true, false, false, null, null);
 
         public ClassPreProcessorImpl(ClassPreProcessor delegate) {
             this.delegate = delegate;

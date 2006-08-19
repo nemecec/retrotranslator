@@ -46,7 +46,8 @@ class InheritanceVisitor extends ClassAdapter {
     }
 
     public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature, final String[] exceptions) {
-        return new MethodAdapter(super.visitMethod(access, name, desc, signature, exceptions)) {
+        MethodVisitor visitor = super.visitMethod(access, name, desc, signature, exceptions);
+        return visitor == null ? null : new MethodAdapter(visitor) {
 
             public void visitTypeInsn(final int opcode, final String desc) {
                 if (opcode == CHECKCAST) {

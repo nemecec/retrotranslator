@@ -82,7 +82,8 @@ class UtilBackportVisitor extends ClassAdapter {
     }
 
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-        return new MethodAdapter(super.visitMethod(access, name, desc, signature, exceptions)) {
+        MethodVisitor visitor = super.visitMethod(access, name, desc, signature, exceptions);
+        return visitor == null ? null : new MethodAdapter(visitor) {
             public void visitMethodInsn(int opcode, String owner, String name, String desc) {
                 if (owner.equals(SYSTEM_NAME) & name.equals("nanoTime")) {
                     owner = Type.getInternalName(Utils.class);

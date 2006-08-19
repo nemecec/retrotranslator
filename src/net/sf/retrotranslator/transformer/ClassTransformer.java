@@ -46,13 +46,15 @@ class ClassTransformer implements BytecodeTransformer {
     private boolean stripsign;
     private boolean retainapi;
     private String backportPrefix;
+    private MessageLogger logger;
 
-    public ClassTransformer(boolean lazy, boolean advanced, boolean stripsign, boolean retainapi, String backportPrefix) {
+    public ClassTransformer(boolean lazy, boolean advanced, boolean stripsign, boolean retainapi, String backportPrefix, MessageLogger logger) {
         this.lazy = lazy;
         this.advanced = advanced;
         this.stripsign = stripsign;
         this.retainapi = retainapi;
         this.backportPrefix = backportPrefix;
+        this.logger = logger;
     }
 
     public byte[] transform(byte[] bytes, int offset, int length) {
@@ -64,7 +66,8 @@ class ClassTransformer implements BytecodeTransformer {
             return result;
         }
         ClassWriter classWriter = new ClassWriter(true);
-        ClassVisitor visitor = new VersionVisitor(new ArrayCloningVisitor(new ClassLiteralVisitor(classWriter)));
+        ClassVisitor visitor = new DuplicateCleaningVisitor(classWriter, logger);
+        visitor = new VersionVisitor(new ArrayCloningVisitor(new ClassLiteralVisitor(visitor)));
         if (backportPrefix != null) visitor = new PrefixingVisitor(visitor, backportPrefix);
         if (!retainapi) {
             visitor = new ConstructorSubstitutionVisitor(new EnumVisitor(visitor), advanced);

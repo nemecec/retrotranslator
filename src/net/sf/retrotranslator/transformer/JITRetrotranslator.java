@@ -46,7 +46,7 @@ public class JITRetrotranslator {
 
     public static synchronized boolean install() {
         if (isJava5Supported()) return true;
-        ClassDescriptor.setBytecodeTransformer(new ClassTransformer(true, true, false, false, null));
+        ClassDescriptor.setBytecodeTransformer(new ClassTransformer(true, true, false, false, null, null));
         return (JRockitJITRetrotranslator.install() || SunJITRetrotranslator.install()) && isJava5Supported();
     }
 

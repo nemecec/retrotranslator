@@ -44,15 +44,11 @@ public class _Thread {
     private static long idSequence;
 
     public static StackTraceElement[] getStackTrace(Thread thread) {
-        if (thread != Thread.currentThread() || !thread.isAlive()) {
-            return EMPTY_STACK_TRACE;
-        }
-        StackTraceElement[] stackTrace = new Throwable().getStackTrace();
-        if (stackTrace.length < 2) return EMPTY_STACK_TRACE;
-        StackTraceElement[] result = new StackTraceElement[stackTrace.length + 1];
-        System.arraycopy(stackTrace, 0, result, 1, stackTrace.length);
-        result[0] = result[1];
-        return result;
+        return thread == Thread.currentThread() ? getStackTrace() : EMPTY_STACK_TRACE;
+    }
+
+    private static StackTraceElement[] getStackTrace() {
+        return new Throwable().getStackTrace();
     }
 
     public static long getId(Thread thread) {
