@@ -38,7 +38,6 @@ import net.sf.retrotranslator.tests.BaseTestCase;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
-import java.util.Arrays;
 
 /**
  * @author Taras Puchko
@@ -108,13 +107,26 @@ public class _MethodTestCase extends BaseTestCase {
 
     public void testGetGenericExceptionTypes() throws Exception {
         class Test<T extends RuntimeException> {
-            public void m() throws T {
+
+            class X extends RuntimeException {
+            }
+
+            public void m() throws T, X {
             }
         }
-        TypeVariable variable = (TypeVariable) singleton(Test.class.getMethod("m").getGenericExceptionTypes());
+        Type[] types = Test.class.getMethod("m").getGenericExceptionTypes();
+
+        TypeVariable variable = (TypeVariable) types[0];
         assertEquals("T", variable.getName());
         assertEquals(Test.class, variable.getGenericDeclaration());
         assertEquals(RuntimeException.class, singleton(variable.getBounds()));
+
+        ParameterizedType xType = (ParameterizedType) types[1];
+        assertEquals(Test.X.class, xType.getRawType());
+        ParameterizedType testType = (ParameterizedType) xType.getOwnerType();
+        assertEquals(Test.class, testType.getRawType());
+        assertNull(testType.getOwnerType());
+        assertEquals(variable, singleton(testType.getActualTypeArguments()));
     }
 
     public void testGetGenericExceptionTypes_NotGeneric() throws Exception {

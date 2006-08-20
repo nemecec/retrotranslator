@@ -31,15 +31,9 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import junit.framework.*;
+import junit.framework.TestCase;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Arrays;
-
-import net.sf.retrotranslator.runtime.java.io.Closeable_;
-import net.sf.retrotranslator.runtime.java.lang.TypeNotPresentException_;
+import java.util.concurrent.Callable;
 
 /**
  * @author Taras Puchko
@@ -47,20 +41,23 @@ import net.sf.retrotranslator.runtime.java.lang.TypeNotPresentException_;
 public class DuplicateCleaningVisitorTestCase extends TestCase {
 
     public void testInterfaces() throws Exception {
-        class Test implements Closeable, Closeable_ {
-            public void close() throws IOException {
+        class Test implements edu.emory.mathcs.backport.java.util.concurrent.Callable, Callable<String> {
+            public String call() throws Exception {
+                return "Hello";
             }
         }
-        Closeable closeable = new Test();
-        closeable.close();
+        Callable<String> callable = new Test();
+        assertEquals("Hello", callable.call());
+        assertEquals(Test.class.getInterfaces().length, Test.class.getGenericInterfaces().length);
     }
 
     public void testMethods() throws Exception {
         class Test {
-            public StringBuffer append(StringBuffer buffer, String s)  {
+            public StringBuffer append(StringBuffer buffer, String s) {
                 return buffer.append(s);
             }
-            public StringBuilder append(StringBuilder builder, String s)  {
+
+            public StringBuilder append(StringBuilder builder, String s) {
                 return builder.append(s);
             }
         }
@@ -68,14 +65,4 @@ public class DuplicateCleaningVisitorTestCase extends TestCase {
         assertEquals("Hi", new Test().append(new StringBuilder(), "Hi").toString());
     }
 
-    public void testExceptions() throws Exception {
-        class Test {
-            public String echo(String s) throws TypeNotPresentException, TypeNotPresentException_ {
-                return s;
-            }
-        }
-        assertEquals("Hello", new Test().echo("Hello"));
-        Class[] exceptionTypes = Test.class.getMethod("echo", String.class).getExceptionTypes();
-        assertEquals(exceptionTypes.length, new HashSet<Class>(Arrays.asList(exceptionTypes)).size());
-    }
 }

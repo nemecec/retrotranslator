@@ -57,7 +57,7 @@ public class DuplicateCleaningVisitor extends ClassAdapter {
 
     public void visit(final int version, final int access, final String name, final String signature, final String superName, final String[] interfaces) {
         String[] cleanInterfaces = cleanInterfaces(interfaces);
-        String cleanSignature = /*cleanInterfaces == interfaces ? signature : */cleanSignature(signature);
+        String cleanSignature = cleanInterfaces == interfaces ? signature : cleanSignature(signature);
         super.visit(version, access, name, cleanSignature, superName, cleanInterfaces);
     }
 

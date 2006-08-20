@@ -350,76 +350,22 @@ abstract class GenericClassVisitor implements ClassVisitor {
         }
     }
 
-    private class GenericSignatureVisitor implements SignatureVisitor {
-
-        final private SignatureVisitor visitor;
+    private class GenericSignatureVisitor extends SignatureAdapter {
 
         public GenericSignatureVisitor(final SignatureVisitor visitor) {
-            this.visitor = visitor;
+            super(visitor);
         }
 
-        public void visitFormalTypeParameter(String name) {
-            visitor.visitFormalTypeParameter(name);
-        }
-
-        public SignatureVisitor visitClassBound() {
-            return new GenericSignatureVisitor(visitor.visitClassBound());
-        }
-
-        public SignatureVisitor visitInterfaceBound() {
-            return new GenericSignatureVisitor(visitor.visitInterfaceBound());
-        }
-
-        public SignatureVisitor visitSuperclass() {
-            return new GenericSignatureVisitor(visitor.visitSuperclass());
-        }
-
-        public SignatureVisitor visitInterface() {
-            return new GenericSignatureVisitor(visitor.visitInterface());
-        }
-
-        public SignatureVisitor visitParameterType() {
-            return new GenericSignatureVisitor(visitor.visitParameterType());
-        }
-
-        public SignatureVisitor visitReturnType() {
-            return new GenericSignatureVisitor(visitor.visitReturnType());
-        }
-
-        public SignatureVisitor visitExceptionType() {
-            return new GenericSignatureVisitor(visitor.visitExceptionType());
-        }
-
-        public void visitBaseType(char descriptor) {
-            visitor.visitBaseType(descriptor);
-        }
-
-        public void visitTypeVariable(String name) {
-            visitor.visitTypeVariable(name);
-        }
-
-        public SignatureVisitor visitArrayType() {
-            return new GenericSignatureVisitor(visitor.visitArrayType());
+        protected SignatureVisitor visitStart(SignatureVisitor visitor) {
+            return new GenericSignatureVisitor(visitor);
         }
 
         public void visitClassType(String name) {
-            visitor.visitClassType(internalNameOrDescriptor(name));
+            super.visitClassType(internalNameOrDescriptor(name));
         }
 
         public void visitInnerClassType(String name) {
-            visitor.visitInnerClassType(identifier(name));
-        }
-
-        public void visitTypeArgument() {
-            visitor.visitTypeArgument();
-        }
-
-        public SignatureVisitor visitTypeArgument(char wildcard) {
-            return new GenericSignatureVisitor(visitor.visitTypeArgument(wildcard));
-        }
-
-        public void visitEnd() {
-            visitor.visitEnd();
+            super.visitInnerClassType(identifier(name));
         }
     }
 
