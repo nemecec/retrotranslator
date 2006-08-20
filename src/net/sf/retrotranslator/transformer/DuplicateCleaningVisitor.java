@@ -34,6 +34,9 @@ package net.sf.retrotranslator.transformer;
 import net.sf.retrotranslator.runtime.asm.ClassAdapter;
 import net.sf.retrotranslator.runtime.asm.ClassVisitor;
 import net.sf.retrotranslator.runtime.asm.MethodVisitor;
+import net.sf.retrotranslator.runtime.asm.signature.SignatureVisitor;
+import net.sf.retrotranslator.runtime.asm.signature.SignatureWriter;
+import net.sf.retrotranslator.runtime.asm.signature.SignatureReader;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -53,28 +56,73 @@ public class DuplicateCleaningVisitor extends ClassAdapter {
     }
 
     public void visit(final int version, final int access, final String name, final String signature, final String superName, final String[] interfaces) {
-        super.visit(version, access, name, signature, superName, clean(interfaces, "interface name"));
+        String[] cleanInterfaces = cleanInterfaces(interfaces);
+        String cleanSignature = /*cleanInterfaces == interfaces ? signature : */cleanSignature(signature);
+        super.visit(version, access, name, cleanSignature, superName, cleanInterfaces);
     }
 
     public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature, final String[] exceptions) {
         if (methods.add(name + desc)) {
-            return super.visitMethod(access, name, desc, signature, clean(exceptions, "exception name"));
+            return super.visitMethod(access, name, desc, signature, exceptions);
         } else {
             log("method/signature");
             return null;
         }
     }
 
-    private String[] clean(String[] values, String name) {
+    private void log(String name) {
+        if (logger != null) logger.log(new Message(Level.INFO, "Repetitive " + name + " removed."));
+    }
+
+    private String[] cleanInterfaces(String[] values) {
         if (values == null) return null;
         Set<String> set = new LinkedHashSet<String>();
         for (String s : values) set.add(s);
         if (set.size() == values.length) return values;
-        log(name);
+        log("interface name");
         return set.toArray(new String[set.size()]);
     }
 
-    private void log(String name) {
-        if (logger != null) logger.log(new Message(Level.INFO, "Repetitive " + name + " removed."));
+    private String cleanSignature(String signature) {
+        if (signature == null) return null;
+        SignatureWriter writer = new SignatureWriter();
+        new SignatureReader(signature).accept(new SignatureCleaningVisitor(writer));
+        return writer.toString();
     }
+
+    private static class SignatureCleaningVisitor extends SignatureAdapter {
+
+        private Set<String> interfaces = new HashSet<String>();
+
+        public SignatureCleaningVisitor(final SignatureVisitor visitor) {
+            super(visitor);
+        }
+
+        private void addInterface(String signature) {
+            new SignatureReader(signature).acceptType(super.visitInterface());
+        }
+
+        public SignatureVisitor visitInterface() {
+            final SignatureWriter writer = new SignatureWriter();
+            return new SignatureAdapter(writer) {
+
+                private String interfaceName;
+
+                public void visitClassType(String name) {
+                    super.visitClassType(name);
+                    interfaceName = name;
+                }
+
+                public void visitEnd() {
+                    super.visitEnd();
+                    if (interfaces.add(interfaceName)) {
+                        addInterface(writer.toString());
+                    }
+                }
+
+            };
+        }
+
+    }
+
 }
