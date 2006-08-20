@@ -94,7 +94,7 @@
         </copy>
     </target>
 
-    <target name="test" depends="test-translated, test-with-jit, test-embedded" />
+    <target name="test" depends="test-translated, test-with-jit, test-embedded, test-retainapi" />
 
     <target name="test-translated" depends="compile-tests">
         <mkdir dir="build/test-classes14"/>
@@ -125,6 +125,28 @@
             </batchtest>
         </junit>
         <fail if="test.failed"/>
+    </target>
+
+    <target name="test-retainapi" depends="compile-tests">
+        <mkdir dir="build/test-retainapi"/>
+        <retrotranslator srcdir="build/test-classes15" destdir="build/test-retainapi" retainapi="true"/>
+        <echo message="Running classes in build/test-retainapi on ${java14_home}"/>
+        <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
+               jvm="${java14_home}/bin/java" failureproperty="test.failed">
+            <jvmarg value="-Xfuture"/>
+            <classpath location="build/test-retainapi" />
+            <formatter type="brief" usefile="false"/>
+            <test name="net.sf.retrotranslator.transformer.ReferenceVerifyingVisitorTestCase"/>
+        </junit>
+        <fail if="test.failed"/>
+        <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
+               jvm="${java14_home}/bin/java" failureproperty="test.failed">
+            <jvmarg value="-Xfuture"/>
+            <classpath location="build/test-retainapi" />
+            <formatter type="brief" usefile="false"/>
+            <test name="net.sf.retrotranslator.transformer.ClassSubstitutionVisitorTestCase"/>
+        </junit>
+        <fail unless="test.failed"/>
     </target>
 
     <target name="retrotranslate-test-classes14">

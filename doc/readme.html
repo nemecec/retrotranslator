@@ -149,7 +149,10 @@ and concurrency utilities
     </tr>
     <tr>
         <td nowrap><code>-retainapi</code></td>
-        <td>Asks the translator to modify classes for JVM 1.4 compatibility but keep Java 5 API uses.</td>
+        <td>Asks the translator to modify classes for JVM 1.4 compatibility but keep use of Java 5 API.
+            References introduced by a compiler will also remain unchanged,
+            like the use of <code>java.lang.StringBuilder</code> for string concatenation
+            or the implicit <code>valueOf</code> method call for autoboxing.</td>
         <td>Off</td>
     </tr>
 </table>
@@ -238,7 +241,10 @@ and concurrency utilities
     </tr>
     <tr>
         <td><code>retainapi</code></td>
-        <td>Asks the translator to modify classes for JVM 1.4 compatibility but keep Java 5 API uses.</td>
+        <td>Asks the translator to modify classes for JVM 1.4 compatibility but keep use of Java 5 API.
+            References introduced by a compiler will also remain unchanged,
+            like the use of <code>java.lang.StringBuilder</code> for string concatenation
+            or the implicit <code>valueOf</code> method call for autoboxing.</td>
         <td>Off</td>
     </tr>
     <tr>

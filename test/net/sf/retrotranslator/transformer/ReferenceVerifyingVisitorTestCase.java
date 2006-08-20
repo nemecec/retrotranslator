@@ -56,5 +56,6 @@ public class ReferenceVerifyingVisitorTestCase extends TestCase {
     public void testAbstractClass() {
         A a = new B();
         assertEquals("ok", a.m());
+        assertSame(B.class, a.getClass());
     }
 }
