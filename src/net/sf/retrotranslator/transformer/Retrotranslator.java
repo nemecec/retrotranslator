@@ -375,7 +375,7 @@ public class Retrotranslator implements MessageLogger {
             throw new IllegalArgumentException("Location not found: " + aClass);
         }
         String url = resource.toExternalForm();
-        String prefix = "jar:file:/";
+        String prefix = "jar:file:";
         String suffix = "!" + path;
         if (!url.startsWith(prefix) || !url.endsWith(suffix)) {
             throw new IllegalArgumentException("Not in a jar file: " + aClass);

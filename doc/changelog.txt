@@ -1,6 +1,8 @@
 Retrotranslator Changelog
 =================================
 
+  - Bug fixed: Embedding runtime & backport failed in UNIX environments.
+
 1.0.8 (2006-08-20)
 ---------------------------------
   - Supported: all constructors of java.io.PrintWriter.
