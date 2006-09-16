@@ -180,7 +180,8 @@ public class Retrotranslator implements MessageLogger {
         if (src.isEmpty()) throw new IllegalArgumentException("Source not set.");
         String backportPrefix = null;
         if (embed != null) {
-            if (dest == null) throw new IllegalArgumentException("Destination not set.");
+            if (dest == null) throw new IllegalArgumentException("Destination required for embedding!");
+            if (lazy) throw new IllegalArgumentException("Embedding cannot be lazy!");
             backportPrefix = embed.replace('.', '/') + '/';
             prependLocationToSource(Queue.class);
             prependLocationToSource(BytecodeTransformer.class);
