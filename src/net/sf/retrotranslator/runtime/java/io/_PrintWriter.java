@@ -32,6 +32,8 @@
 package net.sf.retrotranslator.runtime.java.io;
 
 import java.io.*;
+import java.util.Locale;
+import java.util.Formatter;
 
 /**
  * @author Taras Puchko
@@ -54,6 +56,41 @@ public class _PrintWriter {
     public static Writer convertConstructorArguments(String fileName, String csn)
             throws FileNotFoundException, UnsupportedEncodingException {
         return new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName), csn));
+    }
+
+    public static PrintWriter append(PrintWriter writer, CharSequence csq) {
+        writer.write(String.valueOf(csq));
+        return writer;
+    }
+
+    public static PrintWriter append(PrintWriter writer, CharSequence csq, int start, int end) {
+        writer.write(String.valueOf(csq).substring(start, end));
+        return writer;
+    }
+
+    public static PrintWriter append(PrintWriter writer, char c) {
+        writer.write(c);
+        return writer;
+    }
+
+    public static PrintWriter format(PrintWriter printWriter, Locale locale, String format, Object... args) {
+        new Formatter(printWriter, locale).format(format, args);
+        printWriter.flush();
+        return printWriter;
+    }
+
+    public static PrintWriter format(PrintWriter printWriter, String format, Object... args) {
+        new Formatter(printWriter).format(format, args);
+        printWriter.flush();
+        return printWriter;
+    }
+
+    public static PrintWriter printf(PrintWriter printWriter, Locale locale, String format, Object... args) {
+        return format(printWriter, locale, format, args);
+    }
+
+    public static PrintWriter printf(PrintWriter printWriter, String format, Object... args) {
+        return format(printWriter, format, args);
     }
 
 }

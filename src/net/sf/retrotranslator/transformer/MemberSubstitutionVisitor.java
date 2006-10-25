@@ -39,12 +39,13 @@ import static net.sf.retrotranslator.runtime.asm.Opcodes.*;
  */
 class MemberSubstitutionVisitor extends ClassAdapter {
 
-    private BackportFactory backportFactory = BackportFactory.getInstance();
+    private final BackportLocator locator;
+    private final boolean advanced;
     private String currentClass;
-    private boolean advanced;
 
-    public MemberSubstitutionVisitor(boolean advanced, final ClassVisitor cv) {
+    public MemberSubstitutionVisitor(final ClassVisitor cv, BackportLocator locator, boolean advanced) {
         super(cv);
+        this.locator = locator;
         this.advanced = advanced;
     }
 
@@ -59,7 +60,7 @@ class MemberSubstitutionVisitor extends ClassAdapter {
 
             public void visitMethodInsn(int opcode, String owner, String name, String desc) {
                 if (!owner.equals(currentClass)) {
-                    ClassMember method = backportFactory.getMethod(opcode == INVOKESTATIC, owner, name, desc);
+                    ClassMember method = locator.getMethod(opcode == INVOKESTATIC, owner, name, desc);
                     if (method != null && !method.owner.equals(currentClass) && (advanced | !method.advanced)) {
                         opcode = method.isStatic ? INVOKESTATIC : INVOKEINTERFACE;
                         owner = method.owner;
@@ -72,7 +73,7 @@ class MemberSubstitutionVisitor extends ClassAdapter {
 
             public void visitFieldInsn(int opcode, String owner, String name, String desc) {
                 if (opcode == GETSTATIC || opcode == PUTSTATIC) {
-                    ClassMember field = backportFactory.getField(owner, name, desc);
+                    ClassMember field = locator.getField(owner, name, desc);
                     if (field != null && !field.owner.equals(currentClass) && (advanced | !field.advanced)) {
                         owner = field.owner;
                         name = field.name;

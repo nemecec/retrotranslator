@@ -38,10 +38,11 @@ class JRockitJITRetrotranslator {
 
     private static class ClassPreProcessorImpl implements ClassPreProcessor {
 
-        private ClassPreProcessor delegate;
-        private ClassTransformer transformer = new ClassTransformer(true, true, false, false, null, null);
+        private final ClassTransformer transformer;
+        private final ClassPreProcessor delegate;
 
-        public ClassPreProcessorImpl(ClassPreProcessor delegate) {
+        public ClassPreProcessorImpl(ClassTransformer transformer, ClassPreProcessor delegate) {
+            this.transformer = transformer;
             this.delegate = delegate;
         }
 
@@ -51,7 +52,7 @@ class JRockitJITRetrotranslator {
         }
     }
 
-    public static boolean install() {
+    public static boolean install(ClassTransformer transformer) {
         try {
             Class jvmFactoryClass = Class.forName("com.bea.jvm.JVMFactory");
             Object jvm = jvmFactoryClass.getMethod("getJVM").invoke(null);
@@ -59,8 +60,8 @@ class JRockitJITRetrotranslator {
             ClassPreProcessor preProcessor = (ClassPreProcessor)
                     classLibrary.getClass().getMethod("getClassPreProcessor").invoke(classLibrary);
             if (!(preProcessor instanceof ClassPreProcessorImpl)) {
-                classLibrary.getClass().getMethod("setClassPreProcessor",
-                        ClassPreProcessor.class).invoke(classLibrary, new ClassPreProcessorImpl(preProcessor));
+                classLibrary.getClass().getMethod("setClassPreProcessor", ClassPreProcessor.class).
+                        invoke(classLibrary, new ClassPreProcessorImpl(transformer, preProcessor));
             }
             return true;
         } catch (Throwable e) {

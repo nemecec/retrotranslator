@@ -42,14 +42,20 @@ class TextFileTransformer {
 
     private static Pattern pattern = Pattern.compile("([A-Za-z0-9_$]+\\.)+[A-Za-z0-9_$]+");
 
-    public static byte[] transform(byte[] bytes, String backportPrefix) {
+    private BackportLocatorFactory factory;
+
+    public TextFileTransformer(BackportLocatorFactory factory) {
+        this.factory = factory;
+    }
+
+    public byte[] transform(byte[] bytes, EmbeddingConverter converter) {
         boolean modified = false;
         Matcher matcher = pattern.matcher(toString(bytes));
         StringBuffer buffer = new StringBuffer();
         while (matcher.find()) {
             String originalName = matcher.group().replace('.', '/');
-            String backportName = BackportFactory.getInstance().getClassName(originalName);
-            String name = BackportFactory.prefixBackportName(backportName, backportPrefix);
+            String backportName = factory.getLocator().getClassName(originalName);
+            String name = converter == null ? backportName : converter.convertName(backportName);
             if (originalName.equals(name)) {
                 matcher.appendReplacement(buffer, "$0");
             } else {

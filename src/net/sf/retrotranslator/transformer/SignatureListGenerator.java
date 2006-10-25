@@ -55,15 +55,20 @@ public class SignatureListGenerator extends EmptyVisitor {
             {java.util.concurrent.BlockingQueue.class},
             {java.util.concurrent.ConcurrentMap.class},
             {java.util.HashSet.class},
-            {java.util.TreeSet.class},
+            {java.util.TreeSet.class,
+                    "<E:Ljava/lang/Object;>Ljava/util/AbstractSet<TE;>;Ljava/util/SortedSet<TE;>;" +
+                            "Ljava/lang/Cloneable;Ljava/io/Serializable;"},
             {java.util.LinkedHashSet.class},
             {java.util.ArrayList.class},
             {java.util.LinkedList.class,
-                    "<E:Ljava/lang/Object;>Ljava/util/AbstractSequentialList<TE;>;Ljava/util/List<TE;>;Ljava/lang/Cloneable;Ljava/io/Serializable;"},
+                    "<E:Ljava/lang/Object;>Ljava/util/AbstractSequentialList<TE;>;" +
+                            "Ljava/util/List<TE;>;Ljava/lang/Cloneable;Ljava/io/Serializable;"},
             {java.util.PriorityQueue.class,
-                    "<E:Ljava/lang/Object;>Ledu/emory/mathcs/backport/java/util/AbstractQueue<TE;>;Ljava/io/Serializable;Ledu/emory/mathcs/backport/java/util/Queue<TE;>;"},
+                    "<E:Ljava/lang/Object;>Ledu/emory/mathcs/backport/java/util/AbstractQueue<TE;>;" +
+                            "Ljava/io/Serializable;Ledu/emory/mathcs/backport/java/util/Queue<TE;>;"},
             {java.util.HashMap.class},
-            {java.util.TreeMap.class},
+            {java.util.TreeMap.class, "<K:Ljava/lang/Object;V:Ljava/lang/Object;>Ljava/util/AbstractMap<TK;TV;>;" +
+                    "Ljava/util/SortedMap<TK;TV;>;Ljava/lang/Cloneable;Ljava/io/Serializable;"},
             {java.util.LinkedHashMap.class, "<K:Ljava/lang/Object;V:Ljava/lang/Object;>Ljava/util/HashMap<TK;TV;>;"},
             {java.util.Vector.class},
             {java.util.Hashtable.class},
@@ -74,7 +79,8 @@ public class SignatureListGenerator extends EmptyVisitor {
             {java.util.EnumSet.class,
                     "<E:Lnet/sf/retrotranslator/runtime/java/lang/Enum_<TE;>;>Ljava/util/HashSet<TE;>;"},
             {java.util.EnumMap.class,
-                    "<K:Lnet/sf/retrotranslator/runtime/java/lang/Enum_<TK;>;V:Ljava/lang/Object;>Ljava/util/TreeMap<TK;TV;>;"},
+                    "<K:Lnet/sf/retrotranslator/runtime/java/lang/Enum_<TK;>;V:Ljava/lang/Object;>" +
+                            "Ljava/util/TreeMap<TK;TV;>;"},
             {java.util.concurrent.ConcurrentLinkedQueue.class},
             {java.util.concurrent.LinkedBlockingQueue.class},
             {java.util.concurrent.ArrayBlockingQueue.class},
@@ -82,15 +88,18 @@ public class SignatureListGenerator extends EmptyVisitor {
             {java.util.concurrent.DelayQueue.class},
             {java.util.concurrent.SynchronousQueue.class},
             {java.util.concurrent.ConcurrentHashMap.class,
-                    "<K:Ljava/lang/Object;V:Ljava/lang/Object;>Ledu/emory/mathcs/backport/java/util/AbstractMap<TK;TV;>;Ledu/emory/mathcs/backport/java/util/concurrent/ConcurrentMap<TK;TV;>;Ljava/io/Serializable;"},
+                    "<K:Ljava/lang/Object;V:Ljava/lang/Object;>Ledu/emory/mathcs/backport/java/util/AbstractMap<TK;TV;>;" +
+                            "Ledu/emory/mathcs/backport/java/util/concurrent/ConcurrentMap<TK;TV;>;Ljava/io/Serializable;"},
             {java.util.AbstractCollection.class},
             {java.util.AbstractSet.class},
             {java.util.AbstractList.class},
             {java.util.AbstractSequentialList.class},
             {java.util.AbstractQueue.class,
-                    "<E:Ljava/lang/Object;>Ledu/emory/mathcs/backport/java/util/AbstractCollection<TE;>;Ledu/emory/mathcs/backport/java/util/Queue<TE;>;"},
+                    "<E:Ljava/lang/Object;>Ledu/emory/mathcs/backport/java/util/AbstractCollection<TE;>;" +
+                            "Ledu/emory/mathcs/backport/java/util/Queue<TE;>;"},
             {java.util.AbstractMap.class},
             {java.util.Enumeration.class},
+            {java.lang.Iterable.class},
             {java.util.Iterator.class},
             {java.util.ListIterator.class},
             {java.lang.Comparable.class},
@@ -105,11 +114,12 @@ public class SignatureListGenerator extends EmptyVisitor {
     }
 
     private void execute(String fileName) throws Exception {
-        ClassTransformer classTransformer = new ClassTransformer(false, false, false, false, null, null);
+        ClassTransformer classTransformer = new ClassTransformer(false, false, false, false,
+                null, null, new BackportLocatorFactory(null));
         for (Object[] objects : CLASSES_14) {
             Class aClass = (Class) objects[0];
             specialSignature = objects.length > 1 ? (String) objects[1] : null;
-            byte[] bytes = RuntimeTools.readResourceToByteArray(aClass, aClass.getSimpleName() + ".class");
+            byte[] bytes = RuntimeTools.getBytecode(aClass);
             bytes = classTransformer.transform(bytes, 0, bytes.length);
             new ClassReader(bytes).accept(this, true);
         }

@@ -73,10 +73,11 @@ class FolderFileContainer extends FileContainer {
     private void scanFolder(File folder, int prefixLength) {
         for (File file : folder.listFiles()) {
             String name = file.getPath().substring(prefixLength).replace(File.separatorChar, '/');
-            boolean isFolder = file.isDirectory();
-            if (isFolder) name += "/";
-            entries.put(name, new FolderFileEntry(name, file));
-            if (isFolder) scanFolder(file, prefixLength);
+            if (file.isDirectory()) {
+                scanFolder(file, prefixLength);
+            } else {
+                entries.put(name, new FolderFileEntry(name, file));
+            }
         }
     }
 
@@ -84,10 +85,6 @@ class FolderFileContainer extends FileContainer {
         File file = new File(location, name);
         if (entries == null) entries = new LinkedHashMap<String, FolderFileEntry>();
         entries.put(name, new FolderFileEntry(name, file));
-        if (name.endsWith("/")) {
-            file.mkdirs();
-            return;
-        }
         file.getParentFile().mkdirs();
         try {
             FileOutputStream stream = new FileOutputStream(file);
@@ -115,7 +112,6 @@ class FolderFileContainer extends FileContainer {
         }
 
         public byte[] getContent() {
-            if (!file.isFile()) return null;
             try {
                 FileInputStream stream = new FileInputStream(file);
                 try {

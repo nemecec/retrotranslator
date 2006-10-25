@@ -31,12 +31,53 @@
  */
 package net.sf.retrotranslator.runtime.java.io;
 
-import java.io.PrintStream;
+import java.io.*;
+import java.util.Formatter;
+import java.util.Locale;
 
 /**
  * @author Taras Puchko
  */
 public class _PrintStream {
+
+    public static class PrintStreamBuilder {
+
+        private OutputStream out;
+        private String encoding;
+
+        protected PrintStreamBuilder(OutputStream out, String encoding) {
+            this.out = out;
+            this.encoding = encoding;
+        }
+
+        public OutputStream argument1() {
+            return out;
+        }
+
+        public boolean argument2() {
+            return false;
+        }
+
+        public String argument3() {
+            return encoding;
+        }
+    }
+
+    public static OutputStream convertConstructorArguments(File file) throws FileNotFoundException {
+        return new FileOutputStream(file);
+    }
+
+    public static OutputStream convertConstructorArguments(String fileName) throws FileNotFoundException {
+        return new FileOutputStream(fileName);
+    }
+
+    public static PrintStreamBuilder createInstanceBuilder(File file, String csn) throws FileNotFoundException {
+        return new PrintStreamBuilder(new FileOutputStream(file), csn);
+    }
+
+    public static PrintStreamBuilder createInstanceBuilder(String fileName, String csn) throws FileNotFoundException {
+        return new PrintStreamBuilder(new FileOutputStream(fileName), csn);
+    }
 
     public static PrintStream append(PrintStream printStream, CharSequence csq) {
         printStream.print(csq);
@@ -51,6 +92,24 @@ public class _PrintStream {
     public static PrintStream append(PrintStream printStream, char c) {
         printStream.print(c);
         return printStream;
+    }
+
+    public static PrintStream format(PrintStream printStream, Locale locale, String format, Object... args) {
+        new Formatter(printStream, locale).format(format, args);
+        return printStream;
+    }
+
+    public static PrintStream format(PrintStream printStream, String format, Object... args) {
+        new Formatter(printStream).format(format, args);
+        return printStream;
+    }
+
+    public static PrintStream printf(PrintStream printStream, Locale locale, String format, Object... args) {
+        return format(printStream, locale, format, args);
+    }
+
+    public static PrintStream printf(PrintStream printStream, String format, Object... args) {
+        return format(printStream, format, args);
     }
 
 }

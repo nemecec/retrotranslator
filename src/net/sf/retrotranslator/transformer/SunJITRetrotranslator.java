@@ -38,9 +38,10 @@ class SunJITRetrotranslator {
 
     private static class ClassFileTransformerImpl extends ClassFileTransformer {
 
-        private ClassTransformer transformer = new ClassTransformer(false, true, false, false, null, null);
+        private final ClassTransformer transformer;
 
-        public ClassFileTransformerImpl() {
+        public ClassFileTransformerImpl(ClassTransformer transformer) {
+            this.transformer = transformer;
         }
 
         public byte[] transform(byte[] bytes, int offset, int length) {
@@ -48,12 +49,14 @@ class SunJITRetrotranslator {
         }
     }
 
-    public static boolean install() {
+    public static boolean install(ClassTransformer classTransformer) {
         try {
             for (Object transformer : ClassFileTransformer.getTransformers()) {
-                if (transformer instanceof ClassFileTransformerImpl) return true;
+                if (transformer instanceof ClassFileTransformerImpl) {
+                    return true;
+                }
             }
-            ClassFileTransformer.add(new ClassFileTransformerImpl());
+            ClassFileTransformer.add(new ClassFileTransformerImpl(classTransformer));
             return true;
         } catch (Throwable e) {
             return false;

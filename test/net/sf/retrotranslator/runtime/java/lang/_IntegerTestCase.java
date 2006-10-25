@@ -42,4 +42,10 @@ public class _IntegerTestCase extends TestCase {
         Integer integer = -5;
         assertEquals(-5, integer.intValue());
     }
+
+    public void testSignum() throws Exception {
+        assertEquals(1, Integer.signum(123));
+        assertEquals(0, Integer.signum(0));
+        assertEquals(-1, Integer.signum(-345));
+    }
 }

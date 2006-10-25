@@ -33,6 +33,8 @@ package net.sf.retrotranslator.runtime.java.lang;
 
 import junit.framework.TestCase;
 
+import java.util.Locale;
+
 /**
  * @author Taras Puchko
  */
@@ -48,6 +50,11 @@ public class _StringTestCase extends TestCase {
         assertFalse("abcd".contentEquals("xy"));
     }
 
+    public void testFormat() throws Exception {
+        assertEquals("1234", String.format("%d", 1234));
+        assertEquals("1.234", String.format(Locale.GERMAN, "%,d", 1234));
+    }
+
     public void testReplace() throws Exception {
         assertEquals("axydxy", "abcdbc".replace("bc", "xy"));
         assertEquals("abc", "abc*".replace("*", ""));
@@ -55,4 +62,5 @@ public class _StringTestCase extends TestCase {
         assertEquals("ac", "abc".replace("b", ""));
         assertEquals("abc", "abc".replace("", ""));
     }
+
 }

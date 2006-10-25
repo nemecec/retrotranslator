@@ -34,14 +34,15 @@ package net.sf.retrotranslator.runtime.java.io;
 import net.sf.retrotranslator.tests.BaseTestCase;
 
 import java.io.*;
+import java.util.Locale;
 
 /**
  * @author Taras Puchko
  */
 public class _PrintWriterTestCase extends BaseTestCase {
 
-    public void testConvertConstructorArguments() throws Exception {
-        File file = File.createTempFile("retrotranslator", ".tmp");
+    public void testConstructors() throws Exception {
+        File file = File.createTempFile("_PrintWriterTestCase", ".tmp");
         try {
             writeAndClose(new PrintWriter(file), "test1");
             assertEquals("test1", readLine(file, null));
@@ -67,15 +68,19 @@ public class _PrintWriterTestCase extends BaseTestCase {
         }
     }
 
-    private static String readLine(File file, String csn) throws Exception {
-        FileInputStream stream = new FileInputStream(file);
-        BufferedReader reader = new BufferedReader(csn == null
-                ? new InputStreamReader(stream) : new InputStreamReader(stream, csn) );
-        try {
-            return reader.readLine();
-        } finally {
-            reader.close();
-        }
+    public void testFormat() throws Exception {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        PrintWriter writer = new PrintWriter(stream, true);
+        writer.format("Hello, %s!", "World");
+        writer.format(Locale.FRANCE, " - %f", 1.2);
+        assertEquals("Hello, World! - 1,200000", stream.toString());
     }
 
+    public void testPrintf() throws Exception {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        PrintWriter writer = new PrintWriter(stream, true);
+        writer.printf("Hello, %s!", "World");
+        writer.printf(Locale.FRANCE, " - %,d", 1000000);
+        assertEquals("Hello, World! - 1 000 000", stream.toString());
+    }
 }

@@ -45,7 +45,7 @@ import java.util.HashSet;
 /**
  * @author Taras Puchko
  */
-public class DuplicateCleaningVisitor extends ClassAdapter {
+class DuplicateCleaningVisitor extends ClassAdapter {
 
     private MessageLogger logger;
     private Set<String> methods = new HashSet<String>();

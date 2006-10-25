@@ -42,4 +42,10 @@ public class _LongTestCase extends TestCase {
         Long aLong = -100L;
         assertEquals(-100L, aLong.longValue());
     }
+
+    public void testSignum() throws Exception {
+        assertEquals(1, Long.signum(123));
+        assertEquals(0, Long.signum(0));
+        assertEquals(-1, Long.signum(-345));
+    }
 }

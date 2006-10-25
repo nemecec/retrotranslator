@@ -67,6 +67,11 @@ class JarFileContainer extends FileContainer {
         }
     }
 
+    public void excludeManifest() {
+        if (entries == null) init();
+        entries.remove(JarFile.MANIFEST_NAME);
+    }
+
     private void init() {
         entries = new LinkedHashMap<String, JarFileEntry>();
         try {

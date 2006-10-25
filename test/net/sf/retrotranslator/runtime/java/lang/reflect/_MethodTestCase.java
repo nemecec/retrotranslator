@@ -107,26 +107,20 @@ public class _MethodTestCase extends BaseTestCase {
 
     public void testGetGenericExceptionTypes() throws Exception {
         class Test<T extends RuntimeException> {
-
-            class X extends RuntimeException {
-            }
-
-            public void m() throws T, X {
+            public <X extends Throwable> void m() throws T, X {
             }
         }
         Type[] types = Test.class.getMethod("m").getGenericExceptionTypes();
 
-        TypeVariable variable = (TypeVariable) types[0];
-        assertEquals("T", variable.getName());
-        assertEquals(Test.class, variable.getGenericDeclaration());
-        assertEquals(RuntimeException.class, singleton(variable.getBounds()));
+        TypeVariable variableT = (TypeVariable) types[0];
+        assertEquals("T", variableT.getName());
+        assertEquals(Test.class, variableT.getGenericDeclaration());
+        assertEquals(RuntimeException.class, singleton(variableT.getBounds()));
 
-        ParameterizedType xType = (ParameterizedType) types[1];
-        assertEquals(Test.X.class, xType.getRawType());
-        ParameterizedType testType = (ParameterizedType) xType.getOwnerType();
-        assertEquals(Test.class, testType.getRawType());
-        assertNull(testType.getOwnerType());
-        assertEquals(variable, singleton(testType.getActualTypeArguments()));
+        TypeVariable variableX = (TypeVariable) types[1];
+        assertEquals("X", variableX.getName());
+        assertEquals(Test.class.getMethod("m"), variableX.getGenericDeclaration());
+        assertEquals(Throwable.class, singleton(variableX.getBounds()));
     }
 
     public void testGetGenericExceptionTypes_NotGeneric() throws Exception {

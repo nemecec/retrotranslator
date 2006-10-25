@@ -46,4 +46,8 @@ public class _Long {
         return l >= -128 && l <= 127 ? cache[(int) l & 0xFF] : new Long(l);
     }
 
+    public static int signum(long i) {
+        return (int) (-i >>> 63 | i >> 63);
+    }
+
 }

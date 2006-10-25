@@ -46,4 +46,7 @@ public class _Integer {
         return i >= -128 && i <= 127 ? cache[i & 0xFF] : new Integer(i);
     }
 
+    public static int signum(int i) {
+        return -i >>> 31 | i >> 31;
+    }
 }

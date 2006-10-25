@@ -38,14 +38,14 @@ import net.sf.retrotranslator.runtime.asm.ClassVisitor;
  */
 class PrefixingVisitor extends GenericClassVisitor {
 
-    private String backportPrefix;
+    private EmbeddingConverter converter;
 
-    public PrefixingVisitor(ClassVisitor visitor, String backportPrefix) {
+    public PrefixingVisitor(ClassVisitor visitor, EmbeddingConverter converter) {
         super(visitor);
-        this.backportPrefix = backportPrefix;
+        this.converter = converter;
     }
 
     protected String visitInternalName(String name) {
-        return BackportFactory.prefixBackportName(name, backportPrefix);
+        return converter.convertName(name);
     }
 }

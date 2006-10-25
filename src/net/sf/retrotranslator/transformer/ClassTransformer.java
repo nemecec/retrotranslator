@@ -45,16 +45,19 @@ class ClassTransformer implements BytecodeTransformer {
     private boolean advanced;
     private boolean stripsign;
     private boolean retainapi;
-    private String backportPrefix;
+    private EmbeddingConverter converter;
     private MessageLogger logger;
+    private BackportLocatorFactory factory;
 
-    public ClassTransformer(boolean lazy, boolean advanced, boolean stripsign, boolean retainapi, String backportPrefix, MessageLogger logger) {
+    public ClassTransformer(boolean lazy, boolean advanced, boolean stripsign, boolean retainapi,
+                            EmbeddingConverter converter, MessageLogger logger, BackportLocatorFactory factory) {
         this.lazy = lazy;
         this.advanced = advanced;
         this.stripsign = stripsign;
         this.retainapi = retainapi;
-        this.backportPrefix = backportPrefix;
+        this.converter = converter;
         this.logger = logger;
+        this.factory = factory;
     }
 
     public byte[] transform(byte[] bytes, int offset, int length) {
@@ -68,11 +71,15 @@ class ClassTransformer implements BytecodeTransformer {
         ClassWriter classWriter = new ClassWriter(true);
         ClassVisitor visitor = new DuplicateCleaningVisitor(classWriter, logger);
         visitor = new VersionVisitor(new ArrayCloningVisitor(new ClassLiteralVisitor(visitor)));
-        if (backportPrefix != null) visitor = new PrefixingVisitor(visitor, backportPrefix);
+        if (converter != null) visitor = new PrefixingVisitor(visitor, converter);
         if (!retainapi) {
-            visitor = new ConstructorSubstitutionVisitor(new EnumVisitor(visitor), advanced);
-            visitor = new UtilBackportVisitor(new MemberSubstitutionVisitor(advanced, visitor));
-            visitor = new InheritanceVisitor(new ClassSubstitutionVisitor(visitor));
+            BackportLocator locator = factory.getLocator();
+            visitor = new InheritanceVisitor(visitor, locator);
+            visitor = new ConstructorSubstitutionVisitor(visitor, locator, advanced);
+            visitor = new UtilBackportVisitor(visitor);
+            visitor = new MemberSubstitutionVisitor(visitor, locator, advanced);
+            visitor = new EnumVisitor(visitor);
+            visitor = new ClassSubstitutionVisitor(visitor, locator);
         }
         if (stripsign) visitor = new SignatureStrippingVisitor(visitor);
         new ClassReader(bytes, offset, length).accept(visitor, false);

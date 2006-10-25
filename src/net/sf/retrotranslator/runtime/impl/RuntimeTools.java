@@ -47,6 +47,7 @@ public class RuntimeTools {
 
     public static final String CONSTRUCTOR_NAME = "<init>";
     public static final String STATIC_NAME = "<clinit>";
+    private static final String CLASS_EXTENSION = ".class";
 
     public static Class getBaseClass(char type) {
         return getBaseClass(Type.getType(new String(new char[]{type})));
@@ -148,6 +149,6 @@ public class RuntimeTools {
         String targetName = target.getName();
         int index = targetName.lastIndexOf('.');
         String simpleName = index < 0 ? targetName : targetName.substring(index + 1);
-        return readResourceToByteArray(target, simpleName + ".class");
+        return readResourceToByteArray(target, simpleName + CLASS_EXTENSION);
     }
 }

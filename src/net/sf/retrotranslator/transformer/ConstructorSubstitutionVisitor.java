@@ -42,64 +42,129 @@ class ConstructorSubstitutionVisitor extends ClassAdapter {
 
     private static final String ILLEGAL_STATE_EXCEPTION = Type.getInternalName(IllegalStateException.class);
     private static final String ILLEGAL_ARGUMENT_EXCEPTION = Type.getInternalName(IllegalArgumentException.class);
+    private static final String LONG_ARG_DESCRIPTOR = TransformerTools.descriptor(long.class);
+    private static final String DOUBLE_ARG_DESCRIPTOR = TransformerTools.descriptor(double.class);
 
-    private BackportFactory backportFactory = BackportFactory.getInstance();
-    private boolean advanced;
+    private final BackportLocator locator;
+    private final boolean advanced;
+    private String currentClass;
 
-    public ConstructorSubstitutionVisitor(final ClassVisitor cv, boolean advanced) {
+    public ConstructorSubstitutionVisitor(final ClassVisitor cv, BackportLocator locator, boolean advanced) {
         super(cv);
+        this.locator = locator;
         this.advanced = advanced;
+    }
+
+    public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
+        super.visit(version, access, name, signature, superName, interfaces);
+        currentClass = name;
     }
 
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         MethodVisitor visitor = super.visitMethod(access, name, desc, signature, exceptions);
-        return visitor == null ? null : new MethodAdapter(visitor) {
+        return visitor == null ? null : new ConstructorSubstitutionMethodVisitor(visitor);
+    }
 
-            public void visitMethodInsn(final int opcode, final String owner, final String name, String desc) {
-                if (opcode == INVOKESPECIAL && name.equals(RuntimeTools.CONSTRUCTOR_NAME)) {
-                    if (owner.equals(ILLEGAL_STATE_EXCEPTION) || owner.equals(ILLEGAL_ARGUMENT_EXCEPTION)) {
-                        if (initException(desc, owner)) return;
-                    }
-                    ClassMember converter = backportFactory.getConverter(owner, desc);
-                    if (converter != null && (advanced | !converter.advanced)) {
-                        mv.visitMethodInsn(INVOKESTATIC, converter.owner, converter.name, converter.desc);
-                        desc = Type.getMethodDescriptor(Type.VOID_TYPE, new Type[] {Type.getReturnType(converter.desc)});
+    private class ConstructorSubstitutionMethodVisitor extends MethodAdapter {
+
+        public ConstructorSubstitutionMethodVisitor(MethodVisitor visitor) {
+            super(visitor);
+        }
+
+        public void visitMethodInsn(final int opcode, final String owner, final String name, String desc) {
+            if (opcode == INVOKESPECIAL && name.equals(RuntimeTools.CONSTRUCTOR_NAME) && !owner.equals(currentClass)) {
+                InstanceBuilder builder = locator.getBuilder(owner, desc);
+                if (builder != null && (advanced | !builder.creator.advanced)) {
+                    buildInstance(builder);
+                    return;
+                }
+                ClassMember converter = locator.getConverter(owner, desc);
+                if (converter != null && (advanced | !converter.advanced)) {
+                    mv.visitMethodInsn(INVOKESTATIC, converter.owner, converter.name, converter.desc);
+                    desc = Type.getMethodDescriptor(Type.VOID_TYPE, new Type[]{Type.getReturnType(converter.desc)});
+                } else if (owner.equals(ILLEGAL_STATE_EXCEPTION) || owner.equals(ILLEGAL_ARGUMENT_EXCEPTION)) {
+                    if (initException(desc, owner)) {
+                        return;
                     }
                 }
-                super.visitMethodInsn(opcode, owner, name, desc);
             }
+            super.visitMethodInsn(opcode, owner, name, desc);
+        }
 
-            private boolean initException(String desc, String owner) {
-                if (desc.equals(TransformerTools.descriptor(void.class, Throwable.class))) {
-                    Label toStringLabel = new Label();
-                    Label continueLabel = new Label();
-                    mv.visitInsn(DUP2);
-                    mv.visitInsn(DUP);
-                    mv.visitJumpInsn(IFNONNULL, toStringLabel);
-                    mv.visitInsn(POP);
-                    mv.visitInsn(ACONST_NULL);
-                    mv.visitJumpInsn(GOTO, continueLabel);
-                    mv.visitLabel(toStringLabel);
-                    mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(Throwable.class),
-                            "toString", TransformerTools.descriptor(String.class));
-                    mv.visitLabel(continueLabel);
-                } else if (desc.equals(TransformerTools.descriptor(void.class, String.class, Throwable.class))) {
-                    mv.visitInsn(DUP_X2);
-                    mv.visitInsn(POP);
-                    mv.visitInsn(SWAP);
-                    mv.visitInsn(DUP_X2);
-                    mv.visitInsn(SWAP);
-                } else {
-                    return false;
-                }
-                mv.visitMethodInsn(INVOKESPECIAL, owner,
-                        RuntimeTools.CONSTRUCTOR_NAME, TransformerTools.descriptor(void.class, String.class));
-                mv.visitMethodInsn(INVOKEVIRTUAL, owner,
-                        "initCause", TransformerTools.descriptor(Throwable.class, Throwable.class));
+        private void buildInstance(InstanceBuilder builder) {
+            ClassMember creator = builder.creator;
+            ClassMember[] arguments = builder.arguments;
+            ClassMember constructor = builder.constructor;
+            ClassMember initializer = builder.initializer;
+            mv.visitMethodInsn(INVOKESTATIC, creator.owner, creator.name, creator.desc);
+            if (initializer != null) {
+                mv.visitInsn(DUP2);
+            }
+            if (arguments.length == 0) {
                 mv.visitInsn(POP);
-                return true;
+            } else {
+                pushArguments(arguments);
             }
-        };
+            mv.visitMethodInsn(INVOKESPECIAL, constructor.owner, RuntimeTools.CONSTRUCTOR_NAME, constructor.desc);
+            if (initializer != null) {
+                mv.visitInsn(SWAP);
+                mv.visitMethodInsn(INVOKEVIRTUAL, initializer.owner, initializer.name, initializer.desc);
+            }
+        }
+
+        private void pushArguments(ClassMember[] arguments) {
+            for (int i = 0; i < arguments.length; i++) {
+                ClassMember argument = arguments[i];
+                boolean notLast = i + 1 < arguments.length;
+                if (notLast) {
+                    mv.visitInsn(DUP);
+                }
+                mv.visitMethodInsn(INVOKEVIRTUAL, argument.owner, argument.name, argument.desc);
+                if (notLast) {
+                    swap(argument);
+                }
+            }
+        }
+
+        private void swap(ClassMember argument) {
+            if (argument.desc.equals(LONG_ARG_DESCRIPTOR) || argument.desc.equals(DOUBLE_ARG_DESCRIPTOR)) {
+                mv.visitInsn(DUP2_X1);
+                mv.visitInsn(POP2);
+            } else {
+                mv.visitInsn(SWAP);
+            }
+        }
+
+        private boolean initException(String desc, String owner) {
+            if (desc.equals(TransformerTools.descriptor(void.class, Throwable.class))) {
+                Label toStringLabel = new Label();
+                Label continueLabel = new Label();
+                mv.visitInsn(DUP2);
+                mv.visitInsn(DUP);
+                mv.visitJumpInsn(IFNONNULL, toStringLabel);
+                mv.visitInsn(POP);
+                mv.visitInsn(ACONST_NULL);
+                mv.visitJumpInsn(GOTO, continueLabel);
+                mv.visitLabel(toStringLabel);
+                mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(Throwable.class),
+                        "toString", TransformerTools.descriptor(String.class));
+                mv.visitLabel(continueLabel);
+            } else if (desc.equals(TransformerTools.descriptor(void.class, String.class, Throwable.class))) {
+                mv.visitInsn(DUP_X2);
+                mv.visitInsn(POP);
+                mv.visitInsn(SWAP);
+                mv.visitInsn(DUP_X2);
+                mv.visitInsn(SWAP);
+            } else {
+                return false;
+            }
+            mv.visitMethodInsn(INVOKESPECIAL, owner,
+                    RuntimeTools.CONSTRUCTOR_NAME, TransformerTools.descriptor(void.class, String.class));
+            mv.visitMethodInsn(INVOKEVIRTUAL, owner,
+                    "initCause", TransformerTools.descriptor(Throwable.class, Throwable.class));
+            mv.visitInsn(POP);
+            return true;
+        }
     }
 
 }

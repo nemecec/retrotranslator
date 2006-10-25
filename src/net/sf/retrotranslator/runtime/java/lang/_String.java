@@ -31,6 +31,9 @@
  */
 package net.sf.retrotranslator.runtime.java.lang;
 
+import java.util.Locale;
+import java.util.Formatter;
+
 /**
  * @author Taras Puchko
  */
@@ -42,6 +45,14 @@ public class _String {
 
     public static boolean contentEquals(String s, CharSequence cs) {
         return s.length() == cs.length() && s.equals(cs.toString());
+    }
+
+    public static String format(String format, Object... args) {
+        return new Formatter().format(format, args).toString();
+    }
+
+    public static String format(Locale locale, String format, Object... args) {
+        return new Formatter(locale).format(format, args).toString();
     }
 
     public static String replace(String s, CharSequence target, CharSequence replacement) {

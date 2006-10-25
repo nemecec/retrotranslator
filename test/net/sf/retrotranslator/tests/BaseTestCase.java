@@ -33,20 +33,16 @@ package net.sf.retrotranslator.tests;
 
 import junit.framework.TestCase;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ByteArrayInputStream;
+import java.io.*;
+import java.lang.reflect.*;
+import java.util.*;
 
 /**
  * @author Taras Puchko
  */
 public abstract class BaseTestCase extends TestCase {
+
+    protected static final Locale HINDI = new Locale("hi", "IN");
 
     protected BaseTestCase() {
     }
@@ -86,4 +82,35 @@ public abstract class BaseTestCase extends TestCase {
         new ObjectOutputStream(stream).writeObject(o);
         return new ObjectInputStream(new ByteArrayInputStream(stream.toByteArray())).readObject();
     }
+
+    protected void assertFormat(String expected, String format, Object... argument) {
+        assertFormat(Locale.FRANCE, expected, format, argument);
+    }
+
+    protected void assertFormat(Locale locale, String expected, String format, Object... argument) {
+        assertEquals(expected, new Formatter(Locale.GERMANY).format(locale, format, argument).toString());
+    }
+
+    protected void assertFormatException(Class<? extends RuntimeException> expected, String format, Object... argument) {
+        try {
+            Formatter formatter = new Formatter().format(Locale.FRANCE, format, argument);
+            fail("Result: '" + formatter + "', but expected exception: " + expected);
+        } catch (RuntimeException e) {
+            if (!expected.isInstance(e)) {
+                throw e;
+            }
+        }
+    }
+
+    protected static String readLine(File file, String csn) throws Exception {
+        FileInputStream stream = new FileInputStream(file);
+        BufferedReader reader = new BufferedReader(csn == null
+                ? new InputStreamReader(stream) : new InputStreamReader(stream, csn) );
+        try {
+            return reader.readLine();
+        } finally {
+            reader.close();
+        }
+    }
+
 }

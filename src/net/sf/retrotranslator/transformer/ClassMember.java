@@ -34,7 +34,7 @@ package net.sf.retrotranslator.transformer;
 /**
  * @author Taras Puchko
  */
-class ClassMember {
+class ClassMember implements Comparable<ClassMember> {
 
     public final boolean isStatic;
     public final String owner;
@@ -62,5 +62,8 @@ class ClassMember {
         return owner.hashCode() + name.hashCode() + desc.hashCode();
     }
 
+    public int compareTo(ClassMember member) {
+        return name.compareTo(member.name);
+    }
 }
 

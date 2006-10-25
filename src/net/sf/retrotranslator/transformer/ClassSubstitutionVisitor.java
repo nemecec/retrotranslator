@@ -38,10 +38,11 @@ import net.sf.retrotranslator.runtime.asm.ClassVisitor;
  */
 class ClassSubstitutionVisitor extends GenericClassVisitor {
 
-    private BackportFactory backportFactory = BackportFactory.getInstance();
+    private final BackportLocator locator;
 
-    public ClassSubstitutionVisitor(final ClassVisitor cv) {
-        super(cv);
+    public ClassSubstitutionVisitor(ClassVisitor classVisitor, BackportLocator locator) {
+        super(classVisitor);
+        this.locator = locator;
     }
 
     protected String visitIdentifier(String identifier) {
@@ -49,7 +50,7 @@ class ClassSubstitutionVisitor extends GenericClassVisitor {
     }
 
     protected String visitInternalName(String name) {
-        return backportFactory.getClassName(name);
+        return locator.getClassName(name);
     }
 
 }

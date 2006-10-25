@@ -36,7 +36,7 @@ import net.sf.retrotranslator.runtime.asm.signature.SignatureVisitor;
 /**
  * @author Taras Puchko
  */
-public abstract class SignatureAdapter implements SignatureVisitor {
+abstract class SignatureAdapter implements SignatureVisitor {
 
     final private SignatureVisitor visitor;
 

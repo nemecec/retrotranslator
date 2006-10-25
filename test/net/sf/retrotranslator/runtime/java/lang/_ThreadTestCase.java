@@ -42,7 +42,7 @@ public class _ThreadTestCase extends TestCase {
         StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
         String className = this.getClass().getName();
         StackTraceElement element = null;
-        for (int i = 2; i < stackTrace.length; i++) {
+        for (int i = 1; i < stackTrace.length; i++) {
             element = stackTrace[i];
             if (className.equals(element.getClassName())) break;
         }

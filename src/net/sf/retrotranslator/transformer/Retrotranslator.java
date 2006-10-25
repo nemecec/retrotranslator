@@ -59,6 +59,7 @@ public class Retrotranslator implements MessageLogger {
     private MessageLogger logger = this;
     private Pattern srcmaskPattern;
     private String embed;
+    private String backport;
     private ClassLoader classLoader;
 
     public Retrotranslator() {
@@ -164,6 +165,10 @@ public class Retrotranslator implements MessageLogger {
         this.embed = embed;
     }
 
+    public void setBackport(String backport) {
+        this.backport = backport;
+    }
+
     public void setLogger(MessageLogger logger) {
         this.logger = logger;
     }
@@ -178,19 +183,30 @@ public class Retrotranslator implements MessageLogger {
 
     public boolean run() {
         if (src.isEmpty()) throw new IllegalArgumentException("Source not set.");
-        String backportPrefix = null;
+        EmbeddingConverter converter = null;
         if (embed != null) {
             if (dest == null) throw new IllegalArgumentException("Destination required for embedding!");
             if (lazy) throw new IllegalArgumentException("Embedding cannot be lazy!");
-            backportPrefix = embed.replace('.', '/') + '/';
-            prependLocationToSource(Queue.class);
-            prependLocationToSource(BytecodeTransformer.class);
+            converter = new EmbeddingConverter(embed);
         }
         FileInfoLogger fileInfoLogger = new FileInfoLogger(this.logger);
+        BackportLocatorFactory locatorFactory = new BackportLocatorFactory(backport);
         ClassTransformer classTransformer = new ClassTransformer(
-                lazy, advanced, stripsign, retainapi, backportPrefix, fileInfoLogger);
+                lazy, advanced, stripsign, retainapi, converter, fileInfoLogger, locatorFactory);
+        TextFileTransformer fileTransformer = new TextFileTransformer(locatorFactory);
         for (FileContainer container : src) {
-            transform(classTransformer, backportPrefix, container, dest != null ? dest : container, fileInfoLogger);
+            transform(classTransformer, fileTransformer,
+                    container, dest != null ? dest : container, converter, fileInfoLogger);
+        }
+        if (converter != null) {
+            if (converter.isConcurrentConverted()) {
+                transform(classTransformer, fileTransformer,
+                        findContainer(Queue.class), dest, converter, fileInfoLogger);
+            }
+            if (converter.isRuntimeConverted()) {
+                transform(classTransformer, fileTransformer,
+                        findContainer(BytecodeTransformer.class), dest, converter, fileInfoLogger);
+            }
         }
         if (dest != null) dest.flush();
         if (!verify) return true;
@@ -206,22 +222,25 @@ public class Retrotranslator implements MessageLogger {
         }
     }
 
-    private void transform(ClassTransformer transformer, String backportPrefix, FileContainer source,
-                           FileContainer destination, FileInfoLogger fileInfoLogger) {
+    private void transform(ClassTransformer classTransformer, TextFileTransformer fileTransformer,
+                           FileContainer source, FileContainer destination,
+                           EmbeddingConverter converter, FileInfoLogger fileInfoLogger) {
         this.logger.log(new Message(Level.INFO, "Transforming " + source.getFileCount() + " file(s)" +
                 (source == destination ? " in " + source : " from " + source + " to " + destination) + "."));
+        final String signaturesFileName = BackportLocator.RUNTIME_PREFIX + "impl/signatures.properties";
         for (FileEntry entry : source.getEntries()) {
             String name = entry.getName();
-            if (backportPrefix != null && name.equals("net/sf/retrotranslator/runtime/impl/signatures.properties")) {
-                destination.putEntry(backportPrefix + name, transformSignatures(entry.getContent(), backportPrefix));
+            if (converter != null && name.equals(signaturesFileName)) {
+                destination.putEntry(converter.convertName(name),
+                        transformSignatures(entry.getContent(), converter));
             } else if (isTransformable(name)) {
                 fileInfoLogger.setFileInfo(source.getLocation(), name);
                 if (verbose) this.logger.log(new Message(Level.VERBOSE, "Transformation", source.getLocation(), name));
                 byte[] sourceData = entry.getContent();
                 byte[] resultData = isClassFile(sourceData)
-                        ? transformer.transform(sourceData, 0, sourceData.length)
-                        : TextFileTransformer.transform(sourceData, backportPrefix);
-                String fixedName = BackportFactory.prefixBackportName(name, backportPrefix);
+                        ? classTransformer.transform(sourceData, 0, sourceData.length)
+                        : fileTransformer.transform(sourceData, converter);
+                String fixedName = converter == null ? name : converter.convertName(name);
                 if (source != destination || sourceData != resultData || !fixedName.equals(name)) {
                     if (!fixedName.equals(name)) destination.removeEntry(name);
                     destination.putEntry(fixedName, resultData);
@@ -238,18 +257,18 @@ public class Retrotranslator implements MessageLogger {
         return srcmaskPattern != null ? srcmaskPattern.matcher(name).matches() : name.endsWith(".class");
     }
 
-    private byte[] transformSignatures(byte[] content, final String backportPrefix) {
+    private byte[] transformSignatures(byte[] content, final EmbeddingConverter converter) {
         try {
             DescriptorTransformer transformer = new DescriptorTransformer() {
                 protected String transformInternalName(String internalName) {
-                    return BackportFactory.prefixBackportName(internalName, backportPrefix);
+                    return converter.convertName(internalName);
                 }
             };
             Properties source = new Properties();
             source.load(new ByteArrayInputStream(content));
             Properties target = new Properties();
             for (Map.Entry entry : source.entrySet()) {
-                String key = BackportFactory.prefixBackportName((String) entry.getKey(), backportPrefix);
+                String key = converter.convertName((String) entry.getKey());
                 String value = transformer.transformDescriptor((String) entry.getValue());
                 target.put(key, value);
             }
@@ -339,6 +358,8 @@ public class Retrotranslator implements MessageLogger {
                 setSrcmask(args[i++]);
             } else if (string.equals("-embed") && i < args.length) {
                 setEmbed(args[i++]);
+            } else if (string.equals("-backport") && i < args.length) {
+                setBackport(args[i++]);
             } else {
                 throw new IllegalArgumentException("Unknown option: " + string);
             }
@@ -352,7 +373,7 @@ public class Retrotranslator implements MessageLogger {
         System.out.println("Usage: java -jar retrotranslator-transformer" + suffix + ".jar" +
                 " [-srcdir <path> | -srcjar <file>] [-destdir <path> | -destjar <file>]" +
                 " [-stripsign] [-verbose] [-lazy] [-advanced] [-retainapi] [-verify]" +
-                " [-classpath <classpath>] [-srcmask <mask>] [-embed <package>]");
+                " [-classpath <classpath>] [-srcmask <mask>] [-embed <package>] [-backport <packages>]");
     }
 
     public static void main(String[] args) {
@@ -369,7 +390,7 @@ public class Retrotranslator implements MessageLogger {
         }
     }
 
-    private void prependLocationToSource(Class aClass) {
+    private static FileContainer findContainer(Class aClass) {
         String path = "/" + aClass.getName().replace('.', '/') + ".class";
         URL resource = aClass.getResource(path);
         if (resource == null) {
@@ -385,6 +406,8 @@ public class Retrotranslator implements MessageLogger {
         if (!file.isFile()) {
             throw new IllegalArgumentException("File not found: " + file);
         }
-        src.addFirst(new JarFileContainer(file));
+        JarFileContainer container = new JarFileContainer(file);
+        container.excludeManifest();
+        return container;
     }
 }
