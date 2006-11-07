@@ -646,6 +646,10 @@ public class ClassWriter implements ClassVisitor {
      * @return the bytecode of the class that was build with this class writer.
      */
     public byte[] toByteArray() {
+        return toByteArray(false);
+    }
+
+    public byte[] toByteArray(boolean dropTigerFlags) {
         // computes the real size of the bytecode of this class
         int size = 24 + 2 * interfaceCount;
         int nbFields = 0;
@@ -732,7 +736,11 @@ public class ClassWriter implements ClassVisitor {
         ByteVector out = new ByteVector(size);
         out.putInt(0xCAFEBABE).putInt(version);
         out.putShort(index).putByteArray(pool.data, 0, pool.length);
-        out.putShort(access).putShort(name).putShort(superName);
+        int modifiers = access;
+        if (dropTigerFlags) {
+            modifiers &= ~(Opcodes.ACC_SYNTHETIC | Opcodes.ACC_ANNOTATION | Opcodes.ACC_ENUM);
+        }
+        out.putShort(modifiers).putShort(name).putShort(superName);
         out.putShort(interfaceCount);
         for (int i = 0; i < interfaceCount; ++i) {
             out.putShort(interfaces[i]);
@@ -740,13 +748,13 @@ public class ClassWriter implements ClassVisitor {
         out.putShort(nbFields);
         fb = firstField;
         while (fb != null) {
-            fb.put(out);
+            fb.put(out, dropTigerFlags);
             fb = fb.next;
         }
         out.putShort(nbMethods);
         mb = firstMethod;
         while (mb != null) {
-            mb.put(out);
+            mb.put(out, dropTigerFlags);
             mb = mb.next;
         }
         out.putShort(attributeCount);

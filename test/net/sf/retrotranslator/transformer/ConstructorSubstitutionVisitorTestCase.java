@@ -33,6 +33,8 @@ package net.sf.retrotranslator.transformer;
 
 import junit.framework.TestCase;
 
+import java.lang.ref.*;
+
 /**
  * @author Taras Puchko
  */
@@ -120,6 +122,30 @@ public class ConstructorSubstitutionVisitorTestCase extends TestCase {
         Ex ex = new Ex("qwerty", new IllegalArgumentException());
         assertEquals("qwerty", ex.getMessage());
         assertTrue(ex.getCause() instanceof IllegalArgumentException);
+    }
+
+    public void testSoftReference() throws Exception {
+        class MyReference<T> extends SoftReference<T> {
+            public MyReference(T referent, ReferenceQueue<? super T> q) {
+                super(referent, q);
+            }
+        }
+        new MyReference<String>("a", null);
+        new MyReference<String>("b", new ReferenceQueue<String>());
+        new SoftReference<String>("c", null);
+        new SoftReference<String>("d", new ReferenceQueue<String>());
+    }
+
+    public void testWeakReference() throws Exception {
+        class MyReference<T> extends WeakReference<T> {
+            public MyReference(T referent, ReferenceQueue<? super T> q) {
+                super(referent, q);
+            }
+        }
+        new MyReference<String>("a", null);
+        new MyReference<String>("b", new ReferenceQueue<String>());
+        new WeakReference<String>("c", null);
+        new WeakReference<String>("d", new ReferenceQueue<String>());
     }
 
 }

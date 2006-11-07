@@ -51,6 +51,7 @@ public class Retrotranslator implements MessageLogger {
     private FileContainer dest;
     private boolean stripsign;
     private boolean retainapi;
+    private boolean retainflags;
     private boolean verbose;
     private boolean lazy;
     private boolean advanced;
@@ -108,6 +109,10 @@ public class Retrotranslator implements MessageLogger {
 
     public void setRetainapi(boolean retainapi) {
         this.retainapi = retainapi;
+    }
+
+    public void setRetainflags(boolean retainflags) {
+        this.retainflags = retainflags;
     }
 
     public void setVerbose(boolean verbose) {
@@ -192,7 +197,7 @@ public class Retrotranslator implements MessageLogger {
         FileInfoLogger fileInfoLogger = new FileInfoLogger(this.logger);
         BackportLocatorFactory locatorFactory = new BackportLocatorFactory(backport);
         ClassTransformer classTransformer = new ClassTransformer(
-                lazy, advanced, stripsign, retainapi, converter, fileInfoLogger, locatorFactory);
+                lazy, advanced, stripsign, retainapi, retainflags, converter, fileInfoLogger, locatorFactory);
         TextFileTransformer fileTransformer = new TextFileTransformer(locatorFactory);
         for (FileContainer container : src) {
             transform(classTransformer, fileTransformer,
@@ -344,6 +349,8 @@ public class Retrotranslator implements MessageLogger {
                 setStripsign(true);
             } else if (string.equals("-retainapi")) {
                 setRetainapi(true);
+            } else if (string.equals("-retainflags")) {
+                setRetainflags(true);
             } else if (string.equals("-verbose")) {
                 setVerbose(true);
             } else if (string.equals("-lazy")) {
@@ -372,7 +379,7 @@ public class Retrotranslator implements MessageLogger {
         String suffix = (version == null) ? "" : "-" + version;
         System.out.println("Usage: java -jar retrotranslator-transformer" + suffix + ".jar" +
                 " [-srcdir <path> | -srcjar <file>] [-destdir <path> | -destjar <file>]" +
-                " [-stripsign] [-verbose] [-lazy] [-advanced] [-retainapi] [-verify]" +
+                " [-stripsign] [-verbose] [-lazy] [-advanced] [-retainapi] [-retainflags] [-verify]" +
                 " [-classpath <classpath>] [-srcmask <mask>] [-embed <package>] [-backport <packages>]");
     }
 

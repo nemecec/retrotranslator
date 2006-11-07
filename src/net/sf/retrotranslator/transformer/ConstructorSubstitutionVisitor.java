@@ -35,6 +35,8 @@ import net.sf.retrotranslator.runtime.asm.*;
 import static net.sf.retrotranslator.runtime.asm.Opcodes.*;
 import net.sf.retrotranslator.runtime.impl.RuntimeTools;
 
+import java.lang.ref.*;
+
 /**
  * @author Taras Puchko
  */
@@ -42,6 +44,8 @@ class ConstructorSubstitutionVisitor extends ClassAdapter {
 
     private static final String ILLEGAL_STATE_EXCEPTION = Type.getInternalName(IllegalStateException.class);
     private static final String ILLEGAL_ARGUMENT_EXCEPTION = Type.getInternalName(IllegalArgumentException.class);
+    private static final String SOFT_REFERENCE = Type.getInternalName(SoftReference.class);
+    private static final String WEAK_REFERENCE = Type.getInternalName(WeakReference.class);
     private static final String LONG_ARG_DESCRIPTOR = TransformerTools.descriptor(long.class);
     private static final String DOUBLE_ARG_DESCRIPTOR = TransformerTools.descriptor(double.class);
 
@@ -84,6 +88,10 @@ class ConstructorSubstitutionVisitor extends ClassAdapter {
                     desc = Type.getMethodDescriptor(Type.VOID_TYPE, new Type[]{Type.getReturnType(converter.desc)});
                 } else if (owner.equals(ILLEGAL_STATE_EXCEPTION) || owner.equals(ILLEGAL_ARGUMENT_EXCEPTION)) {
                     if (initException(desc, owner)) {
+                        return;
+                    }
+                } else if (advanced && (owner.equals(SOFT_REFERENCE) || owner.equals(WEAK_REFERENCE))) {
+                    if (initReference(desc, owner)) {
                         return;
                     }
                 }
@@ -163,6 +171,24 @@ class ConstructorSubstitutionVisitor extends ClassAdapter {
             mv.visitMethodInsn(INVOKEVIRTUAL, owner,
                     "initCause", TransformerTools.descriptor(Throwable.class, Throwable.class));
             mv.visitInsn(POP);
+            return true;
+        }
+
+        private boolean initReference(String desc, String owner) {
+            if (!desc.equals(TransformerTools.descriptor(void.class, Object.class, ReferenceQueue.class))) {
+                return false;
+            }
+            Label notNullLabel = new Label();
+            Label continueLabel = new Label();
+            mv.visitInsn(DUP);
+            mv.visitJumpInsn(IFNONNULL, notNullLabel);
+            mv.visitInsn(POP);
+            mv.visitMethodInsn(INVOKESPECIAL, owner,
+                    RuntimeTools.CONSTRUCTOR_NAME, TransformerTools.descriptor(void.class, Object.class));
+            mv.visitJumpInsn(GOTO, continueLabel);
+            mv.visitLabel(notNullLabel);
+            mv.visitMethodInsn(INVOKESPECIAL, owner, RuntimeTools.CONSTRUCTOR_NAME, desc);
+            mv.visitLabel(continueLabel);
             return true;
         }
     }

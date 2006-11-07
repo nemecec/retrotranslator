@@ -211,9 +211,14 @@ final class FieldWriter implements FieldVisitor {
      * Puts the content of this field into the given byte vector.
      * 
      * @param out where the content of this field must be put.
+     * @param dropTigerFlags
      */
-    void put(final ByteVector out) {
-        out.putShort(access).putShort(name).putShort(desc);
+    void put(final ByteVector out, boolean dropTigerFlags) {
+        int modifiers = access;
+        if (dropTigerFlags) {
+            modifiers &= ~(Opcodes.ACC_SYNTHETIC | Opcodes.ACC_ENUM);
+        }
+        out.putShort(modifiers).putShort(name).putShort(desc);
         int attributeCount = 0;
         if (value != 0) {
             ++attributeCount;

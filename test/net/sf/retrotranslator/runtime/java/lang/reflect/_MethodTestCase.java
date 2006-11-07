@@ -229,8 +229,13 @@ public class _MethodTestCase extends BaseTestCase {
         assertFalse(PROXY_METHOD.isSynthetic());
     }
 
+    interface VarargsInterface  {
+        void m1(String... s);
+        void m2(String s);
+    }
+
     public void testIsVarArgs() throws Exception {
-        class Test  {
+        abstract class Test  {
             public void m1(String... s) {
             }
             public void m2(String s) {
@@ -238,6 +243,10 @@ public class _MethodTestCase extends BaseTestCase {
         }
         assertTrue(Test.class.getMethod("m1", String[].class).isVarArgs());
         assertFalse(Test.class.getMethod("m2", String.class).isVarArgs());
+
+        assertTrue(VarargsInterface.class.getMethod("m1", String[].class).isVarArgs());
+        assertFalse(VarargsInterface.class.getMethod("m2", String.class).isVarArgs());
+
         assertFalse(PROXY_METHOD.isVarArgs());
     }
 

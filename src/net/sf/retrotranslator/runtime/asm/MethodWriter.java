@@ -1294,10 +1294,14 @@ class MethodWriter implements MethodVisitor {
      * Puts the bytecode of this method in the given byte vector.
      * 
      * @param out the byte vector into which the bytecode of this method must be
-     *        copied.
+     * @param dropTigerFlags
      */
-    final void put(final ByteVector out) {
-        out.putShort(access).putShort(name).putShort(desc);
+    final void put(final ByteVector out, boolean dropTigerFlags) {
+        int modifiers = access;
+        if (dropTigerFlags) {
+            modifiers &= ~(Opcodes.ACC_SYNTHETIC | Opcodes.ACC_VARARGS | Opcodes.ACC_BRIDGE);
+        }
+        out.putShort(modifiers).putShort(name).putShort(desc);
         if (classReaderOffset != 0) {
             out.putByteArray(cw.cr.b, classReaderOffset, classReaderLength);
             return;

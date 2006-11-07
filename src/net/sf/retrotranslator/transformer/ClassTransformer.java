@@ -45,16 +45,18 @@ class ClassTransformer implements BytecodeTransformer {
     private boolean advanced;
     private boolean stripsign;
     private boolean retainapi;
+    private boolean retainflags;
     private EmbeddingConverter converter;
     private MessageLogger logger;
     private BackportLocatorFactory factory;
 
-    public ClassTransformer(boolean lazy, boolean advanced, boolean stripsign, boolean retainapi,
+    public ClassTransformer(boolean lazy, boolean advanced, boolean stripsign, boolean retainapi, boolean retainflags,
                             EmbeddingConverter converter, MessageLogger logger, BackportLocatorFactory factory) {
         this.lazy = lazy;
         this.advanced = advanced;
         this.stripsign = stripsign;
         this.retainapi = retainapi;
+        this.retainflags = retainflags;
         this.converter = converter;
         this.logger = logger;
         this.factory = factory;
@@ -83,6 +85,6 @@ class ClassTransformer implements BytecodeTransformer {
         }
         if (stripsign) visitor = new SignatureStrippingVisitor(visitor);
         new ClassReader(bytes, offset, length).accept(visitor, false);
-        return classWriter.toByteArray();
+        return classWriter.toByteArray(!retainflags);
     }
 }
