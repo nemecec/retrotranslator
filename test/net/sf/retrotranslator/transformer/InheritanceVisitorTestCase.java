@@ -34,11 +34,22 @@ package net.sf.retrotranslator.transformer;
 import junit.framework.TestCase;
 
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Type;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
 import java.util.Queue;
+import java.io.Closeable;
+import java.io.ByteArrayOutputStream;
 
 public class InheritanceVisitorTestCase extends TestCase {
+
+    public static Queue getQueue() {
+        return new LinkedList();
+    }
+
+    public void testMethod() {
+        assertNotNull(getQueue());
+    }
 
     public void testCast() {
         try {

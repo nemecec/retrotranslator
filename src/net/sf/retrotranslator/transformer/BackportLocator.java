@@ -85,8 +85,14 @@ class BackportLocator {
     private String loadReplacement(String name) {
         for (String prefix : prefixes) {
             String replacement = prefix + name + "_";
-            if (getClass().getResource("/" + replacement + ".class") != null) {
+            if (isClassAvailable(replacement)) {
                 return replacement;
+            }
+            if (name.indexOf('$') >= 0) {
+                replacement = prefix + name.replace('$', '_') + "_";
+                if (isClassAvailable(replacement)) {
+                    return replacement;
+                }
             }
         }
         if (name.startsWith(CONCURRENT_PACKAGE) || JAVA_UTIL_CLASSES.contains(name)) {
@@ -96,6 +102,10 @@ class BackportLocator {
             return Type.getInternalName(StringBuffer.class);
         }
         return name;
+    }
+
+    private boolean isClassAvailable(String internalName) {
+        return getClass().getResource("/" + internalName + RuntimeTools.CLASS_EXTENSION) != null;
     }
 
     public Set<String> getImplementations(String desc) {
@@ -169,7 +179,8 @@ class BackportLocator {
     }
 
     private static ClassDescriptor getDescriptor(String internalName) {
-        byte[] bytecode = RuntimeTools.readResourceToByteArray(BackportLocator.class, '/' + internalName + ".class");
+        byte[] bytecode = RuntimeTools.readResourceToByteArray(BackportLocator.class, '/' +
+                internalName + RuntimeTools.CLASS_EXTENSION);
         return bytecode == null ? null : new ClassDescriptor(BackportLocator.class, bytecode);
     }
 

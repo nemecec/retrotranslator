@@ -31,19 +31,34 @@
  */
 package net.sf.retrotranslator.runtime.java.lang;
 
+import net.sf.retrotranslator.runtime.impl.WeakIdentityTable;
+
 import java.io.InvalidObjectException;
 import java.io.Serializable;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.Map;
-import java.util.WeakHashMap;
 
 /**
  * @author Taras Puchko
  */
 public abstract class Enum_<E extends Enum_<E>> implements Comparable<E>, Serializable {
 
-    private static final Map<Class, Enum_[]> map = new WeakHashMap<Class, Enum_[]>();
+    private static final WeakIdentityTable<Class, ConstantContainer> containers =
+            new WeakIdentityTable<Class, ConstantContainer>();
+
+    private static class ConstantContainer {
+
+        private Enum_[] constants;
+
+        public synchronized Enum_[] getConstants() {
+            return constants;
+        }
+
+        public synchronized void setConstants(Enum_[] constants) {
+            this.constants = constants;
+        }
+
+    }
 
     private final String name;
 
@@ -112,11 +127,20 @@ public abstract class Enum_<E extends Enum_<E>> implements Comparable<E>, Serial
     }
 
     protected static Enum_[] getEnumConstants(Class aClass) {
+        ConstantContainer container = containers.lookup(aClass);
+        if (container != null) {
+            return container.getConstants();
+        }
         if (aClass.getSuperclass() != Enum_.class) return null;
         initialize(aClass);
-        synchronized (map) {
-            return map.get(aClass);
-        }
+        container = containers.lookup(aClass);
+        return container == null ? null : container.getConstants();
+    }
+
+    protected static void setEnumConstants(Class aClass, Enum_[] enumConstants) {
+        ConstantContainer container = new ConstantContainer();
+        container.setConstants(enumConstants);
+        containers.putIfAbsent(aClass, container);
     }
 
     private static void initialize(final Class aClass) {
@@ -136,9 +160,4 @@ public abstract class Enum_<E extends Enum_<E>> implements Comparable<E>, Serial
         }
     }
 
-    protected static void setEnumConstants(Class aClass, Enum_[] enumConstants) {
-        synchronized (map) {
-            map.put(aClass, enumConstants);
-        }
-    }
 }

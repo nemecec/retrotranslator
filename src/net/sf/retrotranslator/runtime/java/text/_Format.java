@@ -29,49 +29,27 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.runtime.java.lang;
+package net.sf.retrotranslator.runtime.java.text;
 
-import net.sf.retrotranslator.runtime.impl.WeakIdentityTable;
+import net.sf.retrotranslator.runtime.impl.Advanced;
+
+import java.text.ParseException;
+import java.text.ParsePosition;
+import java.text.Format;
 
 /**
  * @author Taras Puchko
  */
-public class _Thread {
+public class _Format {
 
-    private static final StackTraceElement[] EMPTY_STACK_TRACE = new StackTraceElement[0];
-
-    private static final WeakIdentityTable<Thread, _Thread> threads =
-            new WeakIdentityTable<Thread, _Thread>() {
-                protected _Thread initialValue() {
-                    return new _Thread();
-                }
-            };
-
-    private static long lastId;
-
-    private volatile long id;
-
-    public static StackTraceElement[] getStackTrace(Thread thread) {
-        return thread == Thread.currentThread() ? getStackTrace() : EMPTY_STACK_TRACE;
+    @Advanced
+    public static Object parseObject(Format format, String source) throws ParseException {
+        return _DecimalFormat.fixObject(format, format.parseObject(source));
     }
 
-    public static long getId(Thread thread) {
-        return threads.obtain(thread).getId();
-    }
-
-    private static StackTraceElement[] getStackTrace() {
-        return new Throwable().getStackTrace();
-    }
-
-    private long getId() {
-        if (id == 0) {
-            synchronized (threads) {
-                while (id == 0) {
-                    id = ++lastId;
-                }
-            }
-        }
-        return id;
+    @Advanced
+    public static Object parseObject(Format format, String source, ParsePosition pos) {
+        return _DecimalFormat.fixObject(format, format.parseObject(source, pos));
     }
 
 }

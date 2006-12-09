@@ -29,49 +29,37 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.runtime.java.lang;
+package net.sf.retrotranslator.runtime.java.text;
 
-import net.sf.retrotranslator.runtime.impl.WeakIdentityTable;
+import net.sf.retrotranslator.runtime.impl.Advanced;
+
+import java.text.NumberFormat;
+import java.text.ParseException;
+import java.text.ParsePosition;
 
 /**
  * @author Taras Puchko
  */
-public class _Thread {
+public class _NumberFormat {
 
-    private static final StackTraceElement[] EMPTY_STACK_TRACE = new StackTraceElement[0];
-
-    private static final WeakIdentityTable<Thread, _Thread> threads =
-            new WeakIdentityTable<Thread, _Thread>() {
-                protected _Thread initialValue() {
-                    return new _Thread();
-                }
-            };
-
-    private static long lastId;
-
-    private volatile long id;
-
-    public static StackTraceElement[] getStackTrace(Thread thread) {
-        return thread == Thread.currentThread() ? getStackTrace() : EMPTY_STACK_TRACE;
+    @Advanced
+    public static Number parse(NumberFormat format, String source) throws ParseException {
+        return _DecimalFormat.fixNumber(format, format.parse(source));
     }
 
-    public static long getId(Thread thread) {
-        return threads.obtain(thread).getId();
+    @Advanced
+    public static Number parse(NumberFormat format, String source, ParsePosition parsePosition) {
+        return _DecimalFormat.fixNumber(format, format.parse(source, parsePosition));
     }
 
-    private static StackTraceElement[] getStackTrace() {
-        return new Throwable().getStackTrace();
+    @Advanced
+    public static Object parseObject(NumberFormat format, String source) throws ParseException {
+        return _DecimalFormat.fixObject(format, format.parseObject(source));
     }
 
-    private long getId() {
-        if (id == 0) {
-            synchronized (threads) {
-                while (id == 0) {
-                    id = ++lastId;
-                }
-            }
-        }
-        return id;
+    @Advanced
+    public static Object parseObject(NumberFormat format, String source, ParsePosition pos) {
+        return _DecimalFormat.fixObject(format, format.parseObject(source, pos));
     }
 
 }

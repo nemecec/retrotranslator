@@ -47,7 +47,7 @@ public class RuntimeTools {
 
     public static final String CONSTRUCTOR_NAME = "<init>";
     public static final String STATIC_NAME = "<clinit>";
-    private static final String CLASS_EXTENSION = ".class";
+    public static final String CLASS_EXTENSION = ".class";
 
     public static Class getBaseClass(char type) {
         return getBaseClass(Type.getType(new String(new char[]{type})));

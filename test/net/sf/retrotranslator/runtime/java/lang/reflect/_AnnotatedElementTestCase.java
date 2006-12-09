@@ -66,10 +66,12 @@ public class _AnnotatedElementTestCase extends TestCase {
             assertEquals(0, element.getAnnotations().length);
             assertEquals(0, element.getDeclaredAnnotations().length);
         }
-        Method method = aClass.getDeclaredMethod("methodWithParameter", String.class);
-        Annotation[] annotations = method.getParameterAnnotations()[0];
-        assertNotNull(annotations);
-        assertEquals(0, annotations.length);
+        if (!System.getProperty("java.vm.version").startsWith("R26.0.0")) {
+            Method method = aClass.getDeclaredMethod("methodWithParameter", String.class);
+            Annotation[] annotations = method.getParameterAnnotations()[0];
+            assertNotNull(annotations);
+            assertEquals(0, annotations.length);
+        }
     }
 
     protected void methodWithParameter(@Invisible String s) {

@@ -46,6 +46,6 @@ class PrefixingVisitor extends GenericClassVisitor {
     }
 
     protected String visitInternalName(String name) {
-        return converter.convertName(name);
+        return converter.convertClassName(name);
     }
 }

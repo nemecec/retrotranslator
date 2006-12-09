@@ -31,55 +31,35 @@
  */
 package net.sf.retrotranslator.runtime.java.lang;
 
+import static java.lang.Thread.State.*;
+
 import junit.framework.*;
 
 /**
  * @author Taras Puchko
  */
-public class _ThreadTestCase extends TestCase {
+public class Thread_State_TestCase extends TestCase {
 
-    public void testGetStackTrace() throws Exception {
-        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-        String className = this.getClass().getName();
-        StackTraceElement element = null;
-        for (int i = 1; i < stackTrace.length; i++) {
-            element = stackTrace[i];
-            if (className.equals(element.getClassName())) break;
-        }
-        assertNotNull(element);
-        assertEquals("testGetStackTrace", element.getMethodName());
-        for (StackTraceElement stackTraceElement : stackTrace) {
-            assertNotNull(stackTraceElement);
-        }
+    public void test_length() {
+        assertEquals(6, Thread.State.values().length);
     }
 
-    public void testGetId() throws Exception {
-        long currentId = Thread.currentThread().getId();
-        assertTrue(currentId > 0);
-        Thread thread = new Thread();
-        long newId = thread.getId();
-        assertTrue(newId > 0);
-        assertTrue(currentId != newId);
-        assertEquals(currentId, Thread.currentThread().getId());
-        assertEquals(newId, thread.getId());
+    public void test_valueOf() {
+        assertSame(NEW, Thread.State.valueOf("NEW"));
+        assertSame(RUNNABLE, Thread.State.valueOf("RUNNABLE"));
+        assertSame(BLOCKED, Thread.State.valueOf("BLOCKED"));
+        assertSame(WAITING, Thread.State.valueOf("WAITING"));
+        assertSame(TIMED_WAITING, Thread.State.valueOf("TIMED_WAITING"));
+        assertSame(TERMINATED, Thread.State.valueOf("TERMINATED"));
     }
 
-    public void testGetId_Custom() throws Exception {
-        class MyThread extends Thread {
-            public int hashCode() {
-                return 0;
-            }
-
-            public boolean equals(Object obj) {
-                return true;
-            }
-        }
-        Thread thread1 = new MyThread();
-        Thread thread2 = new MyThread();
-        assertEquals(thread1.getId(), thread1.getId());
-        assertEquals(thread2.getId(), thread2.getId());
-        assertTrue(thread1.getId() != Thread.currentThread().getId());
-        assertTrue(thread2.getId() != Thread.currentThread().getId());
-        assertTrue(thread1.getId() != thread2.getId());
+    public void test_ordinal() {
+        assertEquals(0, NEW.ordinal());
+        assertEquals(1, RUNNABLE.ordinal());
+        assertEquals(2, BLOCKED.ordinal());
+        assertEquals(3, WAITING.ordinal());
+        assertEquals(4, TIMED_WAITING.ordinal());
+        assertEquals(5, TERMINATED.ordinal());
     }
+
 }

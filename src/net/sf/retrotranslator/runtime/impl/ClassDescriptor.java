@@ -53,6 +53,8 @@ import java.util.*;
  */
 public class ClassDescriptor extends GenericDeclarationDescriptor {
 
+    public static final String SIGNATURES_NAME = "signatures.properties";
+
     private static SoftReference<Map<Class, ClassDescriptor>> cache;
     private static Properties signatures = getSignatures();
     private static BytecodeTransformer bytecodeTransformer;
@@ -69,7 +71,7 @@ public class ClassDescriptor extends GenericDeclarationDescriptor {
     private static Properties getSignatures() {
         try {
             Properties properties = new Properties();
-            InputStream stream = ClassDescriptor.class.getResourceAsStream("signatures.properties");
+            InputStream stream = ClassDescriptor.class.getResourceAsStream(SIGNATURES_NAME);
             if (stream != null) {
                 properties.load(stream);
                 stream.close();

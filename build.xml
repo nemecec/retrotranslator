@@ -1,6 +1,6 @@
 <project name="retrotranslator" default="build" basedir=".">
 
-    <property name="version" value="1.1.0"/>
+    <property name="version" value="1.1.1"/>
 
     <property file="build.properties"/>
 
@@ -33,7 +33,6 @@
             <arg value="-destdir"/>
             <arg value="build/classes14"/>
             <arg value="-stripsign"/>
-            <arg value="-advanced"/>
         </java>
         <java classname="net.sf.retrotranslator.transformer.Retrotranslator"
               classpathref="classpath" classpath="build/classes14" failonerror="true"
@@ -42,7 +41,6 @@
             <arg value="build/classes14"/>
             <arg value="-destdir"/>
             <arg value="build/classes"/>
-            <arg value="-advanced"/>
             <arg value="-srcmask"/>
             <arg value="*.class"/>
         </java>

@@ -144,6 +144,10 @@ public class _FieldTestCase extends BaseTestCase {
 
     private static void delete(StringBuffer buffer, String substring) {
         int index = buffer.indexOf(substring);
+        if (index == -1) {
+            substring = substring.replaceAll("\\s", "");
+            index = buffer.indexOf(substring);
+        }
         assertFalse("Cannot find: " + substring + " in " + buffer, index == -1);
         buffer.delete(index, index + substring.length());
     }

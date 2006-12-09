@@ -34,6 +34,7 @@ package net.sf.retrotranslator.runtime.format;
 import net.sf.retrotranslator.tests.BaseTestCase;
 
 import java.text.SimpleDateFormat;
+import java.text.ParseException;
 import java.util.*;
 
 /**
@@ -98,35 +99,35 @@ public class DateTimeConversionTestCase extends BaseTestCase {
     }
 
     public void testFormat_Date() throws Exception {
-        assertDate("janvier", "%tB", "2006-01-03");
-        assertDate("juillet", "%tB", "2006-07-07");
+        assertPatternDate("MMMM", "%tB", "2006-01-03", false);
+        assertPatternDate("MMMM", "%tB", "2006-07-07", false);
 
         assertDate("JANVIER", "%TB", "2006-01-03");
         assertDate("JUILLET", "%TB", "2006-07-07");
 
-        assertDate("janv.", "%tb", "2006-01-05");
-        assertDate("juil.", "%tb", "2006-07-09");
+        assertPatternDate("MMM", "%tb", "2006-01-05", false);
+        assertPatternDate("MMM", "%tb", "2006-07-09", false);
 
-        assertDate("JANV.", "%Tb", "2006-01-05");
-        assertDate("JUIL.", "%Tb", "2006-07-09");
+        assertPatternDate("MMM", "%Tb", "2006-01-05", true);
+        assertPatternDate("MMM", "%Tb", "2006-07-09", true);
 
-        assertDate("avr.", "%th", "2006-04-05");
-        assertDate("sept.", "%th", "2006-09-09");
+        assertPatternDate("MMM", "%th", "2006-04-05", false);
+        assertPatternDate("MMM", "%th", "2006-09-09", false);
 
-        assertDate("AVR.", "%Th", "2006-04-05");
-        assertDate("SEPT.", "%Th", "2006-09-09");
+        assertPatternDate("MMM", "%Th", "2006-04-05", true);
+        assertPatternDate("MMM", "%Th", "2006-09-09", true);
 
-        assertDate("mardi", "%tA", "2006-01-03");
-        assertDate("vendredi", "%tA", "2006-07-07");
+        assertPatternDate("EEEE", "%tA", "2006-01-03", false);
+        assertPatternDate("EEEE", "%tA", "2006-07-07", false);
 
         assertDate("MARDI", "%TA", "2006-01-03");
         assertDate("VENDREDI", "%TA", "2006-07-07");
 
-        assertDate("mer.", "%ta", "2006-01-04");
-        assertDate("sam.", "%ta", "2006-07-08");
+        assertPatternDate("EEE", "%ta", "2006-01-04", false);
+        assertPatternDate("EEE", "%ta", "2006-07-08", false);
 
-        assertDate("MER.", "%Ta", "2006-01-04");
-        assertDate("SAM.", "%Ta", "2006-07-08");
+        assertPatternDate("EEE", "%Ta", "2006-01-04", true);
+        assertPatternDate("EEE", "%Ta", "2006-07-08", true);
 
         assertDate("20", "%tC", "2006-01-04");
         assertDate("01", "%tC", "0123-01-04");
@@ -186,27 +187,32 @@ public class DateTimeConversionTestCase extends BaseTestCase {
     }
 
     private void assertTime(String expected, String format, String time) throws Exception {
-        assertDateTime(expected, format, "2006-01-03 " + time);
+        assertDateTime(expected, format, parse("2006-01-03 " + time));
     }
 
     private void assertDate(String expected, String format, String date) throws Exception {
-        assertDateTime(expected, format, date + " 00:07:08.093");
+        assertDateTime(expected, format, parseDate(date));
+    }
+
+    private void assertPatternDate(String pattern, String format, String date, boolean upperCase) throws Exception {
+        Date parsedDate = parseDate(date);
+        String expected = format(parsedDate, pattern);
+        if (upperCase) {
+            expected = expected.toUpperCase();
+        }
+        assertDateTime(expected, format, parsedDate);
     }
 
     private void assertTimeZone(String id, String numeric, String standard, String daylight) throws Exception {
         TimeZone.setDefault(TimeZone.getTimeZone(id));
-        String winter = "2006-01-03 00:07:08.093";
-        String summer = "2006-04-07 14:15:45.178";
+        Date winter = parse("2006-01-03 00:07:08.093");
+        Date summer = parse("2006-04-07 14:15:45.178");
         assertDateTime(numeric, "%tz", winter);
         assertDateTime(numeric, "%tz", summer);
         assertDateTime(standard, "%tZ", winter);
         assertDateTime(daylight, "%tZ", summer);
-        assertDateTime("mar. janv. 03 00:07:08 " + standard + " 2006", "%tc", winter);
-        assertDateTime("ven. avr. 07 14:15:45 " + daylight + " 2006", "%tc", summer);
-    }
-
-    private void assertDateTime(String expected, String format, String dateTime) throws Exception {
-        assertDateTime(expected, format, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").parse(dateTime));
+        assertDateTime(format(winter, "EEE MMM") + " 03 00:07:08 " + standard + " 2006", "%tc", winter);
+        assertDateTime(format(summer, "EEE MMM") + " 07 14:15:45 " + daylight + " 2006", "%tc", summer);
     }
 
     private void assertDateTime(String expected, String format, Date date) {
@@ -216,4 +222,17 @@ public class DateTimeConversionTestCase extends BaseTestCase {
             assertFormat(expected, format, argument);
         }
     }
+
+    private static Date parseDate(String date) throws ParseException {
+        return parse(date + " 00:07:08.093");
+    }
+
+    private static Date parse(String dateTime) throws ParseException {
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").parse(dateTime);
+    }
+
+    private static String format(Date date, String pattern) {
+        return new SimpleDateFormat(pattern, Locale.FRANCE).format(date);
+    }
+
 }

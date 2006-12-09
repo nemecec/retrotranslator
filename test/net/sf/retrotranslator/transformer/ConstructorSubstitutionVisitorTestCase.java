@@ -142,10 +142,22 @@ public class ConstructorSubstitutionVisitorTestCase extends TestCase {
                 super(referent, q);
             }
         }
-        new MyReference<String>("a", null);
-        new MyReference<String>("b", new ReferenceQueue<String>());
-        new WeakReference<String>("c", null);
-        new WeakReference<String>("d", new ReferenceQueue<String>());
+        new WeakReference<String>("a", null);
+        new MyReference<String>("b", null);
+        ReferenceQueue<String> queue1 = new ReferenceQueue<String>();
+        ReferenceQueue<String> queue2 = new ReferenceQueue<String>();
+        Reference<String> reference1 = new MyReference<String>(new String("c"), queue1);
+        Reference<String> reference2 = new WeakReference<String>(new String("d"), queue2);
+        gc();
+        assertSame(reference1, queue1.poll());
+        assertSame(reference2, queue2.poll());
+    }
+
+    private static void gc() throws InterruptedException {
+        for (int i = 0; i < 10; i++) {
+            System.gc();
+            Thread.sleep(100);
+        }
     }
 
 }

@@ -31,36 +31,56 @@
  */
 package net.sf.retrotranslator.transformer;
 
+import net.sf.retrotranslator.runtime.impl.RuntimeTools;
+
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author Taras Puchko
  */
 class EmbeddingConverter {
 
     private String embeddingPrefix;
-    private boolean runtimeConverted;
-    private boolean concurrentConverted;
+    private Map<String, Boolean> runtimeFileNames = new HashMap<String, Boolean>();
+    private Map<String, Boolean> concurrentFileNames = new HashMap<String, Boolean>();
 
     public EmbeddingConverter(String embed) {
         this.embeddingPrefix = embed.replace('.', '/') + '/';
     }
 
-    public boolean isRuntimeConverted() {
-        return runtimeConverted;
+    public Map<String, Boolean> getRuntimeFileNames() {
+        return runtimeFileNames;
     }
 
-    public boolean isConcurrentConverted() {
-        return concurrentConverted;
+    public Map<String, Boolean> getConcurrentFileNames() {
+        return concurrentFileNames;
     }
 
-    public String convertName(String className) {
-        if (className.startsWith(BackportLocator.RUNTIME_PREFIX)) {
-            runtimeConverted = true;
-            return embeddingPrefix + className;
-        }
-        if (className.startsWith(BackportLocator.CONCURRENT_PREFIX)) {
-            concurrentConverted = true;
-            return embeddingPrefix + className;
-        }
-        return className;
+    public String convertFileName(String fileName) {
+        return getMap(fileName) == null ? fileName : embeddingPrefix + fileName;
     }
+
+    public String convertClassName(String className) {
+        Map<String, Boolean> map = getMap(className);
+        if (map == null) {
+            return className;
+        }
+        String key = className + RuntimeTools.CLASS_EXTENSION;
+        if (!map.containsKey(key)) {
+            map.put(key, Boolean.FALSE);
+        }
+        return embeddingPrefix + className;
+    }
+
+    private Map<String, Boolean> getMap(String name) {
+        if (name.startsWith(BackportLocator.RUNTIME_PREFIX)) {
+            return runtimeFileNames;
+        }
+        if (name.startsWith(BackportLocator.CONCURRENT_PREFIX)) {
+            return concurrentFileNames;
+        }
+        return null;
+    }
+
 }

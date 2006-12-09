@@ -1,6 +1,14 @@
 Retrotranslator Changelog
 =================================
 
+  - Backported java.util.concurrent.locks.LockSupport.
+  - Added support for Thread.State enum, but Thread.getState() is not implemented.
+  - Limited support for DecimalFormat.isParseBigDecimal() and DecimalFormat.setParseBigDecimal(boolean).
+  - Upgraded to backport-util-concurrent 3.0.
+  - Removed deprecated Retrotranslator constructor.
+  - Unused classes may be excluded during embedding.
+  - Retrotranslator runtime depends on backport-util-concurrent.
+
 1.1.0 (2006-11-08)
 ---------------------------------
   - New -retainflags option to keep Java 5 specific access modifiers (was default before).

@@ -50,4 +50,11 @@ class TransformerTools {
         return Type.getType("L" + name + ";");
     }
 
+    public static boolean isClassFile(byte[] bytes) {
+        return bytes.length >= 4 &&
+                bytes[0] == ((byte) 0xCA) &&
+                bytes[1] == ((byte) 0xFE) &&
+                bytes[2] == ((byte) 0xBA) &&
+                bytes[3] == ((byte) 0xBE);
+    }
 }

@@ -185,7 +185,9 @@ public class _MethodTestCase extends BaseTestCase {
         assertEquals(1, annotations[0].length);
         assertEquals(0, annotations[1].length);
         assertEquals("glass", ((MyStyle) annotations[0][0]).value());
-        assertEquals(0, singleton(PROXY_METHOD.getParameterAnnotations()).length);
+        if (!System.getProperty("java.vm.version").startsWith("R26.0.0")) {
+            assertEquals(0, singleton(PROXY_METHOD.getParameterAnnotations()).length);
+        }
     }
 
     public void testGetTypeParameters() throws Exception {
@@ -229,15 +231,17 @@ public class _MethodTestCase extends BaseTestCase {
         assertFalse(PROXY_METHOD.isSynthetic());
     }
 
-    interface VarargsInterface  {
+    interface VarargsInterface {
         void m1(String... s);
+
         void m2(String s);
     }
 
     public void testIsVarArgs() throws Exception {
-        abstract class Test  {
+        abstract class Test {
             public void m1(String... s) {
             }
+
             public void m2(String s) {
             }
         }

@@ -29,57 +29,46 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.runtime.java.lang;
+package net.sf.retrotranslator.transformer;
 
-import junit.framework.*;
+import net.sf.retrotranslator.runtime.impl.RuntimeTools;
+
+import java.util.regex.Pattern;
+import java.util.StringTokenizer;
 
 /**
  * @author Taras Puchko
  */
-public class _ThreadTestCase extends TestCase {
+class SourceMask {
 
-    public void testGetStackTrace() throws Exception {
-        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-        String className = this.getClass().getName();
-        StackTraceElement element = null;
-        for (int i = 1; i < stackTrace.length; i++) {
-            element = stackTrace[i];
-            if (className.equals(element.getClassName())) break;
+    private Pattern pattern;
+
+    public SourceMask(String srcmask) {
+        if (srcmask == null) {
+            pattern = null;
+            return;
         }
-        assertNotNull(element);
-        assertEquals("testGetStackTrace", element.getMethodName());
-        for (StackTraceElement stackTraceElement : stackTrace) {
-            assertNotNull(stackTraceElement);
-        }
-    }
-
-    public void testGetId() throws Exception {
-        long currentId = Thread.currentThread().getId();
-        assertTrue(currentId > 0);
-        Thread thread = new Thread();
-        long newId = thread.getId();
-        assertTrue(newId > 0);
-        assertTrue(currentId != newId);
-        assertEquals(currentId, Thread.currentThread().getId());
-        assertEquals(newId, thread.getId());
-    }
-
-    public void testGetId_Custom() throws Exception {
-        class MyThread extends Thread {
-            public int hashCode() {
-                return 0;
+        StringBuilder builder = new StringBuilder();
+        for (String s : srcmask.split(";")) {
+            if (builder.length() > 0) builder.append('|');
+            builder.append("((./)?");
+            StringTokenizer tokenizer = new StringTokenizer(s, "*?", true);
+            while (tokenizer.hasMoreTokens()) {
+                builder.append(wildcardToRegex(tokenizer.nextToken()));
             }
-
-            public boolean equals(Object obj) {
-                return true;
-            }
+            builder.append(")");
         }
-        Thread thread1 = new MyThread();
-        Thread thread2 = new MyThread();
-        assertEquals(thread1.getId(), thread1.getId());
-        assertEquals(thread2.getId(), thread2.getId());
-        assertTrue(thread1.getId() != Thread.currentThread().getId());
-        assertTrue(thread2.getId() != Thread.currentThread().getId());
-        assertTrue(thread1.getId() != thread2.getId());
+        pattern = Pattern.compile(builder.toString());
     }
+
+    private static String wildcardToRegex(String s) {
+        if (s.equals("*")) return ".*";
+        if (s.equals("?")) return ".";
+        return Pattern.quote(s);
+    }
+
+    public boolean matches(String name) {
+        return pattern != null ? pattern.matcher(name).matches() : name.endsWith(RuntimeTools.CLASS_EXTENSION);
+    }
+
 }

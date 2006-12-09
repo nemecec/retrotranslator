@@ -39,7 +39,8 @@ import junit.framework.TestCase;
 public class RetainAPITestCase extends TestCase {
 
     public void test() {
-        if (isRetainAPI()) {
+        if (Boolean.getBoolean("net.sf.retrotranslator.retain-api") &&
+                System.getProperty("java.version").startsWith("1.4")) {
             try {
                 new StringBuilder().append("a").append("b");
                 fail();
@@ -47,10 +48,6 @@ public class RetainAPITestCase extends TestCase {
                 //ok
             }
         }
-    }
-
-    private boolean isRetainAPI() {
-        return Boolean.getBoolean("net.sf.retrotranslator.retain-api");
     }
 
 }

@@ -122,6 +122,13 @@ abstract class FloatingPointConversion extends NumericConversion {
         return builder;
     }
 
+    protected static BigDecimal round(BigDecimal decimal, int shift) {
+        int scale = decimal.scale() - shift;
+        return scale >= 0 ?
+                decimal.setScale(scale, BigDecimal.ROUND_HALF_UP) :
+                decimal.movePointRight(scale).setScale(0, BigDecimal.ROUND_HALF_UP).movePointLeft(scale);
+    }
+
     public static class ComputerizedScientificConversion extends FloatingPointConversion {
 
         public void format(FormatContext context) {
@@ -132,8 +139,7 @@ abstract class FloatingPointConversion extends NumericConversion {
 
         protected void printf(FormatContext context, boolean negative, BigDecimal argument) {
             int shift = argument.unscaledValue().toString().length() - context.getNumberPrecision() - 1;
-            BigDecimal roundedArgument = argument.setScale(argument.scale() - shift, BigDecimal.ROUND_HALF_UP);
-            printComputerizedScientificNumber(context, negative, roundedArgument, context.getNumberPrecision());
+            printComputerizedScientificNumber(context, negative, round(argument, shift), context.getNumberPrecision());
         }
     }
 
@@ -161,8 +167,7 @@ abstract class FloatingPointConversion extends NumericConversion {
 
         protected void printf(FormatContext context, boolean negative, BigDecimal argument) {
             int precision = Math.max(context.getNumberPrecision(), 1);
-            int shift = argument.unscaledValue().toString().length() - precision;
-            BigDecimal roundedArgument = argument.setScale(argument.scale() - shift, BigDecimal.ROUND_HALF_UP);
+            BigDecimal roundedArgument = round(argument, argument.unscaledValue().toString().length() - precision);
             if (roundedArgument.compareTo(new BigDecimal(BigInteger.ONE, 4)) >= 0 &&
                     roundedArgument.compareTo(BigDecimal.ONE.movePointRight(precision)) < 0) {
                 printDecimalNumber(context, negative, roundedArgument, context.getArgument() instanceof BigDecimal);
@@ -170,6 +175,7 @@ abstract class FloatingPointConversion extends NumericConversion {
                 printComputerizedScientificNumber(context, negative, roundedArgument, precision - 1);
             }
         }
+
     }
 
 }

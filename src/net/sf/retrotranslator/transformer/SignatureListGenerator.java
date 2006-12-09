@@ -63,9 +63,7 @@ public class SignatureListGenerator extends EmptyVisitor {
             {java.util.LinkedList.class,
                     "<E:Ljava/lang/Object;>Ljava/util/AbstractSequentialList<TE;>;" +
                             "Ljava/util/List<TE;>;Ljava/lang/Cloneable;Ljava/io/Serializable;"},
-            {java.util.PriorityQueue.class,
-                    "<E:Ljava/lang/Object;>Ledu/emory/mathcs/backport/java/util/AbstractQueue<TE;>;" +
-                            "Ljava/io/Serializable;Ledu/emory/mathcs/backport/java/util/Queue<TE;>;"},
+            {java.util.PriorityQueue.class},
             {java.util.HashMap.class},
             {java.util.TreeMap.class, "<K:Ljava/lang/Object;V:Ljava/lang/Object;>Ljava/util/AbstractMap<TK;TV;>;" +
                     "Ljava/util/SortedMap<TK;TV;>;Ljava/lang/Cloneable;Ljava/io/Serializable;"},

@@ -32,6 +32,7 @@
 package net.sf.retrotranslator.transformer;
 
 import net.sf.retrotranslator.runtime.asm.ClassReader;
+import net.sf.retrotranslator.runtime.impl.RuntimeTools;
 
 import java.io.*;
 import java.lang.ref.SoftReference;
@@ -67,7 +68,7 @@ class ClassReaderFactory {
             ClassReader classReader = reference.get();
             if (classReader != null) return classReader;
         }
-        InputStream stream = getStream(name + ".class");
+        InputStream stream = getStream(name + RuntimeTools.CLASS_EXTENSION);
         if (stream == null) {
             cache.put(name, null);
             throw new ClassNotFoundException(name);

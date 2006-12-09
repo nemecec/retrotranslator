@@ -72,7 +72,7 @@ and concurrency utilities
         <code>backport-util-concurrent.jar</code> into the classpath of your application.
     </li>
     <li>
-        Run or debug the application as usual on any JVM 1.4, preferably JRE 1.4.2.
+        Run or debug the application as usual on J2SE 1.4.x, preferably 1.4.2.
     </li>
 </ol>
 
@@ -295,13 +295,13 @@ and concurrency utilities
 <p>
     For <a href="http://maven.apache.org/">Maven</a> there is a
     <a href="http://mojo.codehaus.org/retrotranslator-maven-plugin/">Retrotranslator plugin</a>
-    from the <a href="http://mojo.codehaus.org/">Mojo Project</a>.
+    from the <a href="http://mojo.codehaus.org/">Mojo Project</a>, but it may use not the latest Retrotranslator release.
 </p>
 <h4><a name="idea">How to use Retrotranslator from IntelliJ IDEA?</a></h4>
 <p>
-    To automatically translate and verify classes compiled by <a href="http://www.jetbrains.com/idea/">IntelliJ IDEA</a>
-    you may <a href="http://plugins.intellij.net/plugin/?id=145">download a plugin</a>
-    that generates classes compatible with 1.4 virtual machines from your Java 5 source code.
+    There is a <a href="http://plugins.intellij.net/plugin/?id=145">plugin</a> to automatically translate and verify
+    classes compiled by <a href="http://www.jetbrains.com/idea/">IntelliJ IDEA</a>, so you can develop in Java 5 but
+    run and debug on JRE 1.4.
 </p>
 
 <h4><a name="jit">How to use Just-in-Time Retrotranslator?</a></h4>
@@ -329,29 +329,23 @@ and concurrency utilities
     </li>
 </ul>
 <p>
-    JIT Retrotranslator can accept <code>-<a href="#option_advanced">advanced</a></code>
-    and <code>-<a href="#option_backport">backport</a></code> options.
+    JIT Retrotranslator can accept the <code><a href="#option_advanced">advanced</a></code>
+    and <code><a href="#option_backport">backport</a></code> options.
 </p>
 
 <h4><a name="supported">What Java 5 classes and methods are supported?</a></h4>
 <table border="1" cellspacing="0" cellpadding="5">
     <tr><th>Package</th><th>Class</th><th>Methods and fields</th><th>Compatibility notes</th></tr>
-    <tr><td><code>java.lang.annotation</code></td><td>* (all classes)</td><td>* (all methods)</td><td>&nbsp;</td></tr>
+    <tr><td><code>java.lang.annotation</code></td><td>* (all classes)<sup><a href="#1">1</a></sup></td><td>* (all methods)</td><td>&nbsp;</td></tr>
     <tr><td><code>java.util.concurrent,<br>java.util.concurrent.atomic,<br>java.util.concurrent.locks</code></td>
         <td>almost all classes</td><td>almost all methods</td>
-        <td>
-            Supported via the <a href="http://dcl.mathcs.emory.edu/util/backport-util-concurrent/index.php">
-            Backport of JSR 166</a>.<br>
-            The <code>Condition.awaitNanos(long)</code> method is supported with
+        <td>The <code>LockSupport</code> class may be unusable due to poor efficiency.
+            The <code>Condition.awaitNanos(long)</code> method has
         <a href="http://dcl.mathcs.emory.edu/util/backport-util-concurrent/doc/api/edu/emory/mathcs/backport/java/util/concurrent/helpers/Utils.html#awaitNanos(edu.emory.mathcs.backport.java.util.concurrent.locks.Condition, long)">
-        very little</a> accuracy guarantees.
-        </td></tr>
-    <tr><td rowspan="6"><code>java.io</code></td><td><code>Closeable</code></td><td><code>*</code></td><td>
-            <code>new Closeable[...]</code> is replaced with <code>new Object[...]</code>
-        </td></tr>
-    <tr><td><code>Flushable</code></td><td><code>*</code></td><td>
-            <code>new Flushable[...]</code> is replaced with <code>new Object[...]</code>
-        </td></tr>
+        little</a> accuracy guarantees.</td></tr>
+    <tr><td rowspan="6"><code>java.io</code></td><td><code>Closeable<sup><a href="#2">2</a></sup></code>
+    </td><td><code>*</code></td><td>&nbsp;</td></tr>
+    <tr><td><code>Flushable<sup><a href="#2">2</a></sup></code></td><td><code>*</code></td><td>&nbsp;</td></tr>
     <tr><td><code>PrintStream</code></td><td>
         * (11 new methods and constructors)
         </td><td>&nbsp;</td></tr>
@@ -366,17 +360,16 @@ and concurrency utilities
             append(CharSequence, int, int),<br>
             append(char)</code>
         </td><td>&nbsp;</td></tr>
-    <tr><td rowspan="24"><code>java.lang</code></td><td><code>Appendable</code></td><td>*
-    </td><td>
-        <code>new Appendable[...]</code> is replaced with <code>new Object[...]</code>
-    </td></tr>
+    <tr><td rowspan="25"><code>java.lang</code></td><td><code>Appendable<sup><a href="#2">2</a></sup></code></td><td>*
+    </td><td>&nbsp;</td></tr>
     <tr><td><code>Boolean</code></td><td><code>parseBoolean(String),<br>
         compareTo(Boolean)</code></td><td>&nbsp;</td></tr>
     <tr><td><code>Byte</code></td><td><code>valueOf(byte)</code></td><td>&nbsp;</td></tr>
     <tr><td><code>Character</code></td><td><code>valueOf(char)</code></td><td>&nbsp;</td></tr>
     <tr><td><code>Class</code></td><td>* (21 new methods)</td><td>
-        <code>Class.getMethod(String, Class...)</code> and <code>Class.getDeclaredMethod(String, Class...)</code> are
-        intercepted in advanced mode to better support generics and covariant return types on several JVM implementations.
+        <code>Class.getMethod(String, Class...)</code> and <code>Class.getDeclaredMethod(String, Class...)</code>
+        are intercepted to better support generics and covariant return types
+        on several platforms<sup><a href="#3">3</a></sup>.
     </td></tr>
     <tr><td><code>Deprecated</code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>Double</code></td><td><code>valueOf(double)</code></td><td>&nbsp;</td></tr>
@@ -387,14 +380,10 @@ and concurrency utilities
     <tr><td><code>IllegalStateException</code></td><td><code>IllegalStateException(String, Throwable),<br>
         IllegalStateException(Throwable)</code></td><td>&nbsp;</td></tr>
     <tr><td><code>Integer</code></td><td><code>valueOf(int), signum(int)</code></td><td>&nbsp;</td></tr>
-    <tr><td><code>Iterable</code></td><td>*</td><td>
-        <code>new Iterable[...]</code> is replaced with <code>new Object[...]</code>
-    </td></tr>
+    <tr><td><code>Iterable<sup><a href="#2">2</a></sup></code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>Long</code></td><td><code>valueOf(long), signum(long)</code></td><td>&nbsp;</td></tr>
     <tr><td><code>Package</code></td><td>* (4 new methods)</td><td>&nbsp;</td></tr>
-    <tr><td><code>Readable</code></td><td>*</td><td>
-        <code>new Readable[...]</code> is replaced with <code>new Object[...]</code>
-    </td></tr>
+    <tr><td><code>Readable<sup><a href="#2">2</a></sup></code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>Short</code></td><td><code>valueOf(short)</code></td><td>&nbsp;</td></tr>
     <tr><td><code>String</code></td><td><code>contains(CharSequence),<br>
         contentEquals(CharSequence),<br>
@@ -411,12 +400,10 @@ and concurrency utilities
     </code></td><td>&nbsp;</td></tr>
     <tr><td><code>StringBuilder</code></td><td>
         All methods supported in <code>StringBuffer</code>
-    </td><td><code>StringBuilder</code> is replaced with <code>StringBuffer</code></td></tr>
+    </td><td><code>StringBuilder</code> is replaced with <code>StringBuffer</code>.</td></tr>
     <tr><td><code>SuppressWarnings</code></td><td>*</td><td>&nbsp;</td></tr>
-    <tr><td><code>System</code></td><td><code>nanoTime(),<br> clearProperty(String)</code></td><td>
-        The <code>System.nanoTime()</code> method is supported via the
-        <a href="http://dcl.mathcs.emory.edu/util/backport-util-concurrent/index.php">Backport of JSR 166</a>
-        and its precision
+    <tr><td><code>System</code></td><td><code>nanoTime()<sup><a href="#1">1</a></sup>,<br> clearProperty(String)</code></td><td>
+        The <code>System.nanoTime()</code> method precision
         <a href="http://dcl.mathcs.emory.edu/util/backport-util-concurrent/doc/api/edu/emory/mathcs/backport/java/util/concurrent/helpers/Utils.html#nanoTime()">
             may vary</a> on different platforms.
     </td></tr>
@@ -424,26 +411,33 @@ and concurrency utilities
     </code></td><td>The <code>Thread.getStackTrace()</code>
         method returns non-empty stack trace only for the current thread.<br>
         The <code>Thread.getId()</code> method does not reflect the order in which threads are created.</td></tr>
+    <tr><td><code>Thread.State</code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>TypeNotPresentException</code></td><td>*</td><td>&nbsp;</td></tr>
+
+    <tr><td rowspan="2"><code>java.lang.ref</code></td>
+        <td><code>SoftReference</code></td><td>*</td><td>
+        <code>SoftReference(Object,ReferenceQueue)</code>
+        supports <code>null</code> for the second parameter
+        on all platforms<sup><a href="#3">3</a></sup>.
+        </td></tr>
+    <tr><td><code>WeakReference</code></td><td>*</td><td>
+        <code>WeakReference(Object,ReferenceQueue)</code>
+        supports <code>null</code> for the second parameter
+        on all platforms<sup><a href="#3">3</a></sup>.
+        </td></tr>
 
     <tr><td rowspan="13"><code>java.lang.reflect</code></td>
         <td><code>AccessibleObject</code></td><td>*</td><td>&nbsp;</td></tr>
-    <tr><td><code>AnnotatedElement</code></td><td>*</td><td>
-        <code>new AnnotatedElement[...]</code> is replaced with <code>new Object[...]</code>
-    </td></tr>
+    <tr><td><code>AnnotatedElement<sup><a href="#2">2</a></sup></code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>Constructor</code></td><td>* (11 new methods)</td><td>&nbsp;</td></tr>
     <tr><td><code>Field</code></td><td>* (8 new methods)</td><td>&nbsp;</td></tr>
     <tr><td><code>GenericArrayType</code></td><td>*</td><td>&nbsp;</td></tr>
-    <tr><td><code>GenericDeclaration</code></td><td>*</td><td>
-        <code>new GenericDeclaration[...]</code> is replaced with <code>new Object[...]</code>
-    </td></tr>
+    <tr><td><code>GenericDeclaration<sup><a href="#2">2</a></sup></code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>GenericSignatureFormatError</code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>MalformedParameterizedTypeException</code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>Method</code></td><td>* (14 new methods)</td><td>&nbsp;</td></tr>
     <tr><td><code>ParameterizedType</code></td><td>*</td><td>&nbsp;</td></tr>
-    <tr><td><code>Type</code></td><td>*</td><td>
-        <code>new Type[...]</code> is replaced with <code>new Object[...]</code>
-    </td></tr>
+    <tr><td><code>Type<sup><a href="#2">2</a></sup></code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>TypeVariable</code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>WildcardType</code></td><td>*</td><td>&nbsp;</td></tr>
 
@@ -452,48 +446,48 @@ and concurrency utilities
             divideToIntegralValue(BigDecimal),<br> pow(int),<br> remainder(BigDecimal),<br>
             toPlainString(),<br> valueOf(double),<br>
             valueOf(long)</code></td><td>The <code>BigDecimal.setScale(int, int)</code>
-        method supports negative scales in advanced mode.</td></tr>
+        method supports negative scales<sup><a href="#3">3</a></sup>.</td></tr>
+    <tr><td ><code>java.net</code></td><td><code>URL</code></td>
+        <td><code>toURI()</code></td><td>&nbsp;</td></tr>
+
     <tr><td ><code>java.rmi.server</code></td><td><code>RemoteObjectInvocationHandler</code></td>
         <td>*</td><td>&nbsp;</td></tr>
 
-    <tr><td ><code>java.net</code></td><td><code>URL</code></td>
-        <td><code>toURI()</code></td><td>&nbsp;</td></tr>
+    <tr><td ><code>java.text</code></td><td><code>DecimalFormat</code></td>
+        <td><code>isParseBigDecimal()<sup><a href="#3">3</a></sup>,<br>
+            setParseBigDecimal(boolean)<sup><a href="#3">3</a></sup></code></td><td>
+        <code>BigDecimal</code> parsing and formatting is limited by <code>Double</code> or <code>Long</code> precision.
+        </td></tr>
 
     <tr><td><code>java.util.nio</code></td><td><code>CharBuffer</code></td><td>
         <code>append(CharSequence),<br> append(CharSequence, int, int),<br> append(char),<br> read(CharBuffer)</code>
         </td><td>&nbsp;</td></tr>
 
-    <tr><td rowspan="10"><code>java.util</code></td><td><code>AbstractQueue</code></td><td>*</td><td>
-        Supported via the <a href="http://dcl.mathcs.emory.edu/util/backport-util-concurrent/index.php">
-        Backport of JSR 166</a>.
-        </td></tr>
+    <tr><td rowspan="10"><code>java.util</code></td><td><code>AbstractQueue<sup><a href="#1">1</a></sup></code></td>
+        <td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>Arrays</code></td><td>* (21 new methods)</td><td>&nbsp;</td></tr>
-    <tr><td><code>Collections</code></td><td>* (13 new methods)</td><td>
-        Supported via the <a href="http://dcl.mathcs.emory.edu/util/backport-util-concurrent/index.php">
-        Backport of JSR 166</a>.
-    </td></tr>
+    <tr><td><code>Collections<sup><a href="#1">1</a></sup></code></td><td>* (13 new methods)</td><td>&nbsp;</td></tr>
     <tr><td><code>EnumMap</code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>EnumSet</code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>Formatter</code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>LinkedList</code></td><td>* (5 new methods)</td><td>&nbsp;</td></tr>
-    <tr><td><code>PriorityQueue</code></td><td>*</td><td>
-        Supported via the <a href="http://dcl.mathcs.emory.edu/util/backport-util-concurrent/index.php">
-        Backport of JSR 166</a>.
-        </td></tr>
-    <tr><td><code>Queue</code></td><td>*</td><td>
-        Supported via the <a href="http://dcl.mathcs.emory.edu/util/backport-util-concurrent/index.php">
-        Backport of JSR 166</a>.<br>
-        <code>new Queue[...]</code> is replaced with <code>new Object[...]</code>
-    </td></tr>
+    <tr><td><code>PriorityQueue<sup><a href="#1">1</a></sup></code></td><td>*</td><td>&nbsp;</td></tr>
+    <tr><td><code>Queue<sup><a href="#1">1</a>,<a href="#2">2</a></sup></code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>UUID</code></td><td>*</td><td>&nbsp;</td></tr>
 
     <tr><td rowspan="3"><code>java.util.regex</code></td><td><code>Matcher</code></td><td>
         <code>quoteReplacement(String),<br> toMatchResult()</code></td><td>&nbsp;</td></tr>
-    <tr><td><code>MatchResult</code></td><td>*</td><td>
-        <code>new MatchResult[...]</code> is replaced with <code>new Object[...]</code>
-    </td></tr>
+    <tr><td><code>MatchResult<sup><a href="#2">2</a></sup></code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>Pattern</code></td><td><code>quote(String)</code></td><td>&nbsp;</td></tr>
 </table>
+<p>
+    <a name="1"><sup>1</sup></a> Supported via the
+        <a href="http://dcl.mathcs.emory.edu/util/backport-util-concurrent/index.php"> Backport of JSR 166</a>.<br>
+    <a name="2"><sup>2</sup></a> Actual component type for arrays of this type will be
+        <code>java.lang.Object</code> at runtime.<br>
+    <a name="3"><sup>3</sup></a> Supported only in advanced mode, i.e. when
+    the <code><a href="#option_advanced">advanced</a></code> option is specified.<br>
+</p>
 
 <h4><a name="extension">How to write an extension for Retrotranslator?</a></h4>
 

@@ -39,11 +39,13 @@ import java.io.File;
 class FileInfoLogger implements MessageLogger {
 
     private MessageLogger logger;
+    private boolean verbose;
     private File fileLocation;
     private String fileName;
 
-    public FileInfoLogger(MessageLogger logger) {
+    public FileInfoLogger(MessageLogger logger, boolean verbose) {
         this.logger = logger;
+        this.verbose = verbose;
     }
 
     public void setFileInfo(File fileLocation, String fileName) {
@@ -52,6 +54,9 @@ class FileInfoLogger implements MessageLogger {
     }
 
     public void log(Message message) {
+        if (message.getLevel() == Level.VERBOSE && !verbose) {
+            return;
+        }
         if (message.getFileName() != null || message.getFileLocation() != null) {
             logger.log(message);
         } else {

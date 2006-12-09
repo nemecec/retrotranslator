@@ -55,7 +55,7 @@ class TextFileTransformer {
         while (matcher.find()) {
             String originalName = matcher.group().replace('.', '/');
             String backportName = factory.getLocator().getClassName(originalName);
-            String name = converter == null ? backportName : converter.convertName(backportName);
+            String name = converter == null ? backportName : converter.convertClassName(backportName);
             if (originalName.equals(name)) {
                 matcher.appendReplacement(buffer, "$0");
             } else {
