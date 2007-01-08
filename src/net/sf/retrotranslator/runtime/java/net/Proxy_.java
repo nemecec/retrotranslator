@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,40 +29,57 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.transformer;
+package net.sf.retrotranslator.runtime.java.net;
 
-import junit.framework.TestCase;
-
-import java.util.concurrent.Callable;
+import java.net.SocketAddress;
 
 /**
  * @author Taras Puchko
  */
-public class DuplicateCleaningVisitorTestCase extends TestCase {
+public class Proxy_ {
 
-    public void testInterfaces() throws Exception {
-        class Test implements edu.emory.mathcs.backport.java.util.concurrent.Callable, Callable<String> {
-            public String call() throws Exception {
-                return "Hello";
-            }
-        }
-        Callable<String> callable = new Test();
-        assertEquals("Hello", callable.call());
-        assertEquals(Test.class.getInterfaces().length, Test.class.getGenericInterfaces().length);
+    private final Type type;
+    private final SocketAddress address;
+
+    public enum Type {
+        DIRECT, HTTP, SOCKS
     }
 
-    public void testMethods() throws Exception {
-        class Test {
-            public StringBuffer append(StringBuffer buffer, String s) {
-                return buffer.append(s);
-            }
+    public static final Proxy_ NO_PROXY = new Proxy_();
 
-            public StringBuilder append(StringBuilder builder, String s) {
-                return builder.append(s);
-            }
-        }
-        assertEquals("Hello", new Test().append(new StringBuffer(), "Hello").toString());
-        assertEquals("Hi", new Test().append(new StringBuilder(), "Hi").toString());
+    private Proxy_() {
+        this.type = Type.DIRECT;
+        this.address = null;
     }
 
+    public Proxy_(Type type, SocketAddress address) {
+        this.type = type;
+        this.address = address;
+    }
+
+    public Type type() {
+        return type;
+    }
+
+    public SocketAddress address() {
+        return address;
+    }
+
+    public String toString() {
+        return type == Type.DIRECT ? Type.DIRECT.toString() : type() + " @ " + address();
+    }
+
+    public final boolean equals(Object obj) {
+        if (obj instanceof Proxy_) {
+            Proxy_ proxy = (Proxy_) obj;
+            if (type() == proxy.type()) {
+                return address() == null ? proxy.address() == null : address().equals(proxy.address());
+            }
+        }
+        return false;
+    }
+
+    public final int hashCode() {
+        return address() == null ? type().hashCode() : type().hashCode() + address().hashCode();
+    }
 }

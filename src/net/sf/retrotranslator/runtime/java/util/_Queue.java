@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,49 +31,59 @@
  */
 package net.sf.retrotranslator.runtime.java.util;
 
-import net.sf.retrotranslator.runtime.impl.Derived;
-
-import java.util.LinkedList;
-import java.util.Queue;
+import edu.emory.mathcs.backport.java.util.Queue;
+import java.util.*;
 
 /**
  * @author Taras Puchko
  */
-@Derived(LinkedList.class)
 public class _Queue {
 
-    public static Object element(Queue queue) {
-        if (queue instanceof LinkedList) {
-            return _LinkedList.element((LinkedList) queue);
-        }
-        return queue.element();
+    public static boolean executeInstanceOfInstruction(Object object) {
+        return object instanceof LinkedList ||
+                object instanceof Queue;
     }
 
-    public static boolean offer(Queue queue, Object o) {
-        if (queue instanceof LinkedList) {
-            return _LinkedList.offer((LinkedList) queue, o);
+    public static Collection executeCheckCastInstruction(Object object) {
+        if (object instanceof LinkedList) {
+            return (LinkedList) object;
         }
-        return queue.offer(o);
+        return (Queue) object;
     }
 
-    public static Object peek(Queue queue) {
-        if (queue instanceof LinkedList) {
-            return _LinkedList.peek((LinkedList) queue);
+    public static Object element(Collection collection) {
+        if (collection instanceof LinkedList) {
+            return _LinkedList.element((LinkedList) collection);
         }
-        return queue.peek();
+        return ((Queue) collection).element();
     }
 
-    public static Object poll(Queue queue) {
-        if (queue instanceof LinkedList) {
-            return _LinkedList.poll((LinkedList) queue);
+    public static boolean offer(Collection collection, Object element) {
+        if (collection instanceof LinkedList) {
+            return _LinkedList.offer((LinkedList) collection, element);
         }
-        return queue.poll();
+        return ((Queue) collection).offer(element);
     }
 
-    public static Object remove(Queue queue) {
-        if (queue instanceof LinkedList) {
-            return _LinkedList.remove((LinkedList) queue);
+    public static Object peek(Collection collection) {
+        if (collection instanceof LinkedList) {
+            return _LinkedList.peek((LinkedList) collection);
         }
-        return queue.remove();
+        return ((Queue) collection).peek();
     }
+
+    public static Object poll(Collection collection) {
+        if (collection instanceof LinkedList) {
+            return _LinkedList.poll((LinkedList) collection);
+        }
+        return ((Queue) collection).poll();
+    }
+
+    public static Object remove(Collection collection) {
+        if (collection instanceof LinkedList) {
+            return _LinkedList.remove((LinkedList) collection);
+        }
+        return ((Queue) collection).remove();
+    }
+
 }

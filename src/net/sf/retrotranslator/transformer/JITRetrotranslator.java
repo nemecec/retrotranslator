@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,10 +31,8 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import net.sf.retrotranslator.runtime.impl.ClassDescriptor;
-import net.sf.retrotranslator.runtime.impl.RuntimeTools;
-
 import java.io.File;
+import net.sf.retrotranslator.runtime.impl.*;
 
 /**
  * @author Taras Puchko
@@ -55,22 +53,16 @@ public class JITRetrotranslator {
         this.backport = backport;
     }
 
-    /**
-     * @deprecated Use {@link #run} instead.
-     */
-    public static synchronized boolean install() {
-        JITRetrotranslator jit = new JITRetrotranslator();
-        jit.setAdvanced(true);
-        return jit.run();
-    }
-
     public boolean run() {
         if (isJava5Supported()) return true;
-        BackportLocatorFactory factory = new BackportLocatorFactory(backport);
-        ClassTransformer transformer = new ClassTransformer(true, advanced, false, false, false, null, null, factory);
+        ReplacementLocatorFactory factory = new ReplacementLocatorFactory(
+                ClassVersion.VERSION_14, advanced, Backport.asList(backport));
+        ClassTransformer transformer = new ClassTransformer(true, false, false, false, null, null, factory);
         ClassDescriptor.setBytecodeTransformer(transformer);
-        return (JRockitJITRetrotranslator.install(transformer) ||
-                SunJITRetrotranslator.install(transformer)) && isJava5Supported();
+        SunJITRetrotranslator.install(transformer);
+        if (isJava5Supported()) return true;
+        JRockitJITRetrotranslator.install(transformer);
+        return isJava5Supported();
     }
 
     private static boolean isJava5Supported() {

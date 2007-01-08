@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,22 +31,30 @@
  */
 package net.sf.retrotranslator.runtime.java.lang;
 
-import net.sf.retrotranslator.runtime.impl.Derived;
-
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.*;
 
 /**
  * @author Taras Puchko
  */
-@Derived(Collection.class)
 public class _Iterable {
 
-    public static Iterator iterator(Iterable iterable) {
-        if (iterable instanceof Collection) {
-            return ((Collection) iterable).iterator();
-        }
-        return iterable.iterator();
+    public static boolean executeInstanceOfInstruction(Object object) {
+        return object instanceof Collection ||
+                object instanceof Iterable_;
     }
-    
+
+    public static Object executeCheckCastInstruction(Object object) {
+        if (object instanceof Collection) {
+            return (Collection) object;
+        }
+        return (Iterable_) object;
+    }
+
+    public static Iterator iterator(Object object) {
+        if (object instanceof Collection) {
+            return ((Collection) object).iterator();
+        }
+        return ((Iterable_) object).iterator();
+    }
+
 }

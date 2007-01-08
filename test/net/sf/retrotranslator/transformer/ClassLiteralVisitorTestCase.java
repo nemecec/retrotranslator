@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  *
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,9 +31,8 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import junit.framework.TestCase;
-
 import java.util.Queue;
+import junit.framework.TestCase;
 
 public class ClassLiteralVisitorTestCase extends TestCase {
 
@@ -58,7 +57,6 @@ public class ClassLiteralVisitorTestCase extends TestCase {
 
     public void testClasses() {
         assertTrue(Queue.class.isInterface());
-        assertTrue(Iterable.class.isInterface());
         assertEquals(ClassLiteralVisitorTestCase.class, ClassLiteralVisitorTestCase[].class.getComponentType());
         assertEquals(InterfaceInClass.class, InterfaceInClass[].class.getComponentType());
         assertEquals(StaticClassInClass.class, StaticClassInClass[].class.getComponentType());

@@ -1,6 +1,6 @@
 <project name="retrotranslator" default="build" basedir=".">
 
-    <property name="version" value="1.1.1"/>
+    <property name="version" value="1.2.0"/>
 
     <property file="build.properties"/>
 
@@ -20,7 +20,8 @@
         <mkdir dir="build/classes14"/>
         <mkdir dir="build/classes"/>
         <javac fork="yes" srcdir="src" destdir="build/classes15" debug="true"
-               classpathref="classpath" executable="${java15_home}/bin/javac"/>
+               classpathref="classpath" executable="${java15_home}/bin/javac"
+               source="1.5" target="1.5"/>
         <delete>
             <fileset dir="build/classes15/net/sf/retrotranslator/transformer"
                      includes="ClassFileTransformer.class ClassPreProcessor.class"/>
@@ -69,7 +70,7 @@
                 <attribute name="Implementation-Title" value="Retrotranslator Transformer"/>
                 <attribute name="Implementation-Version" value="${version}"/>
                 <attribute name="Class-Path"
-                           value="retrotranslator-runtime-${version}.jar backport-util-concurrent.jar"/>
+                           value="retrotranslator-runtime-${version}.jar backport-util-concurrent-3.0.jar"/>
                 <attribute name="Main-Class" value="net.sf.retrotranslator.transformer.Retrotranslator"/>
             </manifest>
         </jar>
@@ -88,13 +89,25 @@
         <mkdir dir="build/test-classes15"/>
         <javac srcdir="test" destdir="build/test-classes15"
                fork="yes" debug="true" executable="${java15_home}/bin/javac"
-               classpathref="classpath" classpath="build/classes15"/>
+               classpathref="classpath" classpath="build/classes15" excludes="**/*Java6*"/>
+        <antcall target="compile-tests-java6"/>
         <copy todir="build/test-classes15">
             <fileset dir="test" includes="**/*.properties"/>
         </copy>
+        <mkdir dir="build/test-classes-duplicates"/>
+        <move todir="build/test-classes-duplicates">
+            <fileset dir="build/test-classes15" includes="**/DuplicateMethodsTestCase*"/>
+        </move>
     </target>
 
-    <target name="test" depends="test-translated, test-with-jit, test-embedded, test-retainapi, test-custom-backport"/>
+    <target name="compile-tests-java6" if="java16_home">
+        <javac srcdir="test" destdir="build/test-classes15"
+               fork="yes" debug="true" executable="${java16_home}/bin/javac"
+               classpathref="classpath" classpath="build/classes15" includes="**/*Java6*"/>
+    </target>
+
+    <target name="test" depends="test-translated, test-with-jit, test-embedded,
+    test-retainapi, test-custom-backport, test-duplicates"/>
 
     <target name="test-translated" depends="compile-tests">
         <mkdir dir="build/test-classes14"/>
@@ -134,13 +147,13 @@
         <java classname="net.sf.retrotranslator.transformer.Retrotranslator"
               classpathref="classpath" classpath="build/retrotranslator-transformer-${version}.jar"
               failonerror="true" jvm="${java15_home}/bin/java" fork="true">
-            <classpath location="build/test-classes15" />
+            <classpath location="build/test-classes15"/>
             <arg value="-srcdir"/>
             <arg value="build/test-classes15"/>
             <arg value="-destdir"/>
             <arg value="build/test-custom-backport"/>
             <arg value="-backport"/>
-            <arg value="net.sf.retrotranslator.tests"/>
+            <arg value="net.sf.retrotranslator.tests;net.sf.retrotranslator.tests:net.sf.retrotranslator.tests.custom"/>
         </java>
         <echo message="Running classes in build/test-custom-backporton ${java14_home}"/>
         <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
@@ -182,6 +195,28 @@
         <antcall target="junit-on-translated">
             <param name="java_home" value="${java14_home}"/>
         </antcall>
+    </target>
+
+    <target name="test-duplicates" depends="compile-tests">
+        <retrotranslator srcdir="build/test-classes-duplicates" failonwarning="false">
+            <classpath path="${java14_rt_jar}"/>
+            <classpath location="build/retrotranslator-runtime-${version}.jar"/>
+            <classpath refid="classpath"/>
+        </retrotranslator>
+        <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
+               jvm="${java14_home}/bin/java" failureproperty="test.failed">
+            <jvmarg value="-Xfuture"/>
+            <classpath>
+                <path refid="classpath"/>
+                <pathelement location="build/test-classes-duplicates"/>
+                <pathelement location="build/retrotranslator-runtime-${version}.jar"/>
+            </classpath>
+            <formatter type="brief" usefile="false"/>
+            <batchtest>
+                <fileset dir="build/test-classes-duplicates" includes="**/*TestCase.class"/>
+            </batchtest>
+        </junit>
+        <fail if="test.failed"/>
     </target>
 
     <target name="test-with-jit" depends="compile-tests">
@@ -240,7 +275,7 @@
                 <include name="retrotranslator-transformer-${version}.jar"/>
             </zipfileset>
             <zipfileset prefix="${bin.name}" dir="lib">
-                <include name="backport-util-concurrent.jar"/>
+                <include name="backport-util-concurrent-3.0.jar"/>
             </zipfileset>
         </zip>
     </target>

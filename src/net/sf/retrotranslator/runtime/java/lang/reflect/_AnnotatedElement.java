@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,96 +31,117 @@
  */
 package net.sf.retrotranslator.runtime.java.lang.reflect;
 
-import net.sf.retrotranslator.runtime.java.lang._Class;
-import net.sf.retrotranslator.runtime.java.lang._Package;
-import net.sf.retrotranslator.runtime.impl.Derived;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
+import net.sf.retrotranslator.runtime.java.lang.*;
+import net.sf.retrotranslator.runtime.java.lang.annotation.Annotation_;
 
 /**
  * @author Taras Puchko
  */
-@Derived({Class.class, Constructor.class, Field.class, Method.class, Package.class})
 public class _AnnotatedElement {
 
-    public static Annotation getAnnotation(AnnotatedElement annotatedElement, Class annotationType) {
-        if (annotatedElement instanceof Class) {
-            return _Class.getAnnotation((Class) annotatedElement, annotationType);
-        }
-        if (annotatedElement instanceof Constructor) {
-            return _Constructor.getAnnotation((Constructor) annotatedElement, annotationType);
-        }
-        if (annotatedElement instanceof Field) {
-            return _Field.getAnnotation((Field) annotatedElement, annotationType);
-        }
-        if (annotatedElement instanceof Method) {
-            return _Method.getAnnotation((Method) annotatedElement, annotationType);
-        }
-        if (annotatedElement instanceof Package) {
-            return _Package.getAnnotation((Package) annotatedElement, annotationType);
-        }
-        return annotatedElement.getAnnotation(annotationType);
+    public static boolean executeInstanceOfInstruction(Object object) {
+        return object instanceof Class ||
+                object instanceof Constructor ||
+                object instanceof Field ||
+                object instanceof Method ||
+                object instanceof Package ||
+                object instanceof AnnotatedElement_;
     }
 
-    public static Annotation[] getAnnotations(AnnotatedElement annotatedElement) {
-        if (annotatedElement instanceof Class) {
-            return _Class.getAnnotations((Class) annotatedElement);
+    public static Object executeCheckCastInstruction(Object object) {
+        if (object instanceof Class) {
+            return (Class) object;
         }
-        if (annotatedElement instanceof Constructor) {
-            return _Constructor.getAnnotations((Constructor) annotatedElement);
+        if (object instanceof Constructor) {
+            return (Constructor) object;
         }
-        if (annotatedElement instanceof Field) {
-            return _Field.getAnnotations((Field) annotatedElement);
+        if (object instanceof Field) {
+            return (Field) object;
         }
-        if (annotatedElement instanceof Method) {
-            return _Method.getAnnotations((Method) annotatedElement);
+        if (object instanceof Method) {
+            return (Method) object;
         }
-        if (annotatedElement instanceof Package) {
-            return _Package.getAnnotations((Package) annotatedElement);
+        if (object instanceof Package) {
+            return (Package) object;
         }
-        return annotatedElement.getAnnotations();
+        return (AnnotatedElement_) object;
     }
 
-    public static Annotation[] getDeclaredAnnotations(AnnotatedElement annotatedElement) {
-        if (annotatedElement instanceof Class) {
-            return _Class.getDeclaredAnnotations((Class) annotatedElement);
+    public static Annotation_ getAnnotation(Object object, Class<? extends Annotation_> annotationType) {
+        if (object instanceof Class) {
+            return _Class.getAnnotation((Class) object, annotationType);
         }
-        if (annotatedElement instanceof Constructor) {
-            return _Constructor.getDeclaredAnnotations((Constructor) annotatedElement);
+        if (object instanceof Constructor) {
+            return _Constructor.getAnnotation((Constructor) object, annotationType);
         }
-        if (annotatedElement instanceof Field) {
-            return _Field.getDeclaredAnnotations((Field) annotatedElement);
+        if (object instanceof Field) {
+            return _Field.getAnnotation((Field) object, annotationType);
         }
-        if (annotatedElement instanceof Method) {
-            return _Method.getDeclaredAnnotations((Method) annotatedElement);
+        if (object instanceof Method) {
+            return _Method.getAnnotation((Method) object, annotationType);
         }
-        if (annotatedElement instanceof Package) {
-            return _Package.getDeclaredAnnotations((Package) annotatedElement);
+        if (object instanceof Package) {
+            return _Package.getAnnotation((Package) object, annotationType);
         }
-        return annotatedElement.getDeclaredAnnotations();
+        return ((AnnotatedElement_) object).getAnnotation(annotationType);
     }
 
-    public static boolean isAnnotationPresent(AnnotatedElement annotatedElement, Class annotationType) {
-        if (annotatedElement instanceof Class) {
-            return _Class.isAnnotationPresent((Class) annotatedElement, annotationType);
+    public static Annotation_[] getAnnotations(Object object) {
+        if (object instanceof Class) {
+            return _Class.getAnnotations((Class) object);
         }
-        if (annotatedElement instanceof Constructor) {
-            return _Constructor.isAnnotationPresent((Constructor) annotatedElement, annotationType);
+        if (object instanceof Constructor) {
+            return _Constructor.getAnnotations((Constructor) object);
         }
-        if (annotatedElement instanceof Field) {
-            return _Field.isAnnotationPresent((Field) annotatedElement, annotationType);
+        if (object instanceof Field) {
+            return _Field.getAnnotations((Field) object);
         }
-        if (annotatedElement instanceof Method) {
-            return _Method.isAnnotationPresent((Method) annotatedElement, annotationType);
+        if (object instanceof Method) {
+            return _Method.getAnnotations((Method) object);
         }
-        if (annotatedElement instanceof Package) {
-            return _Package.isAnnotationPresent((Package) annotatedElement, annotationType);
+        if (object instanceof Package) {
+            return _Package.getAnnotations((Package) object);
         }
-        return annotatedElement.isAnnotationPresent(annotationType);
+        return ((AnnotatedElement_) object).getAnnotations();
+    }
+
+    public static Annotation_[] getDeclaredAnnotations(Object object) {
+        if (object instanceof Class) {
+            return _Class.getDeclaredAnnotations((Class) object);
+        }
+        if (object instanceof Constructor) {
+            return _Constructor.getDeclaredAnnotations((Constructor) object);
+        }
+        if (object instanceof Field) {
+            return _Field.getDeclaredAnnotations((Field) object);
+        }
+        if (object instanceof Method) {
+            return _Method.getDeclaredAnnotations((Method) object);
+        }
+        if (object instanceof Package) {
+            return _Package.getDeclaredAnnotations((Package) object);
+        }
+        return ((AnnotatedElement_) object).getDeclaredAnnotations();
+    }
+
+    public static boolean isAnnotationPresent(Object object, Class<? extends Annotation_> annotationType) {
+        if (object instanceof Class) {
+            return _Class.isAnnotationPresent((Class) object, annotationType);
+        }
+        if (object instanceof Constructor) {
+            return _Constructor.isAnnotationPresent((Constructor) object, annotationType);
+        }
+        if (object instanceof Field) {
+            return _Field.isAnnotationPresent((Field) object, annotationType);
+        }
+        if (object instanceof Method) {
+            return _Method.isAnnotationPresent((Method) object, annotationType);
+        }
+        if (object instanceof Package) {
+            return _Package.isAnnotationPresent((Package) object, annotationType);
+        }
+        return ((AnnotatedElement_) object).isAnnotationPresent(annotationType);
     }
 
 }

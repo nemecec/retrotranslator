@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  *
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,14 +31,10 @@
  */
 package net.sf.retrotranslator.runtime.impl;
 
-import net.sf.retrotranslator.runtime.asm.Type;
-
-import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.ByteArrayOutputStream;
+import java.io.*;
+import java.lang.reflect.*;
 import java.util.MissingResourceException;
+import net.sf.retrotranslator.runtime.asm.Type;
 
 /**
  * @author Taras Puchko
@@ -151,4 +147,5 @@ public class RuntimeTools {
         String simpleName = index < 0 ? targetName : targetName.substring(index + 1);
         return readResourceToByteArray(target, simpleName + CLASS_EXTENSION);
     }
+
 }

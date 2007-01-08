@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,18 +31,28 @@
  */
 package net.sf.retrotranslator.runtime.java.net;
 
-import junit.framework.*;
-
-import java.net.URL;
-import java.net.URI;
+import java.io.InputStream;
+import java.net.*;
+import junit.framework.TestCase;
 
 /**
  * @author Taras Puchko
  */
 public class _URLTestCase extends TestCase {
 
+    public void testOpenConnection() throws Exception {
+        URL resource = getClass().getResource(getClass().getSimpleName() + ".class");
+        InputStream stream = resource.openConnection(Proxy.NO_PROXY).getInputStream();
+        try {
+            assertTrue(stream.available() > 0);
+        } finally {
+            stream.close();
+        }
+    }
+
     public void testToURI() throws Exception {
         URI uri = new URL("http", "localhost", 80, "/index.html").toURI();
         assertEquals("http://localhost:80/index.html", uri.toString());
     }
+
 }

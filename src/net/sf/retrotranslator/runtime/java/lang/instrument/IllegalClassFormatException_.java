@@ -1,8 +1,8 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- *
- * Copyright (c) 2005, 2006 Taras Puchko
+ * 
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,28 +29,18 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.transformer;
-
-import net.sf.retrotranslator.runtime.asm.ClassVisitor;
+package net.sf.retrotranslator.runtime.java.lang.instrument;
 
 /**
  * @author Taras Puchko
  */
-class ClassSubstitutionVisitor extends GenericClassVisitor {
+public class IllegalClassFormatException_ extends Exception {
 
-    private final BackportLocator locator;
-
-    public ClassSubstitutionVisitor(ClassVisitor classVisitor, BackportLocator locator) {
-        super(classVisitor);
-        this.locator = locator;
+    public IllegalClassFormatException_() {
     }
 
-    protected String visitIdentifier(String identifier) {
-        return identifier.replace('+', '$');
-    }
-
-    protected String visitInternalName(String name) {
-        return locator.getClassName(name);
+    public IllegalClassFormatException_(String message) {
+        super(message);
     }
 
 }

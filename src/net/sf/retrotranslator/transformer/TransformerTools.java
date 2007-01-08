@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,7 +47,15 @@ class TransformerTools {
     }
 
     public static Type getTypeByInternalName(String name) {
-        return Type.getType("L" + name + ";");
+        return Type.getType('L' + name + ';');
+    }
+
+    public static Type getArrayTypeByInternalName(String name, int dimensions) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < dimensions; i++) {
+            builder.append('[');
+        }
+        return Type.getType(builder.append('L').append(name).append(';').toString());
     }
 
     public static boolean isClassFile(byte[] bytes) {
@@ -57,4 +65,14 @@ class TransformerTools {
                 bytes[2] == ((byte) 0xBA) &&
                 bytes[3] == ((byte) 0xBE);
     }
+
+    public static int getClassVersion(byte[] bytes, int offset) {
+        return get(bytes, offset, 4, 24) | get(bytes, offset, 5, 16) |
+                get(bytes, offset, 6, 8) | get(bytes, offset, 7, 0);
+    }
+
+    private static int get(byte[] bytes, int offset, int index, int shift) {
+        return (bytes[offset + index] & 0xFF) << shift;
+    }
+
 }

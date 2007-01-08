@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,30 +31,25 @@
  */
 package net.sf.retrotranslator.runtime.java.lang.reflect;
 
-import net.sf.retrotranslator.runtime.impl.MethodDescriptor;
-import net.sf.retrotranslator.runtime.impl.RuntimeTools;
+import java.lang.reflect.*;
 import net.sf.retrotranslator.runtime.asm.Opcodes;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
+import net.sf.retrotranslator.runtime.impl.*;
+import net.sf.retrotranslator.runtime.java.lang.annotation.Annotation_;
 
 /**
  * @author Taras Puchko
  */
 public class _Constructor {
 
-    public static Annotation getAnnotation(Constructor constructor, Class annotationType) {
+    public static Annotation_ getAnnotation(Constructor constructor, Class annotationType) {
         return MethodDescriptor.getInstance(constructor).getAnnotation(annotationType);
     }
 
-    public static Annotation[] getAnnotations(Constructor constructor) {
+    public static Annotation_[] getAnnotations(Constructor constructor) {
         return MethodDescriptor.getInstance(constructor).getAnnotations();
     }
 
-    public static Annotation[] getDeclaredAnnotations(Constructor constructor) {
+    public static Annotation_[] getDeclaredAnnotations(Constructor constructor) {
         return MethodDescriptor.getInstance(constructor).getDeclaredAnnotations();
     }
 
@@ -68,7 +63,7 @@ public class _Constructor {
         return types != null ? types : constructor.getParameterTypes();
     }
 
-    public static Annotation[][] getParameterAnnotations(Constructor constructor) {
+    public static Annotation_[][] getParameterAnnotations(Constructor constructor) {
         return MethodDescriptor.getInstance(constructor).getParameterAnnotations();
     }
 

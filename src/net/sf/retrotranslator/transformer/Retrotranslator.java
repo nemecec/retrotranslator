@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  *
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -52,7 +52,8 @@ public class Retrotranslator implements MessageLogger {
     private MessageLogger logger = this;
     private SourceMask sourceMask = new SourceMask(null);
     private String embed;
-    private String backport;
+    private List<Backport> backports = new ArrayList<Backport>();
+    private ClassVersion target = ClassVersion.VERSION_14;
     private ClassLoader classLoader;
 
     public Retrotranslator() {
@@ -131,7 +132,11 @@ public class Retrotranslator implements MessageLogger {
     }
 
     public void setBackport(String backport) {
-        this.backport = backport;
+        backports = Backport.asList(backport); 
+    }
+
+    public void setTarget(String target) {
+        this.target = ClassVersion.valueOf(target);
     }
 
     public void setLogger(MessageLogger logger) {
@@ -154,20 +159,20 @@ public class Retrotranslator implements MessageLogger {
             if (lazy) throw new IllegalArgumentException("Embedding cannot be lazy!");
             converter = new EmbeddingConverter(embed);
         }
-        FileInfoLogger infoLogger = new FileInfoLogger(logger, verbose);
-        BackportLocatorFactory locatorFactory = new BackportLocatorFactory(backport);
+        SystemLogger systemLogger = new SystemLogger(logger, verbose);
+        ReplacementLocatorFactory locatorFactory = new ReplacementLocatorFactory(target, advanced, backports);
         ClassTransformer classTransformer = new ClassTransformer(
-                lazy, advanced, stripsign, retainapi, retainflags, converter, infoLogger, locatorFactory);
+                lazy, stripsign, retainapi, retainflags, converter, systemLogger, locatorFactory);
         TextFileTransformer fileTransformer = new TextFileTransformer(locatorFactory);
         FileTranslator translator = new FileTranslator(
-                classTransformer, fileTransformer, converter, infoLogger, sourceMask);
+                classTransformer, fileTransformer, converter, systemLogger, sourceMask);
         for (FileContainer container : src) {
             translator.transform(container, dest != null ? dest : container);
         }
         if (converter != null) {
             translator.embed(dest);
         }
-        if (dest != null) dest.flush();
+        if (dest != null) dest.flush(systemLogger);
         if (!verify) return true;
         ClassLoader loader = classLoader;
         if (loader == null && classpath.isEmpty()) {
@@ -175,13 +180,13 @@ public class Retrotranslator implements MessageLogger {
         }
         ClassReaderFactory factory = new ClassReaderFactory(loader);
         try {
-            return verify(factory);
+            return verify(factory, systemLogger);
         } finally {
             factory.close();
         }
     }
 
-    private boolean verify(ClassReaderFactory factory) {
+    private boolean verify(ClassReaderFactory factory, SystemLogger systemLogger) {
         if (dest != null) {
             factory.appendPath(dest.getLocation());
         } else {
@@ -193,34 +198,32 @@ public class Retrotranslator implements MessageLogger {
             factory.appendPath(file);
         }
         if (dest != null) {
-            return verify(factory, dest);
+            verify(factory, dest, systemLogger);
+        } else {
+            for (FileContainer container : src) {
+                verify(factory, container, systemLogger);
+            }
         }
-        boolean verified = true;
-        for (FileContainer container : src) {
-            verified &= verify(factory, container);
-        }
-        return verified;
+        return systemLogger.isReliable();
     }
 
-    private boolean verify(ClassReaderFactory factory, final FileContainer container) {
-        logger.log(new Message(Level.INFO,
+    private void verify(ClassReaderFactory factory, FileContainer container, SystemLogger systemLogger) {
+        systemLogger.log(new Message(Level.INFO,
                 "Verifying " + container.getFileCount() + " file(s) in " + container + "."));
         int warningCount = 0;
         for (final FileEntry entry : container.getEntries()) {
             if (sourceMask.matches(entry.getName())) {
                 byte[] content = entry.getContent();
                 if (TransformerTools.isClassFile(content)) {
-                    if (verbose) logger.log(new Message(Level.VERBOSE,
-                            "Verification", container.getLocation(), entry.getName()));
-                    warningCount += new ReferenceVerifyingVisitor(factory, logger,
-                            container.getLocation(), entry.getName()).verify(content);
+                    systemLogger.setFile(container.getLocation(), entry.getName());
+                    systemLogger.logForFile(Level.VERBOSE, "Verification");
+                    warningCount += new ReferenceVerifyingVisitor(factory, systemLogger).verify(content);
                 }
             }
         }
         String result = warningCount != 0 ? " with " + warningCount + " warning(s)." : " successfully.";
-        logger.log(new Message(Level.INFO,
+        systemLogger.log(new Message(Level.INFO,
                 "Verification of " + container.getFileCount() + " file(s) completed" + result));
-        return warningCount == 0;
     }
 
     private boolean execute(String[] args) {
@@ -257,6 +260,8 @@ public class Retrotranslator implements MessageLogger {
                 setEmbed(args[i++]);
             } else if (string.equals("-backport") && i < args.length) {
                 setBackport(args[i++]);
+            } else if (string.equals("-target") && i < args.length) {
+                setTarget(args[i++]);
             } else {
                 throw new IllegalArgumentException("Unknown option: " + string);
             }
@@ -268,8 +273,8 @@ public class Retrotranslator implements MessageLogger {
         String version = Retrotranslator.class.getPackage().getImplementationVersion();
         String suffix = (version == null) ? "" : "-" + version;
         System.out.println("Usage: java -jar retrotranslator-transformer" + suffix + ".jar" +
-                " [-srcdir <path> | -srcjar <file>] [-destdir <path> | -destjar <file>]" +
-                " [-stripsign] [-verbose] [-lazy] [-advanced] [-retainapi] [-retainflags] [-verify]" +
+                " [-srcdir <path> | -srcjar <file>] [-destdir <path> | -destjar <file>] [-stripsign]" +
+                " [-verbose] [-lazy] [-advanced] [-retainapi] [-retainflags] [-verify] [-target <version>]" +
                 " [-classpath <classpath>] [-srcmask <mask>] [-embed <package>] [-backport <packages>]");
     }
 
@@ -279,7 +284,9 @@ public class Retrotranslator implements MessageLogger {
             return;
         }
         try {
-            if (!new Retrotranslator().execute(args)) System.exit(2);
+            if (!new Retrotranslator().execute(args)) {
+                System.exit(2);
+            }
         } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());
             printUsage();

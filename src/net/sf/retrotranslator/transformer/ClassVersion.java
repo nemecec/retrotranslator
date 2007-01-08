@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,18 +29,40 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.runtime.impl;
-
-import java.lang.annotation.Target;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.ElementType;
+package net.sf.retrotranslator.transformer;
 
 /**
  * @author Taras Puchko
  */
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Derived {
-    Class[] value();
+class ClassVersion {
+
+    public static final ClassVersion VERSION_14 = new ClassVersion("1.4", 48);
+    public static final ClassVersion VERSION_15 = new ClassVersion("1.5", 49);
+
+    private String name;
+    private int version;
+
+    private ClassVersion(String name, int version) {
+        this.name = name;
+        this.version = version;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getVersion() {
+        return version;
+    }
+
+    public static ClassVersion valueOf(String name) {
+        if (VERSION_14.name.equals(name)) return VERSION_14;
+        if (VERSION_15.name.equals(name)) return VERSION_15;
+        throw new IllegalArgumentException("Unsupported target: " + name);
+    }
+
+    public boolean isBefore(int other) {
+        return version < (other & 0xFFFF);
+    }
+
 }

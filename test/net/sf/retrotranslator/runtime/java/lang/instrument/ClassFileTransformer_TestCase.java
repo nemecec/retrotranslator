@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,38 +29,33 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.transformer;
+package net.sf.retrotranslator.runtime.java.lang.instrument;
 
-import java.io.File;
+import java.lang.instrument.*;
+import java.security.ProtectionDomain;
+import junit.framework.TestCase;
 
 /**
  * @author Taras Puchko
  */
-class FileInfoLogger implements MessageLogger {
+public class ClassFileTransformer_TestCase extends TestCase {
 
-    private MessageLogger logger;
-    private boolean verbose;
-    private File fileLocation;
-    private String fileName;
-
-    public FileInfoLogger(MessageLogger logger, boolean verbose) {
-        this.logger = logger;
-        this.verbose = verbose;
-    }
-
-    public void setFileInfo(File fileLocation, String fileName) {
-        this.fileLocation = fileLocation;
-        this.fileName = fileName;
-    }
-
-    public void log(Message message) {
-        if (message.getLevel() == Level.VERBOSE && !verbose) {
-            return;
-        }
-        if (message.getFileName() != null || message.getFileLocation() != null) {
-            logger.log(message);
-        } else {
-            logger.log(new Message(message.getLevel(), message.getText(), fileLocation, fileName));
+    public void test() {
+        ClassFileTransformer transformer = new ClassFileTransformer() {
+            public byte[] transform(ClassLoader loader,
+                                    String className,
+                                    Class<?> classBeingRedefined,
+                                    ProtectionDomain protectionDomain,
+                                    byte[] classfileBuffer) throws IllegalClassFormatException {
+                throw new IllegalClassFormatException("Test");
+            }
+        };
+        try {
+            transformer.transform(null, null, null, null, null);
+            fail();
+        } catch (IllegalClassFormatException e) {
+            assertEquals("Test", e.getMessage());
         }
     }
+
 }

@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,68 +31,86 @@
  */
 package net.sf.retrotranslator.runtime.java.lang;
 
-import net.sf.retrotranslator.runtime.java.io._Writer;
-import net.sf.retrotranslator.runtime.java.io._PrintStream;
-import net.sf.retrotranslator.runtime.java.nio._CharBuffer;
-import net.sf.retrotranslator.runtime.impl.Derived;
-
-import java.io.IOException;
-import java.io.Writer;
-import java.io.PrintStream;
+import java.io.*;
 import java.nio.CharBuffer;
+import net.sf.retrotranslator.runtime.java.io.*;
+import net.sf.retrotranslator.runtime.java.nio._CharBuffer;
 
 /**
  * @author Taras Puchko
  */
-@Derived({StringBuffer.class, PrintStream.class, Writer.class, CharBuffer.class})
 public class _Appendable {
 
-    public static Appendable append(Appendable appendable, CharSequence csq) throws IOException {
-        if (appendable instanceof StringBuffer) {
-            return _StringBuffer.append((StringBuffer) appendable, csq);
-        }
-        if (appendable instanceof PrintStream) {
-            return _PrintStream.append((PrintStream) appendable, csq);
-        }
-        if (appendable instanceof Writer) {
-            return _Writer.append((Writer) appendable, csq);
-        }
-        if (appendable instanceof CharBuffer) {
-            return _CharBuffer.append((CharBuffer) appendable, csq);
-        }
-        return appendable.append(csq);
+    public static boolean executeInstanceOfInstruction(Object object) {
+        return object instanceof StringBuffer ||
+                object instanceof PrintStream ||
+                object instanceof Writer ||
+                object instanceof CharBuffer ||
+                object instanceof Appendable_;
     }
 
-    public static Appendable append(Appendable appendable, CharSequence csq, int start, int end) throws IOException {
-        if (appendable instanceof StringBuffer) {
-            return _StringBuffer.append((StringBuffer) appendable, csq, start, end);
+    public static Object executeCheckCastInstruction(Object object) {
+        if (object instanceof StringBuffer) {
+            return (StringBuffer) object;
         }
-        if (appendable instanceof PrintStream) {
-            return _PrintStream.append((PrintStream) appendable, csq, start, end);
+        if (object instanceof PrintStream) {
+            return (PrintStream) object;
         }
-        if (appendable instanceof Writer) {
-            return _Writer.append((Writer) appendable, csq, start, end);
+        if (object instanceof Writer) {
+            return (Writer) object;
         }
-        if (appendable instanceof CharBuffer) {
-            return _CharBuffer.append((CharBuffer) appendable, csq, start, end);
+        if (object instanceof CharBuffer) {
+            return (CharBuffer) object;
         }
-        return appendable.append(csq, start, end);
+        return (Appendable_) object;
     }
 
-    public static Appendable append(Appendable appendable, char c) throws IOException {
-        if (appendable instanceof StringBuffer) {
-            return ((StringBuffer) appendable).append(c);
+    public static Object append(Object object, CharSequence csq) throws IOException {
+        if (object instanceof StringBuffer) {
+            return _StringBuffer.append((StringBuffer) object, csq);
         }
-        if (appendable instanceof PrintStream) {
-            return _PrintStream.append((PrintStream) appendable, c);
+        if (object instanceof PrintStream) {
+            return _PrintStream.append((PrintStream) object, csq);
         }
-        if (appendable instanceof Writer) {
-            return _Writer.append((Writer) appendable, c);
+        if (object instanceof Writer) {
+            return _Writer.append((Writer) object, csq);
         }
-        if (appendable instanceof CharBuffer) {
-            return _CharBuffer.append((CharBuffer) appendable, c);
+        if (object instanceof CharBuffer) {
+            return _CharBuffer.append((CharBuffer) object, csq);
         }
-        return appendable.append(c);
+        return ((Appendable_) object).append(csq);
+    }
+
+    public static Object append(Object object, CharSequence csq, int start, int end) throws IOException {
+        if (object instanceof StringBuffer) {
+            return _StringBuffer.append((StringBuffer) object, csq, start, end);
+        }
+        if (object instanceof PrintStream) {
+            return _PrintStream.append((PrintStream) object, csq, start, end);
+        }
+        if (object instanceof Writer) {
+            return _Writer.append((Writer) object, csq, start, end);
+        }
+        if (object instanceof CharBuffer) {
+            return _CharBuffer.append((CharBuffer) object, csq, start, end);
+        }
+        return ((Appendable_) object).append(csq, start, end);
+    }
+
+    public static Object append(Object object, char c) throws IOException {
+        if (object instanceof StringBuffer) {
+            return ((StringBuffer) object).append(c);
+        }
+        if (object instanceof PrintStream) {
+            return _PrintStream.append((PrintStream) object, c);
+        }
+        if (object instanceof Writer) {
+            return _Writer.append((Writer) object, c);
+        }
+        if (object instanceof CharBuffer) {
+            return _CharBuffer.append((CharBuffer) object, c);
+        }
+        return ((Appendable_) object).append(c);
     }
 
 }

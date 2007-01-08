@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,13 +31,9 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.Task;
-import org.apache.tools.ant.types.Path;
-import org.apache.tools.ant.types.Reference;
-
 import java.io.File;
+import org.apache.tools.ant.*;
+import org.apache.tools.ant.types.*;
 
 /**
  * @author Taras Puchko
@@ -59,6 +55,7 @@ public class RetrotranslatorTask extends Task implements MessageLogger {
     private String srcmask;
     private String embed;
     private String backport;
+    private String target;
 
     public RetrotranslatorTask() {
     }
@@ -147,9 +144,12 @@ public class RetrotranslatorTask extends Task implements MessageLogger {
         this.backport = backport;
     }
 
+    public void setTarget(String target) {
+        this.target = target;
+    }
+
     public void log(Message message) {
-        boolean info = message.getLevel().compareTo(Level.INFO) >= 0;
-        log(message.toString(), info ? Project.MSG_INFO : Project.MSG_WARN);
+        log(message.toString(), message.getLevel().isCritical() ? Project.MSG_WARN : Project.MSG_INFO);
     }
 
     public void execute() throws BuildException {
@@ -169,6 +169,7 @@ public class RetrotranslatorTask extends Task implements MessageLogger {
         }
         if (destdir != null) retrotranslator.setDestdir(destdir);
         if (destjar != null) retrotranslator.setDestjar(destjar);
+        if (target != null) retrotranslator.setTarget(target);
         retrotranslator.setVerbose(verbose);
         retrotranslator.setStripsign(stripsign);
         retrotranslator.setRetainapi(retainapi);
@@ -183,7 +184,9 @@ public class RetrotranslatorTask extends Task implements MessageLogger {
             retrotranslator.addClasspathElement(getProject().resolveFile(fileName));
         }
         retrotranslator.setLogger(this);
-        boolean verified = retrotranslator.run();
-        if (!verified && failonwarning) throw new BuildException("Verification failed.", getLocation());
+        boolean success = retrotranslator.run();
+        if (!success && failonwarning) {
+            throw new BuildException("Translation failed.", getLocation());
+        }
     }
 }

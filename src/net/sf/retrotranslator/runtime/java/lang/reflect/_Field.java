@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,29 +31,25 @@
  */
 package net.sf.retrotranslator.runtime.java.lang.reflect;
 
-import net.sf.retrotranslator.runtime.impl.FieldDescriptor;
-import net.sf.retrotranslator.runtime.impl.RuntimeTools;
+import java.lang.reflect.*;
 import net.sf.retrotranslator.runtime.asm.Opcodes;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
+import net.sf.retrotranslator.runtime.impl.*;
+import net.sf.retrotranslator.runtime.java.lang.annotation.Annotation_;
 
 /**
  * @author Taras Puchko
  */
 public class _Field {
 
-    public static Annotation getAnnotation(Field field, Class annotationType) {
+    public static Annotation_ getAnnotation(Field field, Class annotationType) {
         return FieldDescriptor.getInstance(field).getAnnotation(annotationType);
     }
 
-    public static Annotation[] getAnnotations(Field field) {
+    public static Annotation_[] getAnnotations(Field field) {
         return FieldDescriptor.getInstance(field).getAnnotations();
     }
 
-    public static Annotation[] getDeclaredAnnotations(Field field) {
+    public static Annotation_[] getDeclaredAnnotations(Field field) {
         return FieldDescriptor.getInstance(field).getDeclaredAnnotations();
     }
 

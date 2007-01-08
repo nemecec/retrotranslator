@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,17 +31,11 @@
  */
 package net.sf.retrotranslator.runtime.java.lang;
 
-import net.sf.retrotranslator.runtime.asm.Opcodes;
-import net.sf.retrotranslator.runtime.impl.Advanced;
-import net.sf.retrotranslator.runtime.impl.ClassDescriptor;
-import net.sf.retrotranslator.runtime.impl.MethodDescriptor;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
+import java.lang.reflect.*;
 import java.util.Arrays;
+import net.sf.retrotranslator.runtime.asm.Opcodes;
+import net.sf.retrotranslator.runtime.impl.*;
+import net.sf.retrotranslator.runtime.java.lang.annotation.Annotation_;
 
 /**
  * @author Taras Puchko
@@ -58,11 +52,11 @@ public class _Class {
         throw new ClassCastException(aClass.toString());
     }
 
-    public static Annotation getAnnotation(Class aClass, Class annotationType) {
+    public static Annotation_ getAnnotation(Class aClass, Class annotationType) {
         return ClassDescriptor.getInstance(aClass).getAnnotation(annotationType);
     }
 
-    public static Annotation[] getAnnotations(final Class aClass) {
+    public static Annotation_[] getAnnotations(final Class aClass) {
         return ClassDescriptor.getInstance(aClass).getAnnotations();
     }
 
@@ -77,7 +71,7 @@ public class _Class {
                 : getCanonicalName(declaringClass) + "." + getSimpleName(aClass);
     }
 
-    public static Annotation[] getDeclaredAnnotations(Class aClass) {
+    public static Annotation_[] getDeclaredAnnotations(Class aClass) {
         return ClassDescriptor.getInstance(aClass).getDeclaredAnnotations();
     }
 

@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  *
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,24 +31,21 @@
  */
 package net.sf.retrotranslator.runtime.java.lang.annotation;
 
-import java.lang.annotation.Annotation;
-
-
 /**
  * @author Taras Puchko
  */
 public class IncompleteAnnotationException_ extends RuntimeException {
 
-    private Class<? extends Annotation> annotationType;
+    private Class<? extends Annotation_> annotationType;
     private String elementName;
 
-    public IncompleteAnnotationException_(Class<? extends Annotation> annotationType, String elementName) {
+    public IncompleteAnnotationException_(Class<? extends Annotation_> annotationType, String elementName) {
         super(annotationType.getName() + " missing element " + elementName);
         this.annotationType = annotationType;
         this.elementName = elementName;
     }
 
-    public Class<? extends Annotation> annotationType() {
+    public Class<? extends Annotation_> annotationType() {
         return annotationType;
     }
 

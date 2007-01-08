@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  *
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,14 +31,9 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import static net.sf.retrotranslator.runtime.asm.Opcodes.*;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
+import java.util.*;
 import net.sf.retrotranslator.runtime.asm.*;
+import static net.sf.retrotranslator.runtime.asm.Opcodes.*;
 
 /**
  * @author Taras Puchko
@@ -150,14 +145,14 @@ class ClassLiteralVisitor extends ClassAdapter {
 
     private static Map<Integer, Integer> getPrimitiveTypes() {
         Map<Integer, Integer> types = new HashMap<Integer, Integer>();
-        types.put(Type.BOOLEAN, Opcodes.T_BOOLEAN);
-        types.put(Type.CHAR, Opcodes.T_CHAR);
-        types.put(Type.FLOAT, Opcodes.T_FLOAT);
-        types.put(Type.DOUBLE, Opcodes.T_DOUBLE);
-        types.put(Type.BYTE, Opcodes.T_BYTE);
-        types.put(Type.SHORT, Opcodes.T_SHORT);
-        types.put(Type.INT, Opcodes.T_INT);
-        types.put(Type.LONG, Opcodes.T_LONG);
+        types.put(Type.BOOLEAN, T_BOOLEAN);
+        types.put(Type.CHAR, T_CHAR);
+        types.put(Type.FLOAT, T_FLOAT);
+        types.put(Type.DOUBLE, T_DOUBLE);
+        types.put(Type.BYTE, T_BYTE);
+        types.put(Type.SHORT, T_SHORT);
+        types.put(Type.INT, T_INT);
+        types.put(Type.LONG, T_LONG);
         return types;
     }
 }

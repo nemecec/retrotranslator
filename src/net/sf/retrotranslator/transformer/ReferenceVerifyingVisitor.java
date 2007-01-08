@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,15 +31,9 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import net.sf.retrotranslator.runtime.impl.EmptyVisitor;
-import net.sf.retrotranslator.runtime.impl.RuntimeTools;
-import net.sf.retrotranslator.runtime.asm.Opcodes;
-import net.sf.retrotranslator.runtime.asm.Type;
-import net.sf.retrotranslator.runtime.asm.ClassReader;
-
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.io.File;
+import java.util.*;
+import net.sf.retrotranslator.runtime.asm.*;
+import net.sf.retrotranslator.runtime.impl.*;
 
 /**
  * @author Taras Puchko
@@ -47,17 +41,13 @@ import java.io.File;
 class ReferenceVerifyingVisitor extends GenericClassVisitor {
 
     private ClassReaderFactory factory;
-    private MessageLogger logger;
-    private File location;
-    private String name;
+    private SystemLogger logger;
     private Set<String> warnings;
 
-    public ReferenceVerifyingVisitor(ClassReaderFactory factory, MessageLogger logger, File location, String name) {
+    public ReferenceVerifyingVisitor(ClassReaderFactory factory, SystemLogger logger) {
         super(new EmptyVisitor());
         this.factory = factory;
         this.logger = logger;
-        this.location = location;
-        this.name = name;
     }
 
     public int verify(byte[] bytes) {
@@ -66,16 +56,18 @@ class ReferenceVerifyingVisitor extends GenericClassVisitor {
         return warnings.size();
     }
 
-    protected String visitInternalName(String name) {
+    protected  String typeName(String s) {
+        if (s == null) return null;
         try {
-            factory.getClassReader(name);
+            factory.getClassReader(s);
         } catch (ClassNotFoundException e) {
             println("Class not found: " + getClassInfo(e.getMessage()));
         }
-        return name;
+        return s;
     }
 
-    protected void visitFieldRef(int opcode, String owner, String name, String desc) {
+    protected void visitFieldInstruction(MethodVisitor visitor, int opcode, String owner, String name, String desc) {
+        super.visitFieldInstruction(visitor, opcode, owner, name, desc);
         boolean stat = (opcode == Opcodes.GETSTATIC || opcode == Opcodes.PUTSTATIC);
         try {
             int found = new MemberFinder(factory, false, stat, name, desc).findIn(owner, null);
@@ -89,7 +81,8 @@ class ReferenceVerifyingVisitor extends GenericClassVisitor {
         }
     }
 
-    protected void visitMethodRef(int opcode, String owner, String name, String desc) {
+    protected void visitMethodInstruction(MethodVisitor visitor, int opcode, String owner, String name, String desc) {
+        super.visitMethodInstruction(visitor, opcode, owner, name, desc);
         if (owner.startsWith("[")) return;
         boolean stat = (opcode == Opcodes.INVOKESTATIC);
         try {
@@ -111,7 +104,7 @@ class ReferenceVerifyingVisitor extends GenericClassVisitor {
     private void println(String text) {
         if (!warnings.contains(text)) {
             warnings.add(text);
-            logger.log(new Message(Level.WARNING, text, location, name));
+            logger.logForFile(Level.WARNING, text);
         }
     }
 

@@ -1,13 +1,22 @@
 Retrotranslator Changelog
 =================================
 
+1.2.0 (2007-01-08)
+---------------------------------
+  WARNING: This release is not fully compatible with the previous one.
+  - Added -target option for Java 6 to Java 5 translation.
+  - Improved bytecode compatibility with different JVMs.
   - Backported java.util.concurrent.locks.LockSupport.
-  - Added support for Thread.State enum, but Thread.getState() is not implemented.
+  - Added java.net.Proxy and java.net.ProxySelector.
+  - Added java.net.URL.openConnection(Proxy), currenly the argument is ignored.
+  - Added java.lang.instrument.* classes, but instrumentation is not supported.
+  - Added java.lang.Thread.State enumeration, but Thread.getState() is not implemented.
   - Limited support for DecimalFormat.isParseBigDecimal() and DecimalFormat.setParseBigDecimal(boolean).
+  - Removed deprecated Retrotranslator constructor and JITRetrotranslator.install method.
   - Upgraded to backport-util-concurrent 3.0.
-  - Removed deprecated Retrotranslator constructor.
-  - Unused classes may be excluded during embedding.
+  - Signature is being removed when translating signed jars.
   - Retrotranslator runtime depends on backport-util-concurrent.
+  - When embedding runtime support, only directly or indirectly referenced classes are being kept.
 
 1.1.0 (2006-11-08)
 ---------------------------------

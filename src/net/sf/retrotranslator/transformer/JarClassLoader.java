@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,15 +31,10 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.jar.Attributes;
-import java.util.jar.JarFile;
+import java.io.*;
+import java.net.*;
+import java.util.*;
+import java.util.jar.*;
 
 /**
  * @author Taras Puchko
@@ -66,7 +61,7 @@ class JarClassLoader extends URLClassLoader {
     private static void addToPath(Set<URL> classPath, File file) throws IOException {
         file = file.getCanonicalFile();
         if (!file.exists()) return;
-        URL url = file.toURL();
+        URL url = file.toURI().toURL();
         if (classPath.contains(url)) return;
         classPath.add(url);
         String attribute = getAttribute(file, Attributes.Name.CLASS_PATH);

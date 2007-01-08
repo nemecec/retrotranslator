@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  *
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,14 +31,11 @@
  */
 package net.sf.retrotranslator.runtime.impl;
 
-import net.sf.retrotranslator.runtime.asm.AnnotationVisitor;
-import net.sf.retrotranslator.runtime.asm.signature.SignatureReader;
-import net.sf.retrotranslator.runtime.asm.signature.SignatureVisitor;
-
-import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import net.sf.retrotranslator.runtime.asm.AnnotationVisitor;
+import net.sf.retrotranslator.runtime.asm.signature.*;
+import net.sf.retrotranslator.runtime.java.lang.annotation.Annotation_;
 
 /**
  * @author Taras Puchko
@@ -55,7 +52,7 @@ public class MethodDescriptor extends GenericDeclarationDescriptor {
     private LazyValue<TypeDescriptor, Type> genericReturnType;
     private LazyList<TypeDescriptor,Type> genericParameterTypes;
     private LazyList<TypeDescriptor,Type> genericExceptionTypes;
-    private LazyList<List<AnnotationValue>, Annotation[]> parameterAnnotations;
+    private LazyList<List<AnnotationValue>, Annotation_[]> parameterAnnotations;
 
     public MethodDescriptor(ClassDescriptor classDescriptor, int access, final String name, final String desc, String signature) {
         this.classDescriptor = classDescriptor;
@@ -162,18 +159,18 @@ public class MethodDescriptor extends GenericDeclarationDescriptor {
         return variable != null ? variable : classDescriptor.findTypeVariable(name);
     }
 
-    public Annotation[][] getParameterAnnotations() {
+    public Annotation_[][] getParameterAnnotations() {
         return parameterAnnotations.getClone();
     }
 
-    private LazyList<List<AnnotationValue>, Annotation[]> createParameterAnnotations() {
-        return new LazyList<List<AnnotationValue>, Annotation[]>() {
-            protected Annotation[] resolve(List<AnnotationValue> input) {
+    private LazyList<List<AnnotationValue>, Annotation_[]> createParameterAnnotations() {
+        return new LazyList<List<AnnotationValue>, Annotation_[]>() {
+            protected Annotation_[] resolve(List<AnnotationValue> input) {
                 return createAnnotations(input);
             }
 
-            protected Annotation[][] newArray(int size) {
-                return new Annotation[net.sf.retrotranslator.runtime.asm.Type.getArgumentTypes(desc).length][];
+            protected Annotation_[][] newArray(int size) {
+                return new Annotation_[net.sf.retrotranslator.runtime.asm.Type.getArgumentTypes(desc).length][];
             }
         };
     }
@@ -190,7 +187,7 @@ public class MethodDescriptor extends GenericDeclarationDescriptor {
         return genericExceptionTypes == null ? null : genericExceptionTypes.getClone();
     }
 
-    protected Annotation[] createAnnotations(Annotation[] declaredAnnotations) {
+    protected Annotation_[] createAnnotations(Annotation_[] declaredAnnotations) {
         return declaredAnnotations;
     }
 
@@ -253,4 +250,5 @@ public class MethodDescriptor extends GenericDeclarationDescriptor {
             }
         };
     }
+
 }

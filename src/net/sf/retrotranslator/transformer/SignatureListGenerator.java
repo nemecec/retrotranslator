@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,13 +31,10 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import net.sf.retrotranslator.runtime.asm.*;
-import net.sf.retrotranslator.runtime.impl.EmptyVisitor;
-import net.sf.retrotranslator.runtime.impl.RuntimeTools;
-
-import java.util.Properties;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
+import java.io.*;
+import java.util.*;
+import net.sf.retrotranslator.runtime.asm.ClassReader;
+import net.sf.retrotranslator.runtime.impl.*;
 
 /**
  * @author Taras Puchko
@@ -112,8 +109,8 @@ public class SignatureListGenerator extends EmptyVisitor {
     }
 
     private void execute(String fileName) throws Exception {
-        ClassTransformer classTransformer = new ClassTransformer(false, false, false, false,
-                false, null, null, new BackportLocatorFactory(null));
+        ClassTransformer classTransformer = new ClassTransformer(false, false, false, false, null, null,
+                new ReplacementLocatorFactory(ClassVersion.VERSION_14, false, new ArrayList<Backport>()));
         for (Object[] objects : CLASSES_14) {
             Class aClass = (Class) objects[0];
             specialSignature = objects.length > 1 ? (String) objects[1] : null;

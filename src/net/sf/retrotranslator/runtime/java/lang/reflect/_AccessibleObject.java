@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,15 +31,15 @@
  */
 package net.sf.retrotranslator.runtime.java.lang.reflect;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
+import net.sf.retrotranslator.runtime.java.lang.annotation.Annotation_;
 
 /**
  * @author Taras Puchko
  */
 public class _AccessibleObject {
 
-    public static Annotation getAnnotation(AccessibleObject accessibleObject, Class annotationType) {
+    public static Annotation_ getAnnotation(AccessibleObject accessibleObject, Class annotationType) {
         if (accessibleObject instanceof Constructor) {
             return _Constructor.getAnnotation((Constructor) accessibleObject, annotationType);
         }
@@ -52,7 +52,7 @@ public class _AccessibleObject {
         return null;
     }
 
-    public static Annotation[] getAnnotations(AccessibleObject accessibleObject) {
+    public static Annotation_[] getAnnotations(AccessibleObject accessibleObject) {
         if (accessibleObject instanceof Constructor) {
             return _Constructor.getAnnotations((Constructor) accessibleObject);
         }
@@ -62,10 +62,10 @@ public class _AccessibleObject {
         if (accessibleObject instanceof Method) {
             return _Method.getAnnotations((Method) accessibleObject);
         }
-        return new Annotation[0];
+        return new Annotation_[0];
     }
 
-    public static Annotation[] getDeclaredAnnotations(AccessibleObject accessibleObject) {
+    public static Annotation_[] getDeclaredAnnotations(AccessibleObject accessibleObject) {
         if (accessibleObject instanceof Constructor) {
             return _Constructor.getDeclaredAnnotations((Constructor) accessibleObject);
         }
@@ -75,7 +75,7 @@ public class _AccessibleObject {
         if (accessibleObject instanceof Method) {
             return _Method.getDeclaredAnnotations((Method) accessibleObject);
         }
-        return new Annotation[0];
+        return new Annotation_[0];
     }
 
     public static boolean isAnnotationPresent(AccessibleObject accessibleObject, Class annotationType) {

@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,12 +31,9 @@
  */
 package net.sf.retrotranslator.tests;
 
-import junit.framework.TestCase;
-
-import java.util.UnknownFormatFlagsException;
-import java.util.DuplicateFormatFlagsException;
-import java.util.Arrays;
 import java.math.BigDecimal;
+import java.util.*;
+import junit.framework.TestCase;
 
 /**
  * @author Taras Puchko
@@ -72,7 +69,7 @@ public class CustomBackportTestCase extends TestCase {
     }
 
     public void testBuilders_1() {
-        TestBean_ bean = new TestBean_(true, 'L', (byte) 12, (short) 10, 1234567, 0.5f, 12345670L, 123.45, "XYZ");
+        TestBean bean = new TestBean(true, 'L', (byte) 12, (short) 10, 1234567, 0.5f, 12345670L, 123.45, "XYZ");
         assertEquals(true, bean.isVisible());
         assertEquals('L', bean.getSign());
         assertEquals((byte) 12, bean.getCode());
@@ -92,7 +89,7 @@ public class CustomBackportTestCase extends TestCase {
     }
 
     public void testBuilders_2() {
-        TestBean_ bean = new TestBean_("abc");
+        TestBean bean = new TestBean("abc");
         assertEquals("abc", bean.getState());
         if (isCustomBackport()) {
             assertEquals("B", bean.getDirection());

@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,28 +31,40 @@
  */
 package net.sf.retrotranslator.runtime.java.lang;
 
+import java.io.*;
+import java.nio.CharBuffer;
 import net.sf.retrotranslator.runtime.java.io._Reader;
 import net.sf.retrotranslator.runtime.java.nio._CharBuffer;
-import net.sf.retrotranslator.runtime.impl.Derived;
-
-import java.nio.CharBuffer;
-import java.io.IOException;
-import java.io.Reader;
 
 /**
  * @author Taras Puchko
  */
-@Derived({Reader.class, CharBuffer.class})
 public class _Readable {
 
-    public static int read(Readable readable, CharBuffer cb) throws IOException {
-        if (readable instanceof Reader) {
-            return _Reader.read((Reader) readable, cb);
+    public static boolean executeInstanceOfInstruction(Object object) {
+        return object instanceof Reader ||
+                object instanceof CharBuffer ||
+                object instanceof Readable_;
+    }
+
+    public static Object executeCheckCastInstruction(Object object) {
+        if (object instanceof Reader) {
+            return (Reader) object;
         }
-        if (readable instanceof CharBuffer) {
-            return _CharBuffer.read((CharBuffer) readable, cb);
+        if (object instanceof CharBuffer) {
+            return (CharBuffer) object;
         }
-        return readable.read(cb);
+        return (Readable_) object;
+    }
+
+    public static int read(Object object, CharBuffer cb) throws IOException {
+        if (object instanceof Reader) {
+            return _Reader.read((Reader) object, cb);
+        }
+        if (object instanceof CharBuffer) {
+            return _CharBuffer.read((CharBuffer) object, cb);
+        }
+        return ((Readable_) object).read(cb);
     }
 
 }

@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  *
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,22 +31,15 @@
  */
 package net.sf.retrotranslator.runtime.impl;
 
-import net.sf.retrotranslator.runtime.asm.ClassReader;
-import net.sf.retrotranslator.runtime.asm.FieldVisitor;
-import net.sf.retrotranslator.runtime.asm.MethodVisitor;
-import net.sf.retrotranslator.runtime.asm.Opcodes;
-import net.sf.retrotranslator.runtime.asm.signature.SignatureReader;
-import net.sf.retrotranslator.runtime.asm.signature.SignatureVisitor;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.annotation.Annotation;
+import java.io.*;
 import java.lang.annotation.Inherited;
 import java.lang.ref.SoftReference;
-import java.lang.reflect.MalformedParameterizedTypeException;
+import java.lang.reflect.*;
 import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
 import java.util.*;
+import net.sf.retrotranslator.runtime.asm.*;
+import net.sf.retrotranslator.runtime.asm.signature.*;
+import net.sf.retrotranslator.runtime.java.lang.annotation.Annotation_;
 
 /**
  * @author Taras Puchko
@@ -114,22 +107,22 @@ public class ClassDescriptor extends GenericDeclarationDescriptor {
         return map;
     }
 
-    protected Annotation[] createAnnotations(Annotation[] declaredAnnotations) {
+    protected Annotation_[] createAnnotations(Annotation_[] declaredAnnotations) {
         Class superclass = target.getSuperclass();
         if (superclass == null) return declaredAnnotations;
-        Annotation[] superAnnotations = getInstance(superclass).getAnnotations();
+        Annotation_[] superAnnotations = getInstance(superclass).getAnnotations();
         if (superAnnotations.length == 0) return declaredAnnotations;
-        Map<Class, Annotation> result = new HashMap<Class, Annotation>();
-        for (Annotation annotation : superAnnotations) {
+        Map<Class, Annotation_> result = new HashMap<Class, Annotation_>();
+        for (Annotation_ annotation : superAnnotations) {
             Class annotationClass = annotation.getClass().getInterfaces()[0];
             if (annotationClass.isAnnotationPresent(Inherited.class)) {
                 result.put(annotationClass, annotation);
             }
         }
-        for (Annotation annotation : declaredAnnotations) {
+        for (Annotation_ annotation : declaredAnnotations) {
             result.put(annotation.getClass().getInterfaces()[0], annotation);
         }
-        return result.values().toArray(new Annotation[result.size()]);
+        return result.values().toArray(new Annotation_[result.size()]);
     }
 
     public String getName() {

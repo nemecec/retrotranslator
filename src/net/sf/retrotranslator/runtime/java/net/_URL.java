@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,14 +31,17 @@
  */
 package net.sf.retrotranslator.runtime.java.net;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.io.IOException;
+import java.net.*;
 
 /**
  * @author Taras Puchko
  */
 public class _URL {
+
+    public static URLConnection openConnection(URL url, Proxy proxy) throws IOException {
+        return url.openConnection();
+    }
 
     public static URI toURI(URL url) throws URISyntaxException {
         return new URI(url.toString());

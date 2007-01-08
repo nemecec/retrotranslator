@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  *
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,17 +31,62 @@
  */
 package net.sf.retrotranslator.transformer;
 
+import java.lang.reflect.AnnotatedElement;
+import java.util.*;
+import java.util.concurrent.*;
 import junit.framework.TestCase;
 
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Type;
-import java.util.LinkedList;
-import java.util.PriorityQueue;
-import java.util.Queue;
-import java.io.Closeable;
-import java.io.ByteArrayOutputStream;
+public class GeneralReplacementVisitorTestCase extends TestCase {
 
-public class InheritanceVisitorTestCase extends TestCase {
+    private String hello = "Hello,";
+    private String world = "World!";
+    private StringBuilder builder = new StringBuilder();
+
+    public void testImplicit() {
+        assertEquals("Hello, World!", hello + " " + world);
+    }
+
+    public void testExplicit() {
+        assertEquals("Hello, World!", builder.append(hello).append(" ").append(world).toString());
+    }
+
+    public void testCallable() throws Exception {
+        final String hello = "Hello, World";
+        Callable callable = new Callable() {
+            public Object call() throws Exception {
+                return hello;
+            }
+        };
+        assertSame(hello, callable.call());
+    }
+
+    public void testConcurrentMap() throws Exception {
+        ConcurrentMap<String, String> map = new ConcurrentHashMap<String, String>();
+        map.put("hi", "Hello");
+        map.put("bye", "Good-bye");
+        assertEquals("Hello", map.get("hi"));
+    }
+
+    public void testDelayQueue() throws Exception {
+        class MyDelayed implements Delayed {
+            public long getDelay(TimeUnit unit) {
+                return 0;
+            }
+
+            public int compareTo(Delayed o) {
+                return 0;
+            }
+        }
+        DelayQueue<MyDelayed> delayQueue = new DelayQueue<MyDelayed>();
+        delayQueue.offer(new MyDelayed());
+        delayQueue.put(new MyDelayed());
+        delayQueue.offer(new MyDelayed(), 0, TimeUnit.SECONDS);
+        delayQueue.add(new MyDelayed());
+        assertNotNull(delayQueue.take());
+        assertNotNull(delayQueue.poll(0, TimeUnit.SECONDS));
+        assertNotNull(delayQueue.poll());
+        assertNotNull(delayQueue.peek());
+    }
 
     public static Queue getQueue() {
         return new LinkedList();
@@ -94,4 +139,5 @@ public class InheritanceVisitorTestCase extends TestCase {
         assertTrue(new String[0] instanceof String[]);
         assertFalse(((Object) new Integer[0]) instanceof String[]);
     }
+
 }

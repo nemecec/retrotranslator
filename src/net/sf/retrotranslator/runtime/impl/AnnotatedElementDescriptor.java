@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,40 +31,36 @@
  */
 package net.sf.retrotranslator.runtime.impl;
 
-import net.sf.retrotranslator.runtime.asm.AnnotationVisitor;
-import net.sf.retrotranslator.runtime.asm.Type;
-
-import java.lang.annotation.Annotation;
-import java.lang.annotation.AnnotationTypeMismatchException;
-import java.lang.annotation.IncompleteAnnotationException;
-import java.lang.reflect.Array;
-import java.lang.reflect.Proxy;
-import java.lang.reflect.TypeVariable;
+import java.lang.reflect.*;
 import java.util.*;
+import net.sf.retrotranslator.runtime.asm.*;
+import net.sf.retrotranslator.runtime.asm.Type;
+import net.sf.retrotranslator.runtime.java.lang.Enum_;
+import net.sf.retrotranslator.runtime.java.lang.annotation.*;
 
 /**
  * @author Taras Puchko
  */
 public abstract class AnnotatedElementDescriptor extends EmptyVisitor {
 
-    private static final Annotation[] EMPTY = new Annotation[0];
+    private static final Annotation_[] EMPTY = new Annotation_[0];
     protected static final EmptyVisitor EMPTY_VISITOR = new EmptyVisitor();
 
     protected int access;
 
-    private LazyList<AnnotationValue, Annotation> declaredAnnotations = new LazyList<AnnotationValue, Annotation>() {
-        protected Annotation resolve(AnnotationValue input) {
+    private LazyList<AnnotationValue, Annotation_> declaredAnnotations = new LazyList<AnnotationValue, Annotation_>() {
+        protected Annotation_ resolve(AnnotationValue input) {
             return createAnnotation(input);
         }
 
-        protected Annotation[] newArray(int size) {
-            return new Annotation[size];
+        protected Annotation_[] newArray(int size) {
+            return new Annotation_[size];
         }
     };
 
-    private LazyValue<LazyList<AnnotationValue, Annotation>, Annotation[]> annotations
-            = new LazyValue<LazyList<AnnotationValue, Annotation>, Annotation[]>(declaredAnnotations) {
-        protected Annotation[] resolve(LazyList<AnnotationValue, Annotation> input) {
+    private LazyValue<LazyList<AnnotationValue, Annotation_>, Annotation_[]> annotations
+            = new LazyValue<LazyList<AnnotationValue, Annotation_>, Annotation_[]>(declaredAnnotations) {
+        protected Annotation_[] resolve(LazyList<AnnotationValue, Annotation_> input) {
             return createAnnotations(input.getLive());
         }
     };
@@ -74,25 +70,25 @@ public abstract class AnnotatedElementDescriptor extends EmptyVisitor {
     }
 
     public boolean isAnnotationPresent(Class annotationType) {
-        for (Annotation annotation : annotations.get()) {
+        for (Annotation_ annotation : annotations.get()) {
             if (annotationType.isInstance(annotation)) return true;
         }
         return false;
     }
 
-    public Annotation getAnnotation(Class annotationType) {
-        for (Annotation annotation : annotations.get()) {
+    public Annotation_ getAnnotation(Class annotationType) {
+        for (Annotation_ annotation : annotations.get()) {
             if (annotationType.isInstance(annotation)) return annotation;
         }
         return null;
     }
 
-    public Annotation[] getAnnotations() {
-        Annotation[] result = annotations.get();
+    public Annotation_[] getAnnotations() {
+        Annotation_[] result = annotations.get();
         return result.length == 0 ? result : result.clone();
     }
 
-    public Annotation[] getDeclaredAnnotations() {
+    public Annotation_[] getDeclaredAnnotations() {
         return declaredAnnotations.getClone();
     }
 
@@ -100,11 +96,11 @@ public abstract class AnnotatedElementDescriptor extends EmptyVisitor {
 
     protected abstract TypeVariable findTypeVariable(String name);
 
-    protected abstract Annotation[] createAnnotations(Annotation[] declaredAnnotations);
+    protected abstract Annotation_[] createAnnotations(Annotation_[] declaredAnnotations);
 
-    protected Annotation[] createAnnotations(List<AnnotationValue> values) {
+    protected Annotation_[] createAnnotations(List<AnnotationValue> values) {
         if (values == null) return EMPTY;
-        Annotation[] result = new Annotation[values.size()];
+        Annotation_[] result = new Annotation_[values.size()];
         for (int i = 0; i < result.length; i++) {
             result[i] = createAnnotation(values.get(i));
         }
@@ -206,7 +202,7 @@ public abstract class AnnotatedElementDescriptor extends EmptyVisitor {
         return result;
     }
 
-    protected Annotation createAnnotation(AnnotationValue annotationValue) {
+    protected Annotation_ createAnnotation(AnnotationValue annotationValue) {
         Class annotationType = getClassByDesc(annotationValue.getDesc());
         StringBuffer buffer = new StringBuffer("@").append(annotationType.getName()).append('(');
         Map<String, Object> values = new HashMap<String, Object>();
@@ -221,14 +217,16 @@ public abstract class AnnotatedElementDescriptor extends EmptyVisitor {
             Object elementValue = annotationValue.getElement(elementName);
             Object resolvedValue = elementValue == null ? descriptor.getDefaultValue()
                     : resolveValue(elementValue, descriptor.getReturnType(), descriptor);
-            if (resolvedValue == null) throw new IncompleteAnnotationException(annotationType, elementName);
+            if (resolvedValue == null) throw new IncompleteAnnotationException_(annotationType, elementName);
             values.put(elementName, resolvedValue);
             buffer.append(elementName).append('=');
             append(buffer, resolvedValue);
         }
         buffer.append(")");
-        return (Annotation) Proxy.newProxyInstance(getClassLoader(),
-                new Class[]{annotationType}, new AnnotationHandler(annotationType, buffer.toString(), values));
+        Class[] interfaces = Annotation_.class.isAssignableFrom(annotationType) ?
+                new Class[]{annotationType} : new Class[]{annotationType, Annotation_.class};
+        return (Annotation_) Proxy.newProxyInstance(getClassLoader(),
+                interfaces, new AnnotationHandler(annotationType, buffer.toString(), values));
     }
 
     protected Object resolveValue(Object value, Class type, MethodDescriptor descriptor) {
@@ -237,7 +235,7 @@ public abstract class AnnotatedElementDescriptor extends EmptyVisitor {
             value = getClassByType((net.sf.retrotranslator.runtime.asm.Type) value);
         } else if (value instanceof EnumValue) {
             EnumValue enumValue = (EnumValue) value;
-            value = Enum.valueOf(getClassByDesc(enumValue.getDescriptor()), enumValue.getValue());
+            value = Enum_.valueOf(getClassByDesc(enumValue.getDescriptor()), enumValue.getValue());
         } else if (value instanceof AnnotationValue) {
             value = createAnnotation((AnnotationValue) value);
         } else if (value instanceof AnnotationArray) {
@@ -250,7 +248,7 @@ public abstract class AnnotatedElementDescriptor extends EmptyVisitor {
             }
         }
         if (!type.isPrimitive() && !type.isInstance(value)) {
-            throw new AnnotationTypeMismatchException(descriptor.getMethod(), type.getName());
+            throw new AnnotationTypeMismatchException_(descriptor.getMethod(), type.getName());
         }
         return value;
     }
@@ -291,4 +289,5 @@ public abstract class AnnotatedElementDescriptor extends EmptyVisitor {
             }
         };
     }
+
 }

@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,40 +31,35 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import java.lang.ref.SoftReference;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * @author Taras Puchko
  */
-class BackportLocatorFactory {
+class MethodCounter {
 
-    private final List<String> customPrefixes = new ArrayList<String>();
-    private SoftReference<BackportLocator> softReference = new SoftReference<BackportLocator>(null);
+    private Map<String, Integer> methods = new HashMap<String, Integer>();
 
-    public BackportLocatorFactory(String backport) {
-        if (backport != null) {
-            for (String aPackage : backport.split(";")) {
-                customPrefixes.add(aPackage.replace('.', '/') + '/');
-            }
+    public void increment(String name, String desc) {
+        String key = name + desc;
+        Integer count = methods.get(key);
+        methods.put(key, (count == null ? 0 : count) + 1);
+    }
+
+    public boolean isRepetitive(String name, String desc) {
+        return methods.get(name + desc) > 1;
+    }
+
+    public void decrement(String name, String desc) {
+        String key = name + desc;
+        methods.put(key, methods.get(key) - 1);
+    }
+
+    public boolean containsDuplicates() {
+        for (Integer count : methods.values()) {
+            if (count > 1) return true;
         }
+        return false;
     }
 
-    public BackportLocator getLocator() {
-        BackportLocator locator = readFromCache();
-        if (locator == null) {
-            locator = new BackportLocator(customPrefixes);
-            writeToCache(locator);
-        }
-        return locator;
-    }
-
-    private synchronized BackportLocator readFromCache() {
-        return softReference.get();
-    }
-
-    private synchronized void writeToCache(BackportLocator locator) {
-        softReference = new SoftReference<BackportLocator>(locator);
-    }
 }

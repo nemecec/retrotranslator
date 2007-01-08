@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,41 +29,15 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.transformer;
-
-import net.sf.retrotranslator.tests.BaseTestCase;
+package net.sf.retrotranslator.runtime.java.util;
 
 import java.util.*;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.concurrent.locks.ReentrantLock;
+import junit.framework.TestCase;
 
 /**
  * @author Taras Puchko
  */
-public class UtilBackportVisitorTestCase extends BaseTestCase {
-
-    public void testReentrantReadWriteLock() throws Exception {
-        ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
-        ReentrantReadWriteLock.ReadLock readLock = readWriteLock.readLock();
-        ReentrantReadWriteLock.WriteLock writeLock = readWriteLock.writeLock();
-        assertTrue(readLock.tryLock());
-        readLock.unlock();
-        assertTrue(writeLock.tryLock());
-        writeLock.unlock();
-    }
-
-    public void testCondition_awaitNanos() throws Exception {
-        ReentrantLock lock = new ReentrantLock();
-        lock.lock();
-        lock.newCondition().awaitNanos(1000);
-        lock.unlock();
-        try {
-            lock.newCondition().awaitNanos(1000);
-            fail();
-        } catch (IllegalMonitorStateException e) {
-            //ok
-        }
-    }
+public class CollectionsTestCase extends TestCase {
 
     public void testCheckedCollection() throws Exception {
         Collection strings = Collections.checkedCollection(new ArrayList(), String.class);

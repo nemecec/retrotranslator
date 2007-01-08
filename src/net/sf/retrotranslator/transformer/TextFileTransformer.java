@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,8 +32,7 @@
 package net.sf.retrotranslator.transformer;
 
 import java.io.UnsupportedEncodingException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.regex.*;
 
 /**
  * @author Taras Puchko
@@ -42,9 +41,9 @@ class TextFileTransformer {
 
     private static Pattern pattern = Pattern.compile("([A-Za-z0-9_$]+\\.)+[A-Za-z0-9_$]+");
 
-    private BackportLocatorFactory factory;
+    private ReplacementLocatorFactory factory;
 
-    public TextFileTransformer(BackportLocatorFactory factory) {
+    public TextFileTransformer(ReplacementLocatorFactory factory) {
         this.factory = factory;
     }
 
@@ -54,7 +53,8 @@ class TextFileTransformer {
         StringBuffer buffer = new StringBuffer();
         while (matcher.find()) {
             String originalName = matcher.group().replace('.', '/');
-            String backportName = factory.getLocator().getClassName(originalName);
+            ClassReplacement replacement = factory.getLocator().getReplacement(originalName);
+            String backportName = replacement == null ? originalName : replacement.getReferenceTypeName();
             String name = converter == null ? backportName : converter.convertClassName(backportName);
             if (originalName.equals(name)) {
                 matcher.appendReplacement(buffer, "$0");

@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,64 +31,72 @@
  */
 package net.sf.retrotranslator.runtime.java.util.regex;
 
-import net.sf.retrotranslator.runtime.impl.Derived;
-
-import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 
 /**
  * @author Taras Puchko
  */
-@Derived(Matcher.class)
 public class _MatchResult {
 
-    public static int start(MatchResult matchResult) {
-        if (matchResult instanceof Matcher) {
-            return ((Matcher) matchResult).start();
-        }
-        return matchResult.start();
+    public static boolean executeInstanceOfInstruction(Object object) {
+        return object instanceof Matcher ||
+                object instanceof MatchResult_;
     }
 
-    public static int start(MatchResult matchResult, int group) {
-        if (matchResult instanceof Matcher) {
-            return ((Matcher) matchResult).start(group);
+    public static Object executeCheckCastInstruction(Object object) {
+        if (object instanceof Matcher) {
+            return (Matcher) object;
         }
-        return matchResult.start(group);
+        return (MatchResult_) object;
     }
 
-    public static int end(MatchResult matchResult) {
-        if (matchResult instanceof Matcher) {
-            return ((Matcher) matchResult).end();
+    public static int start(Object object) {
+        if (object instanceof Matcher) {
+            return ((Matcher) object).start();
         }
-        return matchResult.end();
+        return ((MatchResult_) object).start();
     }
 
-    public static int end(MatchResult matchResult, int group) {
-        if (matchResult instanceof Matcher) {
-            return ((Matcher) matchResult).end(group);
+    public static int start(Object object, int group) {
+        if (object instanceof Matcher) {
+            return ((Matcher) object).start(group);
         }
-        return matchResult.end(group);
+        return ((MatchResult_) object).start(group);
     }
 
-    public static String group(MatchResult matchResult) {
-        if (matchResult instanceof Matcher) {
-            return ((Matcher) matchResult).group();
+    public static int end(Object object) {
+        if (object instanceof Matcher) {
+            return ((Matcher) object).end();
         }
-        return matchResult.group();
+        return ((MatchResult_) object).end();
     }
 
-    public static String group(MatchResult matchResult, int group) {
-        if (matchResult instanceof Matcher) {
-            return ((Matcher) matchResult).group(group);
+    public static int end(Object object, int group) {
+        if (object instanceof Matcher) {
+            return ((Matcher) object).end(group);
         }
-        return matchResult.group(group);
+        return ((MatchResult_) object).end(group);
     }
 
-    public static int groupCount(MatchResult matchResult) {
-        if (matchResult instanceof Matcher) {
-            return ((Matcher) matchResult).groupCount();
+    public static String group(Object object) {
+        if (object instanceof Matcher) {
+            return ((Matcher) object).group();
         }
-        return matchResult.groupCount();
+        return ((MatchResult_) object).group();
+    }
+
+    public static String group(Object object, int group) {
+        if (object instanceof Matcher) {
+            return ((Matcher) object).group(group);
+        }
+        return ((MatchResult_) object).group(group);
+    }
+
+    public static int groupCount(Object object) {
+        if (object instanceof Matcher) {
+            return ((Matcher) object).groupCount();
+        }
+        return ((MatchResult_) object).groupCount();
     }
 
 }

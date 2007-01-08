@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,23 +29,42 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.transformer;
+package net.sf.retrotranslator.runtime.java.lang.instrument;
+
+import java.lang.instrument.*;
+import java.lang.reflect.*;
+import junit.framework.TestCase;
 
 /**
  * @author Taras Puchko
  */
-class InstanceBuilder {
+public class Instrumentation_Java6TestCase extends TestCase {
 
-    public final ClassMember creator;
-    public final ClassMember[] arguments;
-    public final ClassMember constructor;
-    public final ClassMember initializer;
-
-    public InstanceBuilder(ClassMember creator, ClassMember[] arguments,
-                           ClassMember constructor, ClassMember initializer) {
-        this.creator = creator;
-        this.arguments = arguments;
-        this.constructor = constructor;
-        this.initializer = initializer;
+    public void test() throws Exception {
+        InvocationHandler handler = new InvocationHandler() {
+            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                if (method.getReturnType() == boolean.class) return false;
+                if (method.getReturnType() == long.class) return 0L;
+                return null;
+            }
+        };
+        Instrumentation instrumentation = (Instrumentation) Proxy.newProxyInstance(
+                getClass().getClassLoader(), new Class<?>[]{Instrumentation.class}, handler);
+        instrumentation.addTransformer(null);
+        instrumentation.addTransformer(null, false);
+        instrumentation.appendToBootstrapClassLoaderSearch(null);
+        instrumentation.appendToSystemClassLoaderSearch(null);
+        instrumentation.getAllLoadedClasses();
+        instrumentation.getInitiatedClasses(null);
+        instrumentation.getObjectSize(null);
+        instrumentation.isModifiableClass(null);
+        instrumentation.isNativeMethodPrefixSupported();
+        instrumentation.isRedefineClassesSupported();
+        instrumentation.isRetransformClassesSupported();
+        instrumentation.redefineClasses(new ClassDefinition[0]);
+        instrumentation.removeTransformer(null);
+        instrumentation.retransformClasses(new Class[0]);
+        instrumentation.setNativeMethodPrefix(null, null);
     }
+
 }

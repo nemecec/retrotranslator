@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,20 +42,21 @@ class SignatureStrippingVisitor extends ClassAdapter {
         super(cv);
     }
 
-    public void visit(final int version, final int access, final String name, final String signature, final String superName, final String[] interfaces) {
+    public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
         super.visit(version, access, name, null, superName, interfaces);
     }
 
-    public FieldVisitor visitField(final int access, final String name, final String desc, final String signature, final Object value) {
+    public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
         return super.visitField(access, name, desc, null, value);
     }
 
-    public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature, final String[] exceptions) {
+    public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         MethodVisitor visitor = super.visitMethod(access, name, desc, null, exceptions);
         return visitor == null ? null : new MethodAdapter(visitor) {
-            public void visitLocalVariable(final String name, final String desc, final String signature, final Label start, final Label end, final int index) {
+            public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index) {
                 super.visitLocalVariable(name, desc, null, start, end, index);
             }
         };
     }
+
 }

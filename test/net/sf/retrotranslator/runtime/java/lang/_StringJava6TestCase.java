@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,46 +29,18 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.transformer;
+package net.sf.retrotranslator.runtime.java.lang;
 
-import junit.framework.*;
-
-import java.util.concurrent.Delayed;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.DelayQueue;
+import junit.framework.TestCase;
 
 /**
  * @author Taras Puchko
  */
-public class MemberSubstitutionVisitorTestCase extends TestCase {
+public class _StringJava6TestCase extends TestCase {
 
-    public void testDelayQueue() throws Exception {
-        class MyDelayed implements Delayed {
-            public long getDelay(TimeUnit unit) {
-                return 0;
-            }
-
-            public int compareTo(Delayed o) {
-                return 0;
-            }
-        }
-        DelayQueue<MyDelayed> delayQueue = new DelayQueue<MyDelayed>();
-        delayQueue.offer(new MyDelayed());
-        delayQueue.put(new MyDelayed());
-        delayQueue.offer(new MyDelayed(), 0, TimeUnit.SECONDS);
-        delayQueue.add(new MyDelayed());
-        assertNotNull(delayQueue.take());
-        assertNotNull(delayQueue.poll(0, TimeUnit.SECONDS));
-        assertNotNull(delayQueue.poll());
-        assertNotNull(delayQueue.peek());
+    public void testContains() throws Exception {
+        assertTrue("".isEmpty());
+        assertFalse("abcd".isEmpty());
     }
 
-    public void testNanotime() throws Exception {
-        long n = System.nanoTime();
-        long m = System.currentTimeMillis();
-        Thread.sleep(100);
-        m = System.currentTimeMillis() - m;
-        n = System.nanoTime() - n;
-        assertTrue(Math.abs(n / 1000000 - m) <= 100);
-    }
 }

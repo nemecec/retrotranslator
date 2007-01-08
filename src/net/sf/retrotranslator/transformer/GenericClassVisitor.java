@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  *
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,130 +31,74 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import net.sf.retrotranslator.runtime.asm.signature.SignatureReader;
-import net.sf.retrotranslator.runtime.asm.signature.SignatureVisitor;
-import net.sf.retrotranslator.runtime.asm.signature.SignatureWriter;
 import net.sf.retrotranslator.runtime.asm.*;
 
 /**
  * @author Taras Puchko
  */
-abstract class GenericClassVisitor implements ClassVisitor {
+abstract class GenericClassVisitor extends NameTranslator implements ClassVisitor {
 
-    private ClassVisitor classVisitor;
-
-    private DescriptorTransformer transformer = new DescriptorTransformer() {
-        protected String transformInternalName(String internalName) {
-            return internalName(internalName);
-        }
-    };
+    private final ClassVisitor classVisitor;
 
     public GenericClassVisitor(ClassVisitor classVisitor) {
         this.classVisitor = classVisitor;
     }
 
-    protected String visitInternalName(String name) {
-        return name;
+    public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
+        classVisitor.visit(version, access, typeName(name),
+                declarationSignature(signature), typeName(superName), typeNames(interfaces));
     }
 
-    protected String visitIdentifier(String identifier) {
-        return identifier;
-    }
-
-    protected void visitFieldRef(int opcode, String owner, String name, String desc) {
-    }
-
-    protected void visitMethodRef(int opcode, String owner, String name, String desc) {
-    }
-
-    private String internalName(String name) {
-        return name == null ? null : visitInternalName(name);
-    }
-
-    private String identifier(String identifier) {
-        return identifier == null ? null : visitIdentifier(identifier);
-    }
-
-    private String[] internalNames(String[] names) {
-        if (names == null) return null;
-        for (int i = 0; i < names.length; i++) {
-            names[i] = internalName(names[i]);
-        }
-        return names;
-    }
-
-    private String internalNameOrDescriptor(String s) {
-        return s != null && s.startsWith("[") ? descriptor(s) : internalName(s);
-    }
-
-    private String descriptor(String descriptor) {
-        return transformer.transformDescriptor(descriptor);
-    }
-
-    private String typeSignature(String signature) {
-        if (signature == null) return null;
-        SignatureWriter writer = new SignatureWriter();
-        new SignatureReader(signature).acceptType(new GenericSignatureVisitor(writer));
-        return writer.toString();
-    }
-
-    private String declarationSignature(String signature) {
-        if (signature == null) return null;
-        SignatureWriter writer = new SignatureWriter();
-        new SignatureReader(signature).accept(new GenericSignatureVisitor(writer));
-        return writer.toString();
-    }
-
-    private Object type(Object value) {
-        return value instanceof Type ? Type.getType(descriptor(((Type) value).getDescriptor())) : value;
-    }
-
-    private GenericFieldVisitor wrap(FieldVisitor fv) {
-        return fv == null ? null : new GenericFieldVisitor(fv);
-    }
-
-    private GenericMethodVisitor wrap(MethodVisitor mv) {
-        return mv == null ? null : new GenericMethodVisitor(mv);
-    }
-
-    private AnnotationVisitor wrap(AnnotationVisitor av) {
-        return av == null ? null : new GenericAnnotationVisitor(av);
-    }
-
-    public void visit(final int version, final int access, final String name, final String signature, final String superName, final String[] interfaces) {
-        classVisitor.visit(version, access, internalName(name), declarationSignature(signature), internalName(superName), internalNames(interfaces));
-    }
-
-    public void visitSource(final String source, final String debug) {
+    public void visitSource(String source, String debug) {
         classVisitor.visitSource(source, debug);
     }
 
-    public void visitOuterClass(final String owner, final String name, final String desc) {
-        classVisitor.visitOuterClass(internalName(owner), identifier(name), descriptor(desc));
+    public void visitOuterClass(String owner, String name, String desc) {
+        classVisitor.visitOuterClass(typeName(owner), identifier(name), methodDescriptor(desc));
     }
 
-    public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
-        return wrap(classVisitor.visitAnnotation(descriptor(desc), visible));
+    public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+        return wrap(classVisitor.visitAnnotation(typeDescriptor(desc), visible));
     }
 
-    public void visitAttribute(final Attribute attr) {
+    public void visitAttribute(Attribute attr) {
         classVisitor.visitAttribute(attr);
     }
 
-    public void visitInnerClass(final String name, final String outerName, final String innerName, final int access) {
-        classVisitor.visitInnerClass(internalName(name), internalName(outerName), identifier(innerName), access);
+    public void visitInnerClass(String name, String outerName, String innerName, int access) {
+        classVisitor.visitInnerClass(typeName(name), typeName(outerName), identifier(innerName), access);
     }
 
-    public FieldVisitor visitField(final int access, final String name, final String desc, final String signature, final Object value) {
-        return wrap(classVisitor.visitField(access, identifier(name), descriptor(desc), typeSignature(signature), value));
+    public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
+        FieldVisitor result = classVisitor.visitField(access,
+                identifier(name), typeDescriptor(desc), typeSignature(signature), value);
+        return result == null ? null : new GenericFieldVisitor(result);
     }
 
-    public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature, final String[] exceptions) {
-        return wrap(classVisitor.visitMethod(access, identifier(name), descriptor(desc), declarationSignature(signature), internalNames(exceptions)));
+    public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+        MethodVisitor result = classVisitor.visitMethod(access,
+                identifier(name), methodDescriptor(desc), declarationSignature(signature), typeNames(exceptions));
+        return result == null ? null : new GenericMethodVisitor(result);
+    }
+
+    protected void visitTypeInstruction(MethodVisitor visitor, int opcode, String desc) {
+        visitor.visitTypeInsn(opcode, typeNameOrTypeDescriptor(desc));
+    }
+
+    protected void visitFieldInstruction(MethodVisitor visitor, int opcode, String owner, String name, String desc) {
+        visitor.visitFieldInsn(opcode, typeName(owner), identifier(name), typeDescriptor(desc));
+    }
+
+    protected void visitMethodInstruction(MethodVisitor visitor, int opcode, String owner, String name, String desc) {
+        visitor.visitMethodInsn(opcode, typeNameOrTypeDescriptor(owner), identifier(name), methodDescriptor(desc));
     }
 
     public void visitEnd() {
         classVisitor.visitEnd();
+    }
+
+    private AnnotationVisitor wrap(AnnotationVisitor av) {
+        return av == null ? null : new GenericAnnotationVisitor(av);
     }
 
     private class GenericAnnotationVisitor implements AnnotationVisitor {
@@ -166,15 +110,15 @@ abstract class GenericClassVisitor implements ClassVisitor {
         }
 
         public void visit(String name, Object value) {
-            annotationVisitor.visit(identifier(name), type(value));
+            annotationVisitor.visit(identifier(name), typeOrValue(value));
         }
 
         public void visitEnum(String name, String desc, String value) {
-            annotationVisitor.visitEnum(identifier(name), descriptor(desc), value);
+            annotationVisitor.visitEnum(identifier(name), typeDescriptor(desc), value);
         }
 
         public AnnotationVisitor visitAnnotation(String name, String desc) {
-            return wrap(annotationVisitor.visitAnnotation(identifier(name), descriptor(desc)));
+            return wrap(annotationVisitor.visitAnnotation(identifier(name), typeDescriptor(desc)));
         }
 
         public AnnotationVisitor visitArray(String name) {
@@ -195,7 +139,7 @@ abstract class GenericClassVisitor implements ClassVisitor {
         }
 
         public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-            return wrap(fieldVisitor.visitAnnotation(descriptor(desc), visible));
+            return wrap(fieldVisitor.visitAnnotation(typeDescriptor(desc), visible));
         }
 
         public void visitAttribute(Attribute attr) {
@@ -207,15 +151,16 @@ abstract class GenericClassVisitor implements ClassVisitor {
         }
     }
 
-    private class GenericMethodVisitor extends AbstractMethodVisitor {
+    private class GenericMethodVisitor implements MethodVisitor {
 
+        protected final MethodVisitor mv;
         private String deferredConstant;
 
-        public GenericMethodVisitor(MethodVisitor methodVisitor) {
-            super(methodVisitor);
+        public GenericMethodVisitor(MethodVisitor visitor) {
+            mv = visitor;
         }
 
-        protected void flush() {
+        private void flush() {
             if (deferredConstant != null) {
                 mv.visitLdcInsn(deferredConstant);
                 deferredConstant = null;
@@ -223,77 +168,127 @@ abstract class GenericClassVisitor implements ClassVisitor {
         }
 
         public AnnotationVisitor visitAnnotationDefault() {
-            return wrap(super.visitAnnotationDefault());
-        }
-
-        public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
-            return wrap(super.visitAnnotation(descriptor(desc), visible));
-        }
-
-        public AnnotationVisitor visitParameterAnnotation(final int parameter, final String desc, final boolean visible) {
-            return wrap(super.visitParameterAnnotation(parameter, descriptor(desc), visible));
-        }
-
-        public void visitTypeInsn(final int opcode, final String desc) {
-            super.visitTypeInsn(opcode, internalNameOrDescriptor(desc));
-        }
-
-        public void visitFieldInsn(final int opcode, final String owner, final String name, final String desc) {
             flush();
-            visitFieldRef(opcode, owner, name, desc);
-            mv.visitFieldInsn(opcode, internalName(owner), identifier(name), descriptor(desc));
+            return wrap(mv.visitAnnotationDefault());
         }
 
-        public void visitMethodInsn(final int opcode, final String owner, final String name, final String desc) {
+        public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+            flush();
+            return wrap(mv.visitAnnotation(typeDescriptor(desc), visible));
+        }
+
+        public AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {
+            flush();
+            return wrap(mv.visitParameterAnnotation(parameter, typeDescriptor(desc), visible));
+        }
+
+        public void visitTypeInsn(int opcode, String desc) {
+            flush();
+            visitTypeInstruction(mv, opcode, desc);
+        }
+
+        public void visitFieldInsn(int opcode, String owner, String name, String desc) {
+            flush();
+            visitFieldInstruction(mv, opcode, owner, name, desc);
+        }
+
+        public void visitMethodInsn(int opcode, String owner, String name, String desc) {
             if (deferredConstant != null && deferredConstant.indexOf('/') < 0 &&
                     opcode == Opcodes.INVOKESTATIC && name.equals("class$") &&
                     desc.equals(TransformerTools.descriptor(Class.class, String.class))) {
-                deferredConstant = internalNameOrDescriptor(deferredConstant.replace('.', '/')).replace('/', '.');
+                deferredConstant = typeNameOrTypeDescriptor(deferredConstant.replace('.', '/')).replace('/', '.');
             }
             flush();
-            visitMethodRef(opcode, owner, name, desc);
-            mv.visitMethodInsn(opcode, internalNameOrDescriptor(owner), identifier(name), descriptor(desc));
+            visitMethodInstruction(mv, opcode, owner, name, desc);
         }
 
-        public void visitLdcInsn(final Object cst) {
+        public void visitLdcInsn(Object cst) {
             flush();
             if (cst instanceof String) {
                 deferredConstant = (String) cst;
             } else {
-                mv.visitLdcInsn(type(cst));
+                mv.visitLdcInsn(typeOrValue(cst));
             }
         }
 
-        public void visitMultiANewArrayInsn(final String desc, final int dims) {
-            super.visitMultiANewArrayInsn(descriptor(desc), dims);
+        public void visitMultiANewArrayInsn(String desc, int dims) {
+            flush();
+            mv.visitMultiANewArrayInsn(typeDescriptor(desc), dims);
         }
 
-        public void visitTryCatchBlock(final Label start, final Label end, final Label handler, final String type) {
-            super.visitTryCatchBlock(start, end, handler, internalName(type));
+        public void visitTryCatchBlock(Label start, Label end, Label handler, String type) {
+            flush();
+            mv.visitTryCatchBlock(start, end, handler, typeName(type));
         }
 
-        public void visitLocalVariable(final String name, final String desc, final String signature,
-                                       final Label start, final Label end, final int index) {
-            super.visitLocalVariable(identifier(name), descriptor(desc), typeSignature(signature), start, end, index);
-        }
-    }
-
-    private class GenericSignatureVisitor extends SignatureAdapter {
-
-        public GenericSignatureVisitor(final SignatureVisitor visitor) {
-            super(visitor);
+        public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index) {
+            flush();
+            mv.visitLocalVariable(identifier(name), typeDescriptor(desc), typeSignature(signature), start, end, index);
         }
 
-        protected SignatureVisitor visitStart(SignatureVisitor visitor) {
-            return new GenericSignatureVisitor(visitor);
+        public void visitAttribute(Attribute attr) {
+            flush();
+            mv.visitAttribute(attr);
         }
 
-        public void visitClassType(String name) {
-            super.visitClassType(internalNameOrDescriptor(name));
+        public void visitCode() {
+            flush();
+            mv.visitCode();
         }
 
-        public void visitInnerClassType(String name) {
-            super.visitInnerClassType(identifier(name));
+        public void visitInsn(int opcode) {
+            flush();
+            mv.visitInsn(opcode);
+        }
+
+        public void visitIntInsn(int opcode, int operand) {
+            flush();
+            mv.visitIntInsn(opcode, operand);
+        }
+
+        public void visitVarInsn(int opcode, int var) {
+            flush();
+            mv.visitVarInsn(opcode, var);
+        }
+
+        public void visitJumpInsn(int opcode, Label label) {
+            flush();
+            mv.visitJumpInsn(opcode, label);
+        }
+
+        public void visitLabel(Label label) {
+            flush();
+            mv.visitLabel(label);
+        }
+
+        public void visitIincInsn(int var, int increment) {
+            flush();
+            mv.visitIincInsn(var, increment);
+        }
+
+        public void visitTableSwitchInsn(int min, int max, Label dflt, Label labels[]) {
+            flush();
+            mv.visitTableSwitchInsn(min, max, dflt, labels);
+        }
+
+        public void visitLookupSwitchInsn(Label dflt, int keys[], Label labels[]) {
+            flush();
+            mv.visitLookupSwitchInsn(dflt, keys, labels);
+        }
+
+        public void visitLineNumber(int line, Label start) {
+            flush();
+            mv.visitLineNumber(line, start);
+        }
+
+        public void visitMaxs(int maxStack, int maxLocals) {
+            flush();
+            mv.visitMaxs(maxStack, maxLocals);
+        }
+
+        public void visitEnd() {
+            flush();
+            mv.visitEnd();
         }
     }
 

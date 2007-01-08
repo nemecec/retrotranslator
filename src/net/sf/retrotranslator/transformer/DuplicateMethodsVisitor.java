@@ -1,8 +1,8 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- *
- * Copyright (c) 2005, 2006 Taras Puchko
+ * 
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,40 +31,51 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import junit.framework.TestCase;
+import java.util.*;
+import net.sf.retrotranslator.runtime.asm.*;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+/**
+ * @author Taras Puchko
+ */
+class DuplicateMethodsVisitor extends ClassAdapter {
 
-public class ClassSubstitutionVisitorTestCase extends TestCase {
+    private final SystemLogger logger;
+    private final MethodCounter counter;
+    private final Set<String> visitedMethods = new HashSet<String>();
 
-    private String hello = "Hello,";
-    private String world = "World!";
-    private StringBuilder builder = new StringBuilder();
-
-    public void testImplicit() {
-        assertEquals("Hello, World!", hello + " " + world);
+    public DuplicateMethodsVisitor(ClassVisitor visitor, SystemLogger logger, MethodCounter counter) {
+        super(visitor);
+        this.logger = logger;
+        this.counter = counter;
     }
 
-    public void testExplicit() {
-        assertEquals("Hello, World!", builder.append(hello).append(" ").append(world).toString());
+    public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+        String key = name + desc;
+        if (visitedMethods.contains(key)) {
+            log(access, name);
+            return null;
+        }
+        if (counter.isRepetitive(name, desc) && isBridge(access)) {
+            counter.decrement(name, desc);
+            log(access, name);
+            return null;
+        }
+        visitedMethods.add(key);
+        return super.visitMethod(access, name, desc, signature, exceptions);
     }
 
-    public void testCallable() throws Exception {
-        final String hello = "Hello, World";
-        Callable callable = new Callable() {
-            public Object call() throws Exception {
-                return hello;
+    private void log(int access, String name) {
+        if (logger != null) {
+            if (isBridge(access)) {
+                logger.logForFile(Level.VERBOSE, "Bridge method removed: " + name);
+            } else {
+                logger.logForFile(Level.WARNING, "Repetitive method removed: " + name);
             }
-        };
-        assertSame(hello, callable.call());
+        }
     }
 
-    public void testConcurrentMap() throws Exception {
-        ConcurrentMap<String, String> map = new ConcurrentHashMap<String, String>();
-        map.put("hi", "Hello");
-        map.put("bye", "Good-bye");
-        assertEquals("Hello", map.get("hi"));
+    private static boolean isBridge(int access) {
+        return (access & Opcodes.ACC_BRIDGE) != 0;
     }
+
 }

@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,30 +31,25 @@
  */
 package net.sf.retrotranslator.runtime.java.lang.reflect;
 
-import net.sf.retrotranslator.runtime.impl.MethodDescriptor;
-import net.sf.retrotranslator.runtime.impl.RuntimeTools;
+import java.lang.reflect.*;
 import net.sf.retrotranslator.runtime.asm.Opcodes;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
+import net.sf.retrotranslator.runtime.impl.*;
+import net.sf.retrotranslator.runtime.java.lang.annotation.Annotation_;
 
 /**
  * @author Taras Puchko
  */
 public class _Method {
 
-    public static Annotation getAnnotation(Method method, Class annotationType) {
+    public static Annotation_ getAnnotation(Method method, Class annotationType) {
         return MethodDescriptor.getInstance(method).getAnnotation(annotationType);
     }
 
-    public static Annotation[] getAnnotations(Method method) {
+    public static Annotation_[] getAnnotations(Method method) {
         return MethodDescriptor.getInstance(method).getAnnotations();
     }
 
-    public static Annotation[] getDeclaredAnnotations(Method method) {
+    public static Annotation_[] getDeclaredAnnotations(Method method) {
         return MethodDescriptor.getInstance(method).getDeclaredAnnotations();
     }
 
@@ -77,7 +72,7 @@ public class _Method {
         return type != null ? type : method.getReturnType();
     }
 
-    public static Annotation[][] getParameterAnnotations(Method method) {
+    public static Annotation_[][] getParameterAnnotations(Method method) {
         return MethodDescriptor.getInstance(method).getParameterAnnotations();
     }
 

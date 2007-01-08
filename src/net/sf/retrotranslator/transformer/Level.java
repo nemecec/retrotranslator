@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,17 +36,19 @@ package net.sf.retrotranslator.transformer;
  */
 public class Level implements Comparable<Level> {
 
-    public static Level ERROR = new Level(1, "ERROR");
-    public static Level WARNING = new Level(2, "WARNING");
-    public static Level INFO = new Level(3, "INFO");
-    public static Level VERBOSE = new Level(4, "VERBOSE");
+    public static Level ERROR = new Level(1, "ERROR", true);
+    public static Level WARNING = new Level(2, "WARNING", true);
+    public static Level INFO = new Level(3, "INFO", false);
+    public static Level VERBOSE = new Level(4, "VERBOSE", false);
 
     private final int ordinal;
     private final String name;
+    private final boolean critical;
 
-    public Level(int ordinal, String name) {
+    private Level(int ordinal, String name, boolean critical) {
         this.ordinal = ordinal;
         this.name = name;
+        this.critical = critical;
     }
 
     public int ordinal() {
@@ -55,6 +57,10 @@ public class Level implements Comparable<Level> {
 
     public String name() {
         return name;
+    }
+
+    public boolean isCritical() {
+        return critical;
     }
 
     public String toString() {

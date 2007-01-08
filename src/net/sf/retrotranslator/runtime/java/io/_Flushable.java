@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,26 +31,36 @@
  */
 package net.sf.retrotranslator.runtime.java.io;
 
-import net.sf.retrotranslator.runtime.impl.Derived;
-
-import java.io.IOException;
-import java.io.Flushable;
-import java.io.OutputStream;
-import java.io.Writer;
+import java.io.*;
 
 /**
  * @author Taras Puchko
  */
-@Derived({OutputStream.class, Writer.class})
 public class _Flushable {
 
-    public static void flush(Flushable flushable) throws IOException {
-        if (flushable instanceof OutputStream) {
-            ((OutputStream) flushable).flush();
-        } else if (flushable instanceof Writer) {
-            ((Writer) flushable).flush();
+    public static boolean executeInstanceOfInstruction(Object object) {
+        return object instanceof OutputStream ||
+                object instanceof Writer ||
+                object instanceof Flushable_;
+    }
+
+    public static Object executeCheckCastInstruction(Object object) {
+        if (object instanceof OutputStream) {
+            return (OutputStream) object;
+        }
+        if (object instanceof Writer) {
+            return (Writer) object;
+        }
+        return (Flushable_) object;
+    }
+
+    public static void flush(Object object) throws IOException {
+        if (object instanceof OutputStream) {
+            ((OutputStream) object).flush();
+        } else if (object instanceof Writer) {
+            ((Writer) object).flush();
         } else {
-            flushable.flush();
+            ((Flushable_) object).flush();
         }
     }
 

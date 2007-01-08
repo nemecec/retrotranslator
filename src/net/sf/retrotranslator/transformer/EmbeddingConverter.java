@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,10 +31,8 @@
  */
 package net.sf.retrotranslator.transformer;
 
+import java.util.*;
 import net.sf.retrotranslator.runtime.impl.RuntimeTools;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author Taras Puchko
@@ -74,10 +72,10 @@ class EmbeddingConverter {
     }
 
     private Map<String, Boolean> getMap(String name) {
-        if (name.startsWith(BackportLocator.RUNTIME_PREFIX)) {
+        if (name.startsWith(ReplacementLocator.RUNTIME_PREFIX)) {
             return runtimeFileNames;
         }
-        if (name.startsWith(BackportLocator.CONCURRENT_PREFIX)) {
+        if (name.startsWith(ReplacementLocator.CONCURRENT_PREFIX)) {
             return concurrentFileNames;
         }
         return null;

@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  *
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,16 +31,11 @@
  */
 package net.sf.retrotranslator.runtime.java.lang.reflect;
 
+import java.lang.annotation.*;
+import java.lang.reflect.*;
+import java.util.*;
 import junit.framework.TestCase;
 import net.sf.retrotranslator.runtime.java.lang.MyStyle;
-
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Method;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author Taras Puchko

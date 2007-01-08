@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,9 +31,8 @@
  */
 package net.sf.retrotranslator.runtime.impl;
 
-import net.sf.retrotranslator.runtime.asm.signature.SignatureVisitor;
-
 import java.util.LinkedList;
+import net.sf.retrotranslator.runtime.asm.signature.SignatureVisitor;
 
 /**
  * @author Taras Puchko
@@ -78,4 +77,5 @@ public class TypeDescriptor extends EmptyVisitor {
         elements.getLast().getArguments().add(new TypeArgument(wildcard, typeDescriptor));
         return typeDescriptor;
     }
+
 }

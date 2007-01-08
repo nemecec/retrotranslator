@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,55 +31,44 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import net.sf.retrotranslator.runtime.asm.ClassAdapter;
-import net.sf.retrotranslator.runtime.asm.ClassVisitor;
-import net.sf.retrotranslator.runtime.asm.MethodVisitor;
-import net.sf.retrotranslator.runtime.asm.signature.SignatureVisitor;
-import net.sf.retrotranslator.runtime.asm.signature.SignatureWriter;
-import net.sf.retrotranslator.runtime.asm.signature.SignatureReader;
-
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.HashSet;
+import java.util.*;
+import net.sf.retrotranslator.runtime.asm.*;
+import net.sf.retrotranslator.runtime.asm.signature.*;
 
 /**
  * @author Taras Puchko
  */
-class DuplicateCleaningVisitor extends ClassAdapter {
+class DuplicateInterfacesVisitor extends ClassAdapter {
 
-    private MessageLogger logger;
-    private Set<String> methods = new HashSet<String>();
+    private final SystemLogger logger;
+    private final MethodCounter counter;
 
-    public DuplicateCleaningVisitor(ClassVisitor cv, MessageLogger logger) {
+    public DuplicateInterfacesVisitor(ClassVisitor cv, SystemLogger logger, MethodCounter counter) {
         super(cv);
         this.logger = logger;
+        this.counter = counter;
     }
 
-    public void visit(final int version, final int access, final String name, final String signature, final String superName, final String[] interfaces) {
+    public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
         String[] cleanInterfaces = cleanInterfaces(interfaces);
         String cleanSignature = cleanInterfaces == interfaces ? signature : cleanSignature(signature);
         super.visit(version, access, name, cleanSignature, superName, cleanInterfaces);
     }
 
-    public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature, final String[] exceptions) {
-        if (methods.add(name + desc)) {
-            return super.visitMethod(access, name, desc, signature, exceptions);
-        } else {
-            log("method/signature");
-            return null;
-        }
-    }
-
-    private void log(String name) {
-        if (logger != null) logger.log(new Message(Level.INFO, "Repetitive " + name + " removed."));
+    public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+        counter.increment(name, desc);
+        return super.visitMethod(access, name, desc, signature, exceptions);
     }
 
     private String[] cleanInterfaces(String[] values) {
         if (values == null) return null;
         Set<String> set = new LinkedHashSet<String>();
-        for (String s : values) set.add(s);
+        for (String s : values) {
+            if (!set.add(s) && logger != null) {
+                logger.logForFile(Level.VERBOSE, "Repetitive interface name removed: " + s.replace('/', '.'));
+            }
+        }
         if (set.size() == values.length) return values;
-        log("interface name");
         return set.toArray(new String[set.size()]);
     }
 

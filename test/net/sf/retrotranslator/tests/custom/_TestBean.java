@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,9 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.tests;
+package net.sf.retrotranslator.tests.custom;
+
+import net.sf.retrotranslator.tests.TestBean;
 
 /**
  * @author Taras Puchko
@@ -97,7 +99,7 @@ public class _TestBean {
             return sign;
         }
 
-        public void initialize(TestBean_ testBean) {
+        public void initialize(TestBean testBean) {
             testBean.setState("initialized");
         }
 
@@ -111,7 +113,7 @@ public class _TestBean {
             this.state = state;
         }
 
-        public void initialize(TestBean_ testBean) {
+        public void initialize(TestBean testBean) {
             testBean.setState(state);
         }
 

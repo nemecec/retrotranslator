@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,20 +38,22 @@ import net.sf.retrotranslator.runtime.asm.*;
  */
 class ArrayCloningVisitor extends ClassAdapter {
 
-    public ArrayCloningVisitor(final ClassVisitor cv) {
-        super(cv);
+    public ArrayCloningVisitor(ClassVisitor visitor) {
+        super(visitor);
     }
 
-    public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature, final String[] exceptions) {
+    public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         MethodVisitor visitor = super.visitMethod(access, name, desc, signature, exceptions);
         return visitor == null ? null : new MethodAdapter(visitor) {
-            public void visitMethodInsn(final int opcode, String owner, final String name, final String desc) {
+
+            public void visitMethodInsn(int opcode, String owner, String name, String desc) {
                 if (opcode == Opcodes.INVOKEVIRTUAL && owner.charAt(0) == '[' &&
                         name.equals("clone") && desc.equals(TransformerTools.descriptor(Object.class))) {
                     owner = Type.getInternalName(Object.class);
                 }
                 super.visitMethodInsn(opcode, owner, name, desc);
             }
+
         };
     }
 }

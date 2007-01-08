@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,7 +34,7 @@ package net.sf.retrotranslator.tests;
 /**
  * @author Taras Puchko
  */
-public class TestBean_ {
+public class TestBean {
 
     private boolean visible;
     private char sign;
@@ -48,7 +48,7 @@ public class TestBean_ {
     private String direction;
     private String state;
 
-    public TestBean_(
+    public TestBean(
             boolean visible, char sign, byte code, short width,
             int height, float opacity, long area, double weight, String name) {
         this.direction = "right";
@@ -63,7 +63,7 @@ public class TestBean_ {
         this.name = name;
     }
 
-    public TestBean_(
+    public TestBean(
             String name, double weight, long area, float opacity,
             int height, short width, byte code, char sign, boolean visible) {
         this.direction = "reverse";
@@ -78,12 +78,12 @@ public class TestBean_ {
         this.visible = visible;
     }
 
-    public TestBean_(String state) {
+    public TestBean(String state) {
         this.direction = "A";
         this.state = state;
     }
 
-    public TestBean_() {
+    public TestBean() {
         this.direction = "B";
     }
 

@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,33 +31,61 @@
  */
 package net.sf.retrotranslator.runtime.java.io;
 
-import net.sf.retrotranslator.runtime.impl.Derived;
-
 import java.io.*;
 import java.nio.channels.Channel;
 
 /**
  * @author Taras Puchko
  */
-@Derived({InputStream.class, OutputStream.class,
-        Reader.class, Writer.class, RandomAccessFile.class, Channel.class})
 public class _Closeable {
 
-    public static void close(Closeable closeable) throws IOException {
-        if (closeable instanceof InputStream) {
-            ((InputStream) closeable).close();
-        } else if (closeable instanceof OutputStream) {
-            ((OutputStream) closeable).close();
-        } else if (closeable instanceof Reader) {
-            ((Reader) closeable).close();
-        } else if (closeable instanceof Writer) {
-            ((Writer) closeable).close();
-        } else if (closeable instanceof RandomAccessFile) {
-            ((RandomAccessFile) closeable).close();
-        } else if (closeable instanceof Channel) {
-            ((Channel) closeable).close();
+    public static boolean executeInstanceOfInstruction(Object object) {
+        return object instanceof InputStream ||
+                object instanceof OutputStream ||
+                object instanceof Reader ||
+                object instanceof Writer ||
+                object instanceof RandomAccessFile ||
+                object instanceof Channel ||
+                object instanceof Closeable_;
+    }
+
+    public static Object executeCheckCastInstruction(Object object) {
+        if (object instanceof InputStream) {
+            return (InputStream) object;
+        }
+        if (object instanceof OutputStream) {
+            return (OutputStream) object;
+        }
+        if (object instanceof Reader) {
+            return (Reader) object;
+        }
+        if (object instanceof Writer) {
+            return (Writer) object;
+        }
+        if (object instanceof RandomAccessFile) {
+            return (RandomAccessFile) object;
+        }
+        if (object instanceof Channel) {
+            return (Channel) object;
+        }
+        return (Closeable_) object;
+    }
+
+    public static void close(Object object) throws IOException {
+        if (object instanceof InputStream) {
+            ((InputStream) object).close();
+        } else if (object instanceof OutputStream) {
+            ((OutputStream) object).close();
+        } else if (object instanceof Reader) {
+            ((Reader) object).close();
+        } else if (object instanceof Writer) {
+            ((Writer) object).close();
+        } else if (object instanceof RandomAccessFile) {
+            ((RandomAccessFile) object).close();
+        } else if (object instanceof Channel) {
+            ((Channel) object).close();
         } else {
-            closeable.close();
+            ((Closeable_) object).close();
         }
     }
 

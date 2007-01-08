@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  *
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,13 +31,11 @@
  */
 package net.sf.retrotranslator.runtime.impl;
 
-import java.lang.annotation.Annotation;
-import java.lang.annotation.IncompleteAnnotationException;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
 import java.io.Serializable;
+import java.lang.annotation.IncompleteAnnotationException;
+import java.lang.reflect.*;
+import java.util.*;
+import net.sf.retrotranslator.runtime.java.lang.annotation.Annotation_;
 
 /**
  * @author Taras Puchko
@@ -58,7 +56,7 @@ public class AnnotationHandler implements InvocationHandler, Serializable {
         String name = method.getName();
         if (args != null) {
             if (name.equals("equals") && args.length == 1 && method.getParameterTypes()[0] == Object.class) {
-                return args[0] instanceof Annotation && asString.equals(args[0].toString());
+                return args[0] instanceof Annotation_ && asString.equals(args[0].toString());
             }
             throw new IncompleteAnnotationException(annotationType, name);
         }
@@ -69,4 +67,5 @@ public class AnnotationHandler implements InvocationHandler, Serializable {
         if (value != null) return RuntimeTools.cloneNonEmptyArray(value);
         throw new IncompleteAnnotationException(annotationType, name);
     }
+
 }

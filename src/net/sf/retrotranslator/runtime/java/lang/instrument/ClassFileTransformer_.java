@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,41 +29,19 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.transformer;
+package net.sf.retrotranslator.runtime.java.lang.instrument;
+
+import java.security.ProtectionDomain;
 
 /**
  * @author Taras Puchko
  */
-class ClassMember implements Comparable<ClassMember> {
+public interface ClassFileTransformer_ {
 
-    public final boolean isStatic;
-    public final String owner;
-    public final String name;
-    public final String desc;
-    public final boolean advanced;
+    byte[] transform(ClassLoader loader,
+                     String className,
+                     Class<?> classBeingRedefined,
+                     ProtectionDomain protectionDomain,
+                     byte[] classfileBuffer) throws IllegalClassFormatException_;
 
-    public ClassMember(boolean isStatic, String owner, String name, String desc, boolean advanced) {
-        this.isStatic = isStatic;
-        this.owner = owner;
-        this.name = name;
-        this.desc = desc;
-        this.advanced = advanced;
-    }
-
-    public boolean equals(Object o) {
-        if (o == this) return true;
-        if (o == null || o.getClass() != this.getClass()) return false;
-        final ClassMember that = (ClassMember) o;
-        return isStatic == that.isStatic && owner.equals(that.owner) &&
-                name.equals(that.name) && desc.equals(that.desc) && advanced == that.advanced;
-    }
-
-    public int hashCode() {
-        return owner.hashCode() + name.hashCode() + desc.hashCode();
-    }
-
-    public int compareTo(ClassMember member) {
-        return name.compareTo(member.name);
-    }
 }
-

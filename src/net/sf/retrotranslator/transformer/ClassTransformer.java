@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,9 +31,7 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import net.sf.retrotranslator.runtime.asm.ClassReader;
-import net.sf.retrotranslator.runtime.asm.ClassVisitor;
-import net.sf.retrotranslator.runtime.asm.ClassWriter;
+import net.sf.retrotranslator.runtime.asm.*;
 import net.sf.retrotranslator.runtime.impl.BytecodeTransformer;
 
 /**
@@ -42,18 +40,16 @@ import net.sf.retrotranslator.runtime.impl.BytecodeTransformer;
 class ClassTransformer implements BytecodeTransformer {
 
     private boolean lazy;
-    private boolean advanced;
     private boolean stripsign;
     private boolean retainapi;
     private boolean retainflags;
     private EmbeddingConverter converter;
-    private MessageLogger logger;
-    private BackportLocatorFactory factory;
+    private SystemLogger logger;
+    private ReplacementLocatorFactory factory;
 
-    public ClassTransformer(boolean lazy, boolean advanced, boolean stripsign, boolean retainapi, boolean retainflags,
-                            EmbeddingConverter converter, MessageLogger logger, BackportLocatorFactory factory) {
+    public ClassTransformer(boolean lazy, boolean stripsign, boolean retainapi, boolean retainflags,
+                            EmbeddingConverter converter, SystemLogger logger, ReplacementLocatorFactory factory) {
         this.lazy = lazy;
-        this.advanced = advanced;
         this.stripsign = stripsign;
         this.retainapi = retainapi;
         this.retainflags = retainflags;
@@ -63,28 +59,39 @@ class ClassTransformer implements BytecodeTransformer {
     }
 
     public byte[] transform(byte[] bytes, int offset, int length) {
-        if (lazy && (bytes[offset + 7] <= 48 ||
-                bytes[offset + 6] != 0 || bytes[offset + 5] != 0 || bytes[offset + 4] != 0)) {
+        if (lazy && !factory.getTarget().isBefore(TransformerTools.getClassVersion(bytes, offset))) {
             if (offset == 0 && length == bytes.length) return bytes;
             byte[] result = new byte[length];
             System.arraycopy(bytes, offset, result, 0, length);
             return result;
         }
         ClassWriter classWriter = new ClassWriter(true);
-        ClassVisitor visitor = new DuplicateCleaningVisitor(classWriter, logger);
-        visitor = new VersionVisitor(new ArrayCloningVisitor(new ClassLiteralVisitor(visitor)));
-        if (converter != null) visitor = new PrefixingVisitor(visitor, converter);
-        if (!retainapi) {
-            BackportLocator locator = factory.getLocator();
-            visitor = new InheritanceVisitor(visitor, locator);
-            visitor = new ConstructorSubstitutionVisitor(visitor, locator, advanced);
-            visitor = new UtilBackportVisitor(visitor);
-            visitor = new MemberSubstitutionVisitor(visitor, locator, advanced);
-            visitor = new EnumVisitor(visitor);
-            visitor = new ClassSubstitutionVisitor(visitor, locator);
+        MethodCounter counter = new MethodCounter();
+        ClassVisitor visitor = new DuplicateInterfacesVisitor(
+                new VersionVisitor(classWriter, factory.getTarget()), logger, counter);
+        boolean isTarget14 = factory.isTarget14();
+        if (isTarget14) {
+            visitor = new ArrayCloningVisitor(new ClassLiteralVisitor(visitor));
         }
-        if (stripsign) visitor = new SignatureStrippingVisitor(visitor);
+        if (converter != null) {
+            visitor = new PrefixingVisitor(visitor, converter);
+        }
+        if (!retainapi) {
+            if (isTarget14) {
+                visitor = new SpecificReplacementVisitor(visitor, factory.isAdvanced());
+            }
+            visitor = new GeneralReplacementVisitor(new EnumVisitor(visitor), factory.getLocator());
+        }
+        if (stripsign) {
+            visitor = new SignatureStrippingVisitor(visitor);
+        }
         new ClassReader(bytes, offset, length).accept(visitor, false);
-        return classWriter.toByteArray(!retainflags);
+        if (counter.containsDuplicates()) {
+            byte[] bytecode = classWriter.toByteArray();
+            classWriter = new ClassWriter(true);
+            new ClassReader(bytecode).accept(new DuplicateMethodsVisitor(classWriter, logger, counter), false);
+        }
+        return classWriter.toByteArray(isTarget14 && !retainflags);
     }
+
 }

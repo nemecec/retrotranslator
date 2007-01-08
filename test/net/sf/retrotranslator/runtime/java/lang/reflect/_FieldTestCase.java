@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  *
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,33 +31,17 @@
  */
 package net.sf.retrotranslator.runtime.java.lang.reflect;
 
-import net.sf.retrotranslator.runtime.java.lang.MyColor;
-import net.sf.retrotranslator.runtime.java.lang.MyFormatter;
-import net.sf.retrotranslator.runtime.java.lang.MyStyle;
-import net.sf.retrotranslator.tests.BaseTestCase;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import net.sf.retrotranslator.runtime.java.lang.*;
+import net.sf.retrotranslator.tests.BaseTestCase;
 
 /**
  * @author Taras Puchko
  */
 public class _FieldTestCase extends BaseTestCase {
-
-    private static Field PROXY_FIELD = getProxyField();
-
-    private static Field getProxyField() {
-        try {
-            return Proxy.getProxyClass(_FieldTestCase.class.getClassLoader(), Comparable.class).getDeclaredField("m0");
-        } catch (NoSuchFieldException e) {
-            throw new Error(e);
-        }
-    }
 
     @MyFormatter(
             pattern = "aabbcc",
@@ -110,7 +94,7 @@ public class _FieldTestCase extends BaseTestCase {
         assertEquals(2, styles.length);
         assertEquals("bold", styles[0].value());
         assertEquals("small", styles[1].value());
-        assertNull(PROXY_FIELD.getAnnotation(MyFormatter.class));
+        assertNull(getProxyField().getAnnotation(MyFormatter.class));
     }
 
     public void testGetAnnotation_Equals() throws Exception {
@@ -156,12 +140,12 @@ public class _FieldTestCase extends BaseTestCase {
         Annotation[] annotations = field.getAnnotations();
         assertEquals(1, annotations.length);
         assertEquals(getAnnotation(), annotations[0]);
-        assertEquals(0, PROXY_FIELD.getAnnotations().length);
+        assertEquals(0, getProxyField().getAnnotations().length);
     }
 
     public void testGetDeclaredAnnotations() throws Exception {
         assertTrue(Arrays.equals(field.getDeclaredAnnotations(), field.getAnnotations()));
-        assertEquals(0, PROXY_FIELD.getDeclaredAnnotations().length);
+        assertEquals(0, getProxyField().getDeclaredAnnotations().length);
     }
 
     public void testGetGenericType() throws Exception {
@@ -201,26 +185,27 @@ public class _FieldTestCase extends BaseTestCase {
         assertEquals(Object.class, singleton(comparableParam.getUpperBounds()));
         assertEquals(Integer.class, singleton(comparableParam.getLowerBounds()));
         assertEquals(Outer.class, top.getOwnerType());
-        assertEquals(PROXY_FIELD.getType(), PROXY_FIELD.getGenericType());
+        Field proxyField = getProxyField();
+        assertEquals(proxyField.getType(), proxyField.getGenericType());
     }
 
     public void testIsAnnotationPresent() throws Exception {
         assertTrue(field.isAnnotationPresent(MyFormatter.class));
         assertFalse(field.isAnnotationPresent(MyStyle.class));
-        assertFalse(PROXY_FIELD.isAnnotationPresent(MyStyle.class));
+        assertFalse(getProxyField().isAnnotationPresent(MyStyle.class));
     }
 
     public void testIsEnumConstant() throws Exception {
         assertTrue(MyColor.class.getField(MyColor.BLUE.name()).isEnumConstant());
         assertFalse(field.isEnumConstant());
-        assertFalse(PROXY_FIELD.isEnumConstant());
+        assertFalse(getProxyField().isEnumConstant());
     }
 
     public void testIsSynthetic() throws Exception {
         class Test {
         }
         assertTrue(Test.class.getDeclaredFields()[0].isSynthetic());
-        assertFalse(PROXY_FIELD.isSynthetic());
+        assertFalse(getProxyField().isSynthetic());
     }
 
     static class Test<T extends Map> {
@@ -228,17 +213,24 @@ public class _FieldTestCase extends BaseTestCase {
         public static boolean b;
         public static Test<HashMap>.Inner i;
 
-        public class Inner {}
+        public class Inner {
+        }
     }
 
     public void testToGenericString() throws Exception {
         String name = this.getClass().getName();
-        assertEquals("public java.lang.Comparable<T>[] " + name + "$Test.c", 
+        assertEquals("public java.lang.Comparable<T>[] " + name + "$Test.c",
                 Test.class.getField("c").toGenericString());
         assertEquals("public static boolean " + name + "$Test.b",
                 Test.class.getField("b").toGenericString());
         assertEquals("public static " + name + "." + name + "$Test<java.util.HashMap>.Inner " + name + "$Test.i",
                 Test.class.getField("i").toGenericString());
-        assertEquals(PROXY_FIELD.toString(), PROXY_FIELD.toGenericString());
+        Field proxyField = getProxyField();
+        assertEquals(proxyField.toString(), proxyField.toGenericString());
     }
+
+    private Field getProxyField() {
+        return Proxy.getProxyClass(getClass().getClassLoader(), Comparable.class).getDeclaredFields()[0];
+    }
+
 }

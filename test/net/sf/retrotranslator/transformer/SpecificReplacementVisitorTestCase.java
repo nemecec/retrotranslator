@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,14 +31,23 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import junit.framework.TestCase;
-
 import java.lang.ref.*;
+import java.util.concurrent.locks.*;
+import junit.framework.TestCase;
 
 /**
  * @author Taras Puchko
  */
-public class ConstructorSubstitutionVisitorTestCase extends TestCase {
+public class SpecificReplacementVisitorTestCase extends TestCase {
+
+    public void testNanotime() throws Exception {
+        long n = System.nanoTime();
+        long m = System.currentTimeMillis();
+        Thread.sleep(100);
+        m = System.currentTimeMillis() - m;
+        n = System.nanoTime() - n;
+        assertTrue(Math.abs(n / 1000000 - m) <= 100);
+    }
 
     public void testIllegalArgumentExceptionOneParam() throws Exception {
         IllegalArgumentException exception = new IllegalArgumentException(new ClassNotFoundException("123"));
@@ -159,5 +168,29 @@ public class ConstructorSubstitutionVisitorTestCase extends TestCase {
             Thread.sleep(100);
         }
     }
+
+    public void testReentrantReadWriteLock() throws Exception {
+        ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+        ReentrantReadWriteLock.ReadLock readLock = readWriteLock.readLock();
+        ReentrantReadWriteLock.WriteLock writeLock = readWriteLock.writeLock();
+        assertTrue(readLock.tryLock());
+        readLock.unlock();
+        assertTrue(writeLock.tryLock());
+        writeLock.unlock();
+    }
+
+    public void testCondition_awaitNanos() throws Exception {
+        ReentrantLock lock = new ReentrantLock();
+        lock.lock();
+        lock.newCondition().awaitNanos(1000);
+        lock.unlock();
+        try {
+            lock.newCondition().awaitNanos(1000);
+            fail();
+        } catch (IllegalMonitorStateException e) {
+            //ok
+        }
+    }
+
 
 }

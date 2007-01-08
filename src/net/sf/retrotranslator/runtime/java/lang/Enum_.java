@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  *
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,12 +31,10 @@
  */
 package net.sf.retrotranslator.runtime.java.lang;
 
+import java.io.*;
+import java.lang.reflect.Method;
+import java.security.*;
 import net.sf.retrotranslator.runtime.impl.WeakIdentityTable;
-
-import java.io.InvalidObjectException;
-import java.io.Serializable;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 
 /**
  * @author Taras Puchko
@@ -144,20 +142,21 @@ public abstract class Enum_<E extends Enum_<E>> implements Comparable<E>, Serial
     }
 
     private static void initialize(final Class aClass) {
-        try {
-            Class.forName(aClass.getName(), true, aClass.getClassLoader());
-        } catch (Exception e) {
-            AccessController.doPrivileged(new PrivilegedAction() {
-                public Object run() {
-                    try {
-                        Class.forName(aClass.getName(), true, aClass.getClassLoader());
-                    } catch (Exception ex) {
-                        //ignore
+        AccessController.doPrivileged(new PrivilegedAction<Object>() {
+            public Object run() {
+                try {
+                    Class.forName(aClass.getName(), true, aClass.getClassLoader());
+                    if (containers.lookup(aClass) == null) {
+                        Method method = aClass.getMethod("values");
+                        method.setAccessible(true);
+                        method.invoke(null);
                     }
-                    return null;
+                } catch (Exception e) {
+                    //ignore
                 }
-            });
-        }
+                return null;
+            }
+        });
     }
 
 }

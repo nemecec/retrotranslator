@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,17 +49,14 @@ class SunJITRetrotranslator {
         }
     }
 
-    public static boolean install(ClassTransformer classTransformer) {
+    public static void install(ClassTransformer classTransformer) {
         try {
             for (Object transformer : ClassFileTransformer.getTransformers()) {
-                if (transformer instanceof ClassFileTransformerImpl) {
-                    return true;
-                }
+                if (transformer instanceof ClassFileTransformerImpl) return;
             }
             ClassFileTransformer.add(new ClassFileTransformerImpl(classTransformer));
-            return true;
         } catch (Throwable e) {
-            return false;
+            // ignore
         }
     }
 }

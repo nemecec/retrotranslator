@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  * 
- * Copyright (c) 2005, 2006 Taras Puchko
+ * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,14 +38,15 @@ import net.sf.retrotranslator.runtime.asm.ClassVisitor;
  */
 class PrefixingVisitor extends GenericClassVisitor {
 
-    private EmbeddingConverter converter;
+    private final EmbeddingConverter converter;
 
     public PrefixingVisitor(ClassVisitor visitor, EmbeddingConverter converter) {
         super(visitor);
         this.converter = converter;
     }
 
-    protected String visitInternalName(String name) {
-        return converter.convertClassName(name);
+    protected  String typeName(String s) {
+        return s == null ? null : converter.convertClassName(s);
     }
+
 }
