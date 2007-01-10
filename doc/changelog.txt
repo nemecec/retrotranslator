@@ -4,7 +4,7 @@ Retrotranslator Changelog
 1.2.0 (2007-01-10)
   WARNING: This release is not fully compatible with the previous one.
 ---------------------------------
-  - Supported for java.lang.ThreadLocal.remove() in advanced mode.
+  - Supported java.lang.ThreadLocal.remove() in advanced mode.
   - Added -target option for Java 6 to Java 5 translation.
   - Improved bytecode compatibility with different JVMs.
   - Backported java.util.concurrent.locks.LockSupport.
