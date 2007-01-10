@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- *
+ * 
  * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
@@ -29,18 +29,51 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.runtime.java.lang.annotation;
+package net.sf.retrotranslator.runtime.java.lang;
 
-import java.lang.annotation.*;
+import net.sf.retrotranslator.runtime.impl.*;
+import java.util.*;
 
 /**
  * @author Taras Puchko
  */
-@Documented
-@Retention(value = RetentionPolicy.RUNTIME)
-@Target(value = ElementType.ANNOTATION_TYPE)
-public @interface Retention_ {
+@Advanced
+public class ThreadLocal_ {
 
-    RetentionPolicy_ value();
+    private static class Key {}
+
+    private static class Container extends ThreadLocal<Map<Key, Object>> {
+        protected Map<Key, Object> initialValue() {
+            return new WeakHashMap<Key, Object>();
+        }
+    }
+
+    private static final Container container = new Container();
+
+    private final Key key = new Key();
+
+    public ThreadLocal_() {
+    }
+
+    public Object get() {
+        Map<Key, Object> map = container.get();
+        Object value = map.get(key);
+        if (value == null && !map.containsKey(key)) {
+            map.put(key, value = initialValue());
+        }
+        return value;
+    }
+
+    public void set(Object value) {
+        container.get().put(key, value);
+    }
+
+    public void remove() {
+        container.get().remove(key);
+    }
+
+    protected Object initialValue() {
+        return null;
+    }
 
 }

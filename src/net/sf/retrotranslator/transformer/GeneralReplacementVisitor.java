@@ -46,12 +46,14 @@ class GeneralReplacementVisitor extends GenericClassVisitor {
     private final ReplacementLocator locator;
     private final NameTranslator translator;
     private String currentClassName;
+    private boolean threadLocalExcluded;
 
     public GeneralReplacementVisitor(ClassVisitor classVisitor, final ReplacementLocator locator) {
         super(classVisitor);
         this.locator = locator;
         translator = new NameTranslator() {
             protected String typeName(String s) {
+                if (isExcluded(s)) return s;
                 ClassReplacement replacement = locator.getReplacement(s);
                 return replacement == null ? s : replacement.getUniqueTypeName();
             }
@@ -63,17 +65,24 @@ class GeneralReplacementVisitor extends GenericClassVisitor {
     }
 
     protected String typeName(String s) {
+        if (isExcluded(s)) return s;
         ClassReplacement replacement = locator.getReplacement(s);
         return replacement == null ? s : replacement.getReferenceTypeName();
     }
 
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
         currentClassName = name;
+        threadLocalExcluded = name.endsWith("ThreadLocal_$Container");
         super.visit(version, access,
                 translator.typeName(name),
                 translator.declarationSignature(signature),
                 translator.typeName(superName),
                 translator.typeNames(interfaces));
+    }
+
+    private boolean isExcluded(String name) {
+        return name == null || threadLocalExcluded &&
+                (name.equals("java/lang/ThreadLocal") || name.equals("java/lang/InheritableThreadLocal"));
     }
 
     protected void visitTypeInstruction(MethodVisitor visitor, int opcode, String desc) {

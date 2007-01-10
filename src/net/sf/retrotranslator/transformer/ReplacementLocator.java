@@ -271,13 +271,15 @@ class ReplacementLocator {
     }
 
     private boolean isClassAvailable(String internalName) {
-        return getClass().getResource("/" + internalName + RuntimeTools.CLASS_EXTENSION) != null;
+        return getClassDescriptor(internalName) != null;
     }
 
-    private static ClassDescriptor getClassDescriptor(String internalName) {
-        byte[] bytecode = RuntimeTools.readResourceToByteArray(ReplacementLocator.class,
-                '/' + internalName + RuntimeTools.CLASS_EXTENSION);
-        return bytecode == null ? null : new ClassDescriptor(ReplacementLocator.class, bytecode);
+    private ClassDescriptor getClassDescriptor(String internalName) {
+        byte[] bytecode = RuntimeTools.readResourceToByteArray(
+                ReplacementLocator.class, '/' + internalName + RuntimeTools.CLASS_EXTENSION);
+        if (bytecode == null) return null;
+        ClassDescriptor descriptor = new ClassDescriptor(ReplacementLocator.class, bytecode);
+        return !advanced && descriptor.isAnnotationPresent(Advanced.class) ? null : descriptor;
     }
 
 }

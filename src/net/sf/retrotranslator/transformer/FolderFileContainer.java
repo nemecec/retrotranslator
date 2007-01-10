@@ -48,7 +48,8 @@ class FolderFileContainer extends FileContainer {
     public FolderFileContainer(File location, List<String> fileNames) {
         super(location);
         entries = new LinkedHashMap<String, FolderFileEntry>();
-        for (String name : fileNames) {
+        for (String fileName : fileNames) {
+            String name = fileName.replace(File.separatorChar, '/');
             entries.put(name, new FolderFileEntry(name, new File(location, name)));
         }
     }

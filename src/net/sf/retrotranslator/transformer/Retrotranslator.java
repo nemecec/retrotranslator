@@ -76,11 +76,13 @@ public class Retrotranslator implements MessageLogger {
 
     public void setDestdir(File destdir) {
         if (!destdir.isDirectory()) throw new IllegalArgumentException("Invalid destdir: " + destdir);
+        if (dest != null) throw new IllegalArgumentException("Destination already set.");
         dest = new FolderFileContainer(destdir);
     }
 
     public void setDestjar(File destjar) {
         if (destjar.isDirectory()) throw new IllegalArgumentException("Invalid destjar: " + destjar);
+        if (dest != null) throw new IllegalArgumentException("Destination already set.");
         dest = new JarFileContainer(destjar);
     }
 
@@ -132,7 +134,7 @@ public class Retrotranslator implements MessageLogger {
     }
 
     public void setBackport(String backport) {
-        backports = Backport.asList(backport); 
+        backports = Backport.asList(backport);
     }
 
     public void setTarget(String target) {

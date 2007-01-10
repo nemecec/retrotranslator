@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- *
+ * 
  * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
@@ -29,18 +29,65 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.runtime.java.lang.annotation;
+package net.sf.retrotranslator.runtime.java.lang;
 
-import java.lang.annotation.*;
+import net.sf.retrotranslator.runtime.impl.Advanced;
+import java.util.*;
 
 /**
  * @author Taras Puchko
  */
-@Documented
-@Retention(value = RetentionPolicy.RUNTIME)
-@Target(value = ElementType.ANNOTATION_TYPE)
-public @interface Retention_ {
+@Advanced
+public class InheritableThreadLocal_ extends ThreadLocal_ {
 
-    RetentionPolicy_ value();
+    private class Key {
+        public InheritableThreadLocal_ get() {
+            return InheritableThreadLocal_.this;
+        }
+    }
+
+    private static class Container extends InheritableThreadLocal<Map<Key, Object>> {
+
+        protected Map<Key, Object> initialValue() {
+            return new WeakHashMap<Key, Object>();
+        }
+
+        protected Map<Key, Object> childValue(Map<Key, Object> parentValue) {
+            WeakHashMap<Key, Object> result = new WeakHashMap<Key, Object>(parentValue.size() * 2);
+            for (Map.Entry<Key, Object> entry : parentValue.entrySet()) {
+                Key key = entry.getKey();
+                result.put(key, key.get().childValue(entry.getValue()));
+            }
+            return result;
+        }
+    }
+
+    private static final Container container = new Container();
+
+    private final Key key = new Key();
+
+    public InheritableThreadLocal_() {
+    }
+
+    public Object get() {
+        Map<Key, Object> map = container.get();
+        Object value = map.get(key);
+        if (value == null && !map.containsKey(key)) {
+            map.put(key, value = initialValue());
+        }
+        return value;
+    }
+
+    public void set(Object value) {
+        container.get().put(key, value);
+    }
+
+    public void remove() {
+        container.get().remove(key);
+    }
+
+    protected Object childValue(Object parentValue) {
+        return parentValue;
+    }
 
 }

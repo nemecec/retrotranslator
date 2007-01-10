@@ -36,7 +36,7 @@ import java.lang.annotation.*;
 /**
  * @author Taras Puchko
  */
-@Target({ElementType.FIELD, ElementType.METHOD})
+@Target({ElementType.TYPE, ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Advanced {
 }

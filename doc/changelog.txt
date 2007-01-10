@@ -1,9 +1,10 @@
 Retrotranslator Changelog
 =================================
 
-1.2.0 (2007-01-08)
----------------------------------
+1.2.0 (2007-01-10)
   WARNING: This release is not fully compatible with the previous one.
+---------------------------------
+  - Supported for java.lang.ThreadLocal.remove() in advanced mode.
   - Added -target option for Java 6 to Java 5 translation.
   - Improved bytecode compatibility with different JVMs.
   - Backported java.util.concurrent.locks.LockSupport.
@@ -13,6 +14,7 @@ Retrotranslator Changelog
   - Added java.lang.Thread.State enumeration, but Thread.getState() is not implemented.
   - Limited support for DecimalFormat.isParseBigDecimal() and DecimalFormat.setParseBigDecimal(boolean).
   - Removed deprecated Retrotranslator constructor and JITRetrotranslator.install method.
+  - Ant task: added nested fileset, jarfileset, and dirset; removed src.
   - Upgraded to backport-util-concurrent 3.0.
   - Signature is being removed when translating signed jars.
   - Retrotranslator runtime depends on backport-util-concurrent.

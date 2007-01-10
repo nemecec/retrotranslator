@@ -235,7 +235,7 @@ public abstract class AnnotatedElementDescriptor extends EmptyVisitor {
             value = getClassByType((net.sf.retrotranslator.runtime.asm.Type) value);
         } else if (value instanceof EnumValue) {
             EnumValue enumValue = (EnumValue) value;
-            value = Enum_.valueOf(getClassByDesc(enumValue.getDescriptor()), enumValue.getValue());
+            value = Enum.valueOf(getClassByDesc(enumValue.getDescriptor()), enumValue.getValue());
         } else if (value instanceof AnnotationValue) {
             value = createAnnotation((AnnotationValue) value);
         } else if (value instanceof AnnotationArray) {

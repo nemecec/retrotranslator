@@ -32,6 +32,7 @@
 package net.sf.retrotranslator.transformer;
 
 import java.io.File;
+import java.util.*;
 import org.apache.tools.ant.*;
 import org.apache.tools.ant.types.*;
 
@@ -40,9 +41,13 @@ import org.apache.tools.ant.types.*;
  */
 public class RetrotranslatorTask extends Task implements MessageLogger {
 
-    private Path src;
+    private File srcdir;
+    private File srcjar;
     private File destdir;
     private File destjar;
+    private List<FileSet> fileSets = new ArrayList<FileSet>();
+    private List<FileSet> jarFileSets = new ArrayList<FileSet>();
+    private List<DirSet> dirSets = new ArrayList<DirSet>();
     private boolean verbose;
     private boolean stripsign;
     private boolean retainapi;
@@ -51,29 +56,21 @@ public class RetrotranslatorTask extends Task implements MessageLogger {
     private boolean advanced;
     private boolean verify;
     private boolean failonwarning = true;
-    private Path classpath;
     private String srcmask;
     private String embed;
     private String backport;
     private String target;
+    private Path classpath;
 
     public RetrotranslatorTask() {
     }
 
-    public void setSrcdir(Path srcdir) {
-        getSrc().append(srcdir);
+    public void setSrcdir(File srcdir) {
+        this.srcdir = srcdir;
     }
 
-    public void setSrcjar(Path srcjar) {
-        getSrc().append(srcjar);
-    }
-
-    public Path createSrc() {
-        return getSrc().createPath();
-    }
-
-    private Path getSrc() {
-        return src != null ? src : (src = new Path(getProject()));
+    public void setSrcjar(File srcjar) {
+        this.srcjar = srcjar;
     }
 
     public void setDestdir(File destdir) {
@@ -82,6 +79,18 @@ public class RetrotranslatorTask extends Task implements MessageLogger {
 
     public void setDestjar(File destjar) {
         this.destjar = destjar;
+    }
+
+    public void addConfiguredFileset(FileSet fileSet) {
+        fileSets.add(fileSet);
+    }
+
+    public void addConfiguredJarfileset(FileSet fileSet) {
+        jarFileSets.add(fileSet);
+    }
+
+    public void addConfiguredDirset(DirSet dirSet) {
+        dirSets.add(dirSet);
     }
 
     public void setVerbose(boolean verbose) {
@@ -100,10 +109,6 @@ public class RetrotranslatorTask extends Task implements MessageLogger {
         this.retainflags = retainflags;
     }
 
-    public void setVerify(boolean verify) {
-        this.verify = verify;
-    }
-
     public void setLazy(boolean lazy) {
         this.lazy = lazy;
     }
@@ -112,24 +117,12 @@ public class RetrotranslatorTask extends Task implements MessageLogger {
         this.advanced = advanced;
     }
 
+    public void setVerify(boolean verify) {
+        this.verify = verify;
+    }
+
     public void setFailonwarning(boolean failonwarning) {
         this.failonwarning = failonwarning;
-    }
-
-    public void setClasspathref(Reference classpathref) {
-        createClasspath().setRefid(classpathref);
-    }
-
-    public void setClasspath(Path classpath) {
-        this.getClasspath().append(classpath);
-    }
-
-    public Path createClasspath() {
-        return getClasspath().createPath();
-    }
-
-    private Path getClasspath() {
-        return classpath != null ? classpath : (classpath = new Path(getProject()));
     }
 
     public void setSrcmask(String srcmask) {
@@ -148,28 +141,50 @@ public class RetrotranslatorTask extends Task implements MessageLogger {
         this.target = target;
     }
 
+    public void setClasspathref(Reference classpathref) {
+        createClasspath().setRefid(classpathref);
+    }
+
+    public void setClasspath(Path classpath) {
+        this.getClasspath().append(classpath);
+    }
+
+    public Path createClasspath() {
+        return getClasspath().createPath();
+    }
+
+    private Path getClasspath() {
+        return classpath != null ? classpath : (classpath = new Path(getProject()));
+    }
+
     public void log(Message message) {
         log(message.toString(), message.getLevel().isCritical() ? Project.MSG_WARN : Project.MSG_INFO);
     }
 
     public void execute() throws BuildException {
         Retrotranslator retrotranslator = new Retrotranslator();
-        for (String name : getSrc().list()) {
-            File file = getProject().resolveFile(name);
-            if (file.isFile()) {
-                retrotranslator.addSrcjar(file);
-            } else if (file.exists()) {
-                retrotranslator.addSrcdir(file);
-            } else {
-                throw new BuildException("Path not found: " + file);
-            }
-        }
-        if (destdir != null && destjar != null) {
-            throw new BuildException("Cannot set both destdir and destjar!");
-        }
+        if (srcdir != null) retrotranslator.addSrcdir(srcdir);
+        if (srcjar != null) retrotranslator.addSrcjar(srcjar);
         if (destdir != null) retrotranslator.setDestdir(destdir);
         if (destjar != null) retrotranslator.setDestjar(destjar);
-        if (target != null) retrotranslator.setTarget(target);
+        for (FileSet fileSet : fileSets) {
+            DirectoryScanner scanner = fileSet.getDirectoryScanner(getProject());
+            retrotranslator.addSourceFiles(scanner.getBasedir(), Arrays.asList(scanner.getIncludedFiles()));
+        }
+        for (FileSet jarFileSet : jarFileSets) {
+            DirectoryScanner scanner = jarFileSet.getDirectoryScanner(getProject());
+            File basedir = scanner.getBasedir();
+            for (String jarFile : scanner.getIncludedFiles()) {
+                retrotranslator.addSrcjar(new File(basedir, jarFile));
+            }
+        }
+        for (DirSet dirSet : dirSets) {
+            DirectoryScanner scanner = dirSet.getDirectoryScanner(getProject());
+            File basedir = scanner.getBasedir();
+            for (String subdirectory : scanner.getIncludedDirectories()) {
+                retrotranslator.addSrcdir(new File(basedir, subdirectory));
+            }
+        }
         retrotranslator.setVerbose(verbose);
         retrotranslator.setStripsign(stripsign);
         retrotranslator.setRetainapi(retainapi);
@@ -180,6 +195,7 @@ public class RetrotranslatorTask extends Task implements MessageLogger {
         retrotranslator.setSrcmask(srcmask);
         retrotranslator.setEmbed(embed);
         retrotranslator.setBackport(backport);
+        if (target != null) retrotranslator.setTarget(target);
         for (String fileName : getClasspath().list()) {
             retrotranslator.addClasspathElement(getProject().resolveFile(fileName));
         }

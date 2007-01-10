@@ -84,45 +84,47 @@ and concurrency utilities
     <tr><th>Option</th><th>Description</th><th>Default</th></tr>
     <tr>
         <td nowrap><code>-srcdir</code></td>
-        <td>Directory with classes compiled using JDK 5.0 (may be specified several times).</td>
+        <td>The directory with classes that should be translated (may be specified several times).</td>
         <td>-</td>
     </tr>
     <tr>
         <td nowrap><code>-srcjar</code></td>
-        <td>JAR file with classes compiled using JDK 5.0 (may be specified several times).</td>
+        <td>The directory with classes that should be translated (may be specified several times).</td>
         <td>-</td>
     </tr>
     <tr>
         <td nowrap><code>-destdir</code></td>
-        <td>Directory to place classes compatible with J2SE 1.4.</td>
+        <td>The directory to place translated classes.</td>
         <td>Location of sources</td>
     </tr>
     <tr>
         <td nowrap><code>-destjar</code></td>
-        <td>JAR file to place classes compatible with J2SE 1.4.</td>
+        <td>The JAR file to place translated classes.</td>
         <td>Location of sources</td>
     </tr>
     <tr>
         <td nowrap><a name="option_advanced"><code>-advanced</code></a></td>
-        <td>Allows to override Java 1.4 methods for better Java 5 compatibility.</td>
+        <td>Whether to use alternative implementations of Java 1.4 classes and methods for better Java 5 compatibility.</td>
         <td>Off</td>
     </tr>
     <tr>
         <td nowrap><code>-verify</code></td>
-        <td>Asks the translator for warnings when references to unknown classes, methods, or fields are found.</td>
+        <td>Asks the translator to examine translated bytecode for references to classes, methods, or fields
+            that cannot be found in the provided classpath.</td>
         <td>Off</td>
     </tr>
     <tr>
         <td nowrap><code>-classpath</code></td>
-        <td>The classpath to use for verification including <code>rt.jar</code>, <code>jce.jar</code>,
+        <td>The classpath for verification including <code>rt.jar</code>, <code>jce.jar</code>,
             <code>jsse.jar</code> (from JRE 1.4), <code>retrotranslator-runtime-<i>n.n.n</i>.jar</code>,
             and <code>backport-util-concurrent-<i>n.n</i>.jar</code>.</td>
         <td>Current classpath</td>
     </tr>
     <tr>
         <td nowrap><code>-srcmask</code></td>
-        <td>Files to translate (either bytecode or UTF-8 text) , e.g. "<code>*.class;*.tld</code>".
-            Only three special characters are supported: "<code>*?;</code>".</td>
+        <td>The wildcard pattern specifying files that should be translated (either bytecode or UTF-8 text),
+            e.g. "<code>*.class;*.tld</code>". There are three special characters: "<code>*?;</code>".
+        </td>
         <td>*.class</td>
     </tr>
     <tr>
@@ -192,46 +194,54 @@ and concurrency utilities
     <tr><th>Attribute</th><th>Description</th><th>Default</th></tr>
     <tr>
         <td><code>srcdir</code></td>
-        <td>Directory with classes compiled using JDK 5.0.</td>
+        <td>The directory with classes that should be translated.</td>
         <td>-</td>
     </tr>
     <tr>
         <td><code>srcjar</code></td>
-        <td>JAR file with classes compiled using JDK 5.0.</td>
+        <td>The directory with classes that should be translated.</td>
         <td>-</td>
     </tr>
     <tr>
         <td><code>destdir</code></td>
-        <td>Directory to place classes compatible with J2SE 1.4.</td>
+        <td>The directory to place translated classes.</td>
         <td>Location of sources</td>
     </tr>
     <tr>
         <td><code>destjar</code></td>
-        <td>JAR file to place classes compatible with J2SE 1.4.</td>
+        <td>The JAR file to place translated classes.</td>
         <td>Location of sources</td>
     </tr>
     <tr>
         <td><code>advanced</code></td>
-        <td>Allows to override Java 1.4 methods for better Java 5 compatibility.</td>
+        <td>Whether to use alternative implementations of Java 1.4 classes and methods for better Java 5 compatibility.</td>
         <td>Off</td>
     </tr>
     <tr>
         <td><code>verify</code></td>
-        <td>Asks the translator for warnings when references to unknown classes, methods, or fields are found.</td>
+        <td>Asks the translator to examine translated bytecode for references to classes, methods, or fields
+            that cannot be found in the provided classpath.</td>
         <td>Off</td>
     </tr>
     <tr>
         <td><code>classpath</code></td>
-        <td>The classpath to use for verification including <code>rt.jar</code>, <code>jce.jar</code>,
+        <td>The classpath for the verification, including <code>rt.jar</code>, <code>jce.jar</code>,
             <code>jsse.jar</code> (from JRE 1.4), <code>retrotranslator-runtime-<i>n.n.n</i>.jar</code>,
             and <code>backport-util-concurrent-<i>n.n</i>.jar</code>.
         </td>
         <td>Current classpath</td>
     </tr>
     <tr>
+        <td><code>classpathref</code></td>
+        <td>The classpath for the verification, given as a reference to a path defined elsewhere.
+        </td>
+        <td>Current classpath</td>
+    </tr>
+    <tr>
         <td><code>srcmask</code></td>
-        <td>Files to translate (either bytecode or UTF-8 text) , e.g. "<code>*.class;*.tld</code>".
-            Only three special characters are supported: "<code>*?;</code>".</td>
+        <td>The wildcard pattern specifying files that should be translated (either bytecode or UTF-8 text),
+            e.g. "<code>*.class;*.tld</code>". There are three special characters: "<code>*?;</code>".
+        </td>
         <td>*.class</td>
     </tr>
     <tr>
@@ -250,8 +260,8 @@ and concurrency utilities
     </tr>
     <tr>
         <td><code>target</code></td>
-        <td>To make Java 6 classes compatible with Java 5 set this option to 1.5 and supply
-            <a href="#extension">user-defined</a> backport packages via the <code>backport</code> option.</td>
+        <td>Set this option to 1.5 and supply <a href="#extension">user-defined</a> backport packages via
+            the <code>backport</code> option to make Java 6 classes compatible with Java 5.</td>
         <td>1.4</td>
     </tr>
     <tr>
@@ -289,8 +299,8 @@ and concurrency utilities
     </tr>
 </table>
 <p>
-    You may use nested <code>src</code> elements to specify source directories or JAR files, and nested
-    <code>classpath</code> elements to specify classpath for verification. For example:
+    You may use nested <code>fileset</code>, <code>jarfileset</code>, and <code>dirset</code> elements to specify
+    source files and <code>classpath</code> elements to specify classpath. For example:
 </p>
 <pre>
     &lt;path id="classpath"&gt;
@@ -299,7 +309,8 @@ and concurrency utilities
     &lt;taskdef name="retrotranslator" classpathref="classpath"
              classname="net.sf.retrotranslator.transformer.RetrotranslatorTask" /&gt;
     &lt;retrotranslator destdir="build/classes14" verify="true"&gt;
-        &lt;src path="build/classes15"/&gt;
+        &lt;fileset dir="build/classes15" includes="**/*.class"&gt;
+        &lt;jarfileset dir="build/lib15" includes="**/*.jar"&gt;
         &lt;classpath location="${java14_home}/jre/lib/rt.jar"/&gt;
         &lt;classpath refid="classpath"/&gt;
     &lt;/retrotranslator&gt;
@@ -374,7 +385,7 @@ and concurrency utilities
             append(CharSequence, int, int),<br>
             append(char)</code>
         </td><td>&nbsp;</td></tr>
-    <tr><td rowspan="25"><code>java.lang</code></td><td><code>Appendable<sup><a href="#2">2</a></sup></code></td><td>*
+    <tr><td rowspan="26"><code>java.lang</code></td><td><code>Appendable<sup><a href="#2">2</a></sup></code></td><td>*
     </td><td>&nbsp;</td></tr>
     <tr><td><code>Boolean</code></td><td><code>parseBoolean(String),<br>
         compareTo(Boolean)</code></td><td>&nbsp;</td></tr>
@@ -427,8 +438,10 @@ and concurrency utilities
         method returns non-empty stack trace only for the current thread.<br>
         The <code>Thread.getId()</code> method does not reflect the order in which threads are created.</td></tr>
     <tr><td><code>Thread.State</code></td><td>*</td><td>&nbsp;</td></tr>
+    <tr><td><code>ThreadLocal</code></td><td><code>remove()<sup><a href="#3">3</a></sup></code></td>
+        <td><code>ThreadLocal</code> and <code>InheritableThreadLocal</code>
+            are replaced by corresponding classes from the runtime library.<sup><a href="#3">3</a></sup>.</td></tr>
     <tr><td><code>TypeNotPresentException</code></td><td>*</td><td>&nbsp;</td></tr>
-
     <tr><td rowspan="2"><code>java.lang.ref</code></td>
         <td><code>SoftReference</code></td><td>*</td><td>
         <code>SoftReference(Object,ReferenceQueue)</code>

@@ -81,8 +81,9 @@
                 <pathelement location="build/retrotranslator-transformer-${version}.jar"/>
             </classpath>
         </taskdef>
-        <delete dir="build/classes" includes="**/*JITRetrotranslator* **/RetrotranslatorTask*"/>
-        <retrotranslator srcdir="build/classes" verify="true" classpath="${java14_rt_jar}" classpathref="classpath"/>
+        <retrotranslator verify="true" classpath="${java14_rt_jar}" classpathref="classpath">
+            <fileset dir="build/classes" excludes="**/*JITRetrotranslator* **/RetrotranslatorTask*"/>
+        </retrotranslator>
     </target>
 
     <target name="compile-tests" depends="compile">
@@ -125,8 +126,13 @@
 
     <target name="test-embedded" depends="compile-tests">
         <mkdir dir="build/test-embedded"/>
-        <retrotranslator srcdir="build/test-classes15" destdir="build/test-embedded" advanced="true"
-                         embed="com.mycompany.internal" srcmask="*.class;*.properties"/>
+        <jar destfile="build/test-embedded.jar">
+            <fileset dir="build/test-embedded" />
+        </jar>
+        <retrotranslator destdir="build/test-embedded" advanced="true"
+                         embed="com.mycompany.internal" srcmask="*.class;*.properties">
+            <jarfileset file="build/test-embedded.jar"/>
+        </retrotranslator>
         <echo message="Running classes in build/test-embedded on ${java14_home}"/>
         <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
                jvm="${java14_home}/bin/java" failureproperty="test.failed">
@@ -173,7 +179,9 @@
 
     <target name="test-retainapi" depends="compile-tests">
         <mkdir dir="build/test-retainapi"/>
-        <retrotranslator srcdir="build/test-classes15" destdir="build/test-retainapi" retainapi="true"/>
+        <retrotranslator destdir="build/test-retainapi" retainapi="true">
+            <dirset dir="build" includes="test-classes15"/>
+        </retrotranslator>
         <echo message="Running classes in build/test-retainapi on ${java14_home}"/>
         <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
                jvm="${java14_home}/bin/java" failureproperty="test.failed">
