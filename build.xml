@@ -1,6 +1,6 @@
 <project name="retrotranslator" default="build" basedir=".">
 
-    <property name="version" value="1.2.0"/>
+    <property name="version" value="1.2.1"/>
 
     <property file="build.properties"/>
 
@@ -34,6 +34,9 @@
             <arg value="-destdir"/>
             <arg value="build/classes14"/>
             <arg value="-stripsign"/>
+            <arg value="-backport"/>
+            <arg value="net.sf.retrotranslator.transformer.ClassFileTransformer:sun.misc.ClassFileTransformer;
+            net.sf.retrotranslator.transformer.ClassPreProcessor:com.bea.jvm.ClassPreProcessor"/>
         </java>
         <java classname="net.sf.retrotranslator.transformer.Retrotranslator"
               classpathref="classpath" classpath="build/classes14" failonerror="true"
@@ -233,7 +236,7 @@
               classpath="${java.class.path}" classpathref="classpath">
             <classpath path="build/retrotranslator-transformer-${version}.jar"/>
             <arg value="-advanced"/>
-            <arg value="org.apache.tools.ant.launch.Launcher"/>
+            <arg value="org.apache.tools.ant.Main"/>
             <arg value="junit-for-jit"/>
         </java>
     </target>

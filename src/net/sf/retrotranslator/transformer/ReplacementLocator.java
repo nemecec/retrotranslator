@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
+ *
  * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
@@ -41,32 +41,15 @@ import net.sf.retrotranslator.runtime.impl.*;
  */
 class ReplacementLocator {
 
-    public static final String RUNTIME_PREFIX = "net/sf/retrotranslator/runtime/";
-    public static final String CONCURRENT_PREFIX = "edu/emory/mathcs/backport/";
-
     private static final ClassReplacement NULL = new ClassReplacement();
-    private static final Set<String> JAVA_UTIL_CLASSES = Collections.synchronizedSet(new HashSet<String>(
-            Arrays.asList("java/util/Queue", "java/util/AbstractQueue", "java/util/PriorityQueue")));
 
-    private final boolean target14;
     private final boolean advanced;
     private final List<Backport> backports;
     private final Map<String, ClassReplacement> replacements = new Hashtable<String, ClassReplacement>();
 
-    public ReplacementLocator(boolean target14, boolean advanced, List<Backport> backports) {
-        this.target14 = target14;
+    public ReplacementLocator(boolean advanced, List<Backport> backports) {
         this.advanced = advanced;
         this.backports = backports;
-        putReplacement("sun/misc/", "ClassFileTransformer");
-        putReplacement("com/bea/jvm/", "ClassPreProcessor");
-    }
-
-    private void putReplacement(String packagePrefix, String simpleName) {
-        ClassReplacement replacement = new ClassReplacement();
-        String name = packagePrefix + simpleName;
-        replacement.setUniqueTypeName(name);
-        replacement.setReferenceTypeName(name);
-        replacements.put("net/sf/retrotranslator/transformer/" + simpleName, replacement);
     }
 
     public ClassReplacement getReplacement(String className) {
@@ -84,15 +67,22 @@ class ReplacementLocator {
     private ClassReplacement buildReplacement(String originalName) {
         ClassReplacement replacement = new ClassReplacement();
         for (Backport backport : backports) {
-            String prefix = backport.getReplacementPrefix();
+            if (replacement.getUniqueTypeName() == null && originalName.equals(backport.getOriginalName())) {
+                replacement.setUniqueTypeName(backport.getReplacementName());
+            }
+            String originalPrefix = backport.getOriginalPrefix();
+            if (originalPrefix == null) {
+                continue;
+            }
             String suffix = originalName;
-            if (backport.getOriginalPrefix().length() > 0) {
-                if (originalName.startsWith(backport.getOriginalPrefix())) {
-                    suffix = originalName.substring(backport.getOriginalPrefix().length());
+            if (originalPrefix.length() > 0) {
+                if (originalName.startsWith(originalPrefix)) {
+                    suffix = originalName.substring(originalPrefix.length());
                 } else {
                     continue;
                 }
             }
+            String prefix = backport.getReplacementPrefix();
             if (replacement.getUniqueTypeName() == null) {
                 replacement.setUniqueTypeName(findUniqueName(prefix, suffix));
             }
@@ -101,9 +91,6 @@ class ReplacementLocator {
                 loadFields(replacement, classDescriptor);
                 loadMethods(replacement, classDescriptor, originalName);
             }
-        }
-        if (replacement.getUniqueTypeName() == null) {
-            replacement.setUniqueTypeName(findSpecialUniqueName(originalName));
         }
         if (replacement.isEmpty()) {
             return NULL;
@@ -143,18 +130,6 @@ class ReplacementLocator {
 
     private static String replaceChar(String s, int index, String replacement) {
         return s.substring(0, index) + replacement + s.substring(index + 1);
-    }
-
-    private String findSpecialUniqueName(String originalName) {
-        if (target14) {
-            if (originalName.startsWith("java/util/concurrent/") || JAVA_UTIL_CLASSES.contains(originalName)) {
-                return CONCURRENT_PREFIX + originalName;
-            }
-            if (originalName.equals("java/lang/StringBuilder")) {
-                return Type.getInternalName(StringBuffer.class);
-            }
-        }
-        return null;
     }
 
     private void loadFields(ClassReplacement classReplacement, ClassDescriptor classDescriptor) {

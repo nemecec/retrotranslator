@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
+ *
  * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
@@ -40,10 +40,14 @@ class Backport {
 
     private String originalPrefix;
     private String replacementPrefix;
+    private String originalName;
+    private String replacementName;
 
-    public Backport(String originalPrefix, String backportPrefix) {
+    public Backport(String originalPrefix, String replacementPrefix, String originalName, String replacementName) {
         this.originalPrefix = originalPrefix;
-        this.replacementPrefix = backportPrefix;
+        this.replacementPrefix = replacementPrefix;
+        this.originalName = originalName;
+        this.replacementName = replacementName;
     }
 
     public String getOriginalPrefix() {
@@ -52,6 +56,14 @@ class Backport {
 
     public String getReplacementPrefix() {
         return replacementPrefix;
+    }
+
+    public String getOriginalName() {
+        return originalName;
+    }
+
+    public String getReplacementName() {
+        return replacementName;
     }
 
     public static List<Backport> asList(String s) {
@@ -65,20 +77,29 @@ class Backport {
     }
 
     private static Backport valueOf(String s) {
+        String original;
+        String replacement;
         int index = s.indexOf(':');
         if (index < 0) {
-            return new Backport("", toPrefix(s));
+            original = "";
+            replacement = toInternalName(s);
         } else {
-            return new Backport(toPrefix(s.substring(0, index)), toPrefix(s.substring(index + 1)));
+            original = toInternalName(s.substring(0, index));
+            replacement = toInternalName(s.substring(index + 1));
         }
+        return new Backport(toPrefix(original), toPrefix(replacement), original, replacement);
     }
 
-    private static String toPrefix(String packageName) {
-        String s = packageName.replace('.', '/');
-        if (s.startsWith("/") || s.endsWith("/")) {
-            throw new IllegalArgumentException("Illegal package name: " + packageName);
+    private static String toInternalName(String name) {
+        String result = name.replace('.', '/').trim();
+        if (result.startsWith("/") || result.endsWith("/")) {
+            throw new IllegalArgumentException("Illegal name: " + name);
         }
-        return s + '/';
+        return result;
+    }
+
+    private static String toPrefix(String name) {
+        return name.length() == 0 ? "" : name + '/';
     }
 
 }

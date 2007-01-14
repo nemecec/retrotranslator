@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
+ *
  * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
@@ -37,6 +37,9 @@ import net.sf.retrotranslator.runtime.asm.Type;
  * @author Taras Puchko
  */
 class TransformerTools {
+
+    public static final String RUNTIME_PREFIX = "net/sf/retrotranslator/runtime/";
+    public static final String CONCURRENT_PREFIX = "edu/emory/mathcs/backport/";
 
     public static String descriptor(Class returnType, Class... parameterTypes) {
         Type[] argumentTypes = new Type[parameterTypes.length];

@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
+ *
  * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
@@ -32,12 +32,15 @@
 package net.sf.retrotranslator.transformer;
 
 import java.lang.ref.SoftReference;
-import java.util.List;
+import java.util.*;
+import static net.sf.retrotranslator.transformer.TransformerTools.*;
 
 /**
  * @author Taras Puchko
  */
 class ReplacementLocatorFactory {
+
+    private static final String JAVA_UTIL_CONCURRENT = "java/util/concurrent/";
 
     private final ClassVersion target;
     private final boolean advanced;
@@ -50,7 +53,16 @@ class ReplacementLocatorFactory {
         this.advanced = advanced;
         this.backports = backports;
         if (target == ClassVersion.VERSION_14) {
-            backports.add(new Backport("", ReplacementLocator.RUNTIME_PREFIX));
+            addDefault(backports);
+        }
+    }
+
+    private void addDefault(List<Backport> backports) {
+        backports.add(new Backport("", RUNTIME_PREFIX, null, null));
+        backports.add(new Backport(null, null, "java/lang/StringBuilder", "java/lang/StringBuffer"));
+        backports.add(new Backport(JAVA_UTIL_CONCURRENT, CONCURRENT_PREFIX + JAVA_UTIL_CONCURRENT, null, null));
+        for (String name : new String[] {"java/util/Queue", "java/util/AbstractQueue", "java/util/PriorityQueue"}) {
+            backports.add(new Backport(null, null, name, CONCURRENT_PREFIX + name));
         }
     }
 
@@ -69,7 +81,7 @@ class ReplacementLocatorFactory {
     public synchronized ReplacementLocator getLocator() {
         ReplacementLocator locator = softReference.get();
         if (locator == null) {
-            locator = new ReplacementLocator(isTarget14(), advanced, backports);
+            locator = new ReplacementLocator(advanced, backports);
             softReference = new SoftReference<ReplacementLocator>(locator);
         }
         return locator;
