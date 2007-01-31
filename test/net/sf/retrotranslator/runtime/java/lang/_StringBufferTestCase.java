@@ -56,9 +56,118 @@ public class _StringBufferTestCase extends TestCase {
         assertEquals("abcy", new StringBuilder("abc").append(sequence, 1, 2).toString());
     }
 
+    public void testAppendCodePoint() throws Exception {
+        assertEquals("abc", new StringBuffer("a").appendCodePoint('b').append('c').toString());
+        assertEquals("a\uD834\uDD1Eb", new StringBuffer("a").appendCodePoint(0x1D11E).append('b').toString());
+        try {
+            new StringBuffer().appendCodePoint(-1);
+            fail();
+        } catch (IllegalArgumentException e) {
+            //ok
+        }
+    }
+
+    public void testCodePointAt() throws Exception {
+        assertEquals('b', new StringBuffer("ab").codePointAt(1));
+        assertEquals(0x1D11E, new StringBuffer("b\uD834\uDD1Ec").codePointAt(1));
+        assertEquals(0xD834, new StringBuffer("b\uD834").codePointAt(1));
+        try {
+            new StringBuffer("abc").codePointAt(-1);
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+            //ok
+        }
+        try {
+            new StringBuffer("abc").codePointAt(3);
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+            //ok
+        }
+    }
+
+    public void testCodePointBefore() throws Exception {
+        assertEquals('a', new StringBuffer("ab").codePointBefore(1));
+        assertEquals(0x1D11E, new StringBuffer("b\uD834\uDD1Ec").codePointBefore(3));
+        assertEquals(0xDD1E, new StringBuffer("\uDD1E").codePointBefore(1));
+        try {
+            new StringBuffer("abc").codePointBefore(0);
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+            //ok
+        }
+        try {
+            new StringBuffer("abc").codePointBefore(4);
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+            //ok
+        }
+    }
+
+    public void testCodePointCount() throws Exception {
+        assertEquals(2, new StringBuffer("abcd").codePointCount(1, 3));
+        assertEquals(3, new StringBuffer("b\uD834\uDD1Ec").codePointCount(0, 4));
+        assertEquals(2, new StringBuffer("b\uD834\uDD1Ec").codePointCount(0, 2));
+        assertEquals(2, new StringBuffer("b\uD834").codePointCount(0, 2));
+        try {
+            new StringBuffer("abc").codePointCount(-1, 1);
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+            //ok
+        }
+        try {
+            new StringBuffer("abc").codePointCount(1, 0);
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+            //ok
+        }
+        try {
+            new StringBuffer("abc").codePointCount(5, 5);
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+            //ok
+        }
+        try {
+            new StringBuffer("abc").codePointCount(1, 5);
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+            //ok
+        }
+    }
+
     public void testInsert() throws Exception {
         CharSequence sequence = "xyz";
         assertEquals("axyzbc", new StringBuffer("abc").insert(1, sequence).toString());
         assertEquals("aybc", new StringBuilder("abc").insert(1, sequence, 1, 2).toString());
     }
+
+    public void testOffsetByCodePoints() throws Exception {
+        assertEquals(3, new StringBuffer("abc").offsetByCodePoints(1, 2));
+        assertEquals(1, new StringBuffer("abc").offsetByCodePoints(1, 0));
+        assertEquals(3, new StringBuffer("b\uD834\uDD1Ec").offsetByCodePoints(0, 2));
+        try {
+            new StringBuffer("abc").offsetByCodePoints(-1, 1);
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+            //ok
+        }
+        try {
+            new StringBuffer("abc").offsetByCodePoints(10, 0);
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+            //ok
+        }
+        try {
+            new StringBuffer("abc").offsetByCodePoints(0, 5);
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+            //ok
+        }
+        try {
+            new StringBuffer("abc").offsetByCodePoints(2, -5);
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+            //ok
+        }
+    }
+
 }

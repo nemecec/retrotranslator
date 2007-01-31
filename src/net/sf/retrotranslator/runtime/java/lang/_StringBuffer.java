@@ -48,6 +48,29 @@ public class _StringBuffer {
         return append(buffer, s.subSequence(start, end));
     }
 
+    public static StringBuffer appendCodePoint(StringBuffer buffer, int codePoint) {
+        buffer.append(Character.toChars(codePoint));
+        return buffer;
+    }
+
+    public static int codePointAt(StringBuffer buffer, int index) {
+        synchronized (buffer) {
+            return Character.codePointAt(buffer, index);
+        }
+    }
+
+    public static int codePointBefore(StringBuffer buffer, int index) {
+        synchronized (buffer) {
+            return Character.codePointBefore(buffer, index);
+        }
+    }
+
+    public static int codePointCount(StringBuffer buffer, int beginIndex, int endIndex) {
+        synchronized (buffer) {
+            return Character.codePointCount(buffer, beginIndex, endIndex);
+        }
+    }
+
     public static StringBuffer insert(StringBuffer buffer, int dstOffset, CharSequence s) {
         return buffer.insert(dstOffset, (Object) s);
     }
@@ -55,4 +78,11 @@ public class _StringBuffer {
     public static StringBuffer insert(StringBuffer buffer, int dstOffset, CharSequence s, int start, int end) {
         return insert(buffer, dstOffset, s.subSequence(start, end));
     }
+
+    public static int offsetByCodePoints(StringBuffer buffer, int index, int codePointOffset) {
+        synchronized (buffer) {
+            return Character.offsetByCodePoints(buffer, index, codePointOffset);
+        }
+    }
+
 }

@@ -38,6 +38,36 @@ import java.util.*;
  */
 public class _String {
 
+    public static String convertConstructorArguments(int[] codePoints, int offset, int count) {
+        if (offset < 0) {
+            throw new StringIndexOutOfBoundsException(offset);
+        }
+        if (count < 0) {
+            throw new StringIndexOutOfBoundsException(count);
+        }
+        if (offset + count > codePoints.length || offset + count < offset) {
+            throw new StringIndexOutOfBoundsException(offset + count);
+        }
+        char[] chars = new char[count * 2 >= 0 ? count * 2 : Integer.MAX_VALUE];
+        int index = 0;
+        for (int i = 0; i < count; i++) {
+            index += _Character.toChars(codePoints[offset + i], chars, index);
+        }
+        return new String(chars, 0, index);
+    }
+
+    public static int codePointAt(String s, int index) {
+        return _Character.codePointAt(s, index);
+    }
+
+    public static int codePointBefore(String s, int index) {
+        return _Character.codePointBefore(s, index);
+    }
+
+    public static int codePointCount(String s, int beginIndex, int endIndex) {
+        return _Character.codePointCount(s, beginIndex, endIndex);
+    }
+
     public static boolean contains(String s, CharSequence cs) {
         return s.indexOf(cs.toString()) >= 0;
     }
@@ -52,6 +82,10 @@ public class _String {
 
     public static String format(Locale locale, String format, Object... args) {
         return new Formatter(locale).format(format, args).toString();
+    }
+
+    public static int offsetByCodePoints(String s, int index, int codePointOffset) {
+        return _Character.offsetByCodePoints(s, index, codePointOffset);
     }
 
     public static String replace(String s, CharSequence target, CharSequence replacement) {
@@ -82,4 +116,5 @@ public class _String {
     public static boolean isEmpty(String s) {
         return s.length() == 0;
     }
+
 }

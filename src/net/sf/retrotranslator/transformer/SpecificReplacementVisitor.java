@@ -58,35 +58,19 @@ class SpecificReplacementVisitor extends ClassAdapter {
     private static final String ORIGINAL_COLLECTIONS_NAME = Type.getInternalName(java.util.Collections.class);
     private static final String BACKPORTED_COLLECTIONS_NAME =
             Type.getInternalName(edu.emory.mathcs.backport.java.util.Collections.class);
-    private static final Map<String, String> COLLECTIONS_FIELDS = new HashMap<String, String>();
-    private static final Map<String, String> COLLECTIONS_METHODS = new HashMap<String, String>();
+    private static final String ORIGINAL_ARRAYS_NAME = Type.getInternalName(java.util.Arrays.class);
+    private static final String BACKPORTED_ARRAYS_NAME =
+            Type.getInternalName(edu.emory.mathcs.backport.java.util.Arrays.class);
+
+    private static final Set<String> ARRAYS_METHODS = getArrayMethods();
+    private static final Set<String> COLLECTIONS_METHODS = getCollectionMethods();
+    private static final Map<String, String> COLLECTIONS_FIELDS = getCollectionFields();
 
     private final boolean advanced;
-
-    static {
-        COLLECTIONS_FIELDS.put("emptyList", "EMPTY_LIST");
-        COLLECTIONS_FIELDS.put("emptyMap", "EMPTY_MAP");
-        COLLECTIONS_FIELDS.put("emptySet", "EMPTY_SET");
-        putMethod(boolean.class, "addAll", Collection.class, Object[].class);
-        putMethod(Collection.class, "checkedCollection", Collection.class, Class.class);
-        putMethod(List.class, "checkedList", List.class, Class.class);
-        putMethod(Map.class, "checkedMap", Map.class, Class.class, Class.class);
-        putMethod(Set.class, "checkedSet", Set.class, Class.class);
-        putMethod(SortedMap.class, "checkedSortedMap", SortedMap.class, Class.class, Class.class);
-        putMethod(SortedSet.class, "checkedSortedSet", SortedSet.class, Class.class);
-        putMethod(boolean.class, "disjoint", Collection.class, Collection.class);
-        putMethod(int.class, "frequency", Collection.class, Object.class);
-        putMethod(Comparator.class, "reverseOrder", Comparator.class);
-        putMethod(Set.class, "newSetFromMap", Map.class);
-    }
 
     public SpecificReplacementVisitor(ClassVisitor visitor, boolean advanced) {
         super(visitor);
         this.advanced = advanced;
-    }
-
-    private static void putMethod(Class returnType, String name, Class... parameterTypes) {
-        COLLECTIONS_METHODS.put(name, TransformerTools.descriptor(returnType, parameterTypes));
     }
 
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
@@ -125,6 +109,9 @@ class SpecificReplacementVisitor extends ClassAdapter {
                 return;
             }
             if (fixCollections(opcode, owner, name, desc)) {
+                return;
+            }
+            if (fixArrays(opcode, owner, name, desc)) {
                 return;
             }
             super.visitMethodInsn(opcode, owner, name, desc);
@@ -173,8 +160,16 @@ class SpecificReplacementVisitor extends ClassAdapter {
                         field, Type.getReturnType(desc).toString());
                 return true;
             }
-            if (desc.equals(COLLECTIONS_METHODS.get(name))) {
+            if (COLLECTIONS_METHODS.contains(name + desc)) {
                 mv.visitMethodInsn(opcode, BACKPORTED_COLLECTIONS_NAME, name, desc);
+                return true;
+            }
+            return false;
+        }
+
+        private boolean fixArrays(int opcode, String owner, String name, String desc) {
+            if (owner.equals(ORIGINAL_ARRAYS_NAME) && ARRAYS_METHODS.contains(name + desc)) {
+                mv.visitMethodInsn(opcode, BACKPORTED_ARRAYS_NAME, name, desc);
                 return true;
             }
             return false;
@@ -234,6 +229,53 @@ class SpecificReplacementVisitor extends ClassAdapter {
             mv.visitLabel(continueLabel);
             return true;
         }
+    }
+
+    private static Set<String> getArrayMethods() {
+        Set<String> result = new HashSet<String>();
+        for (Class arrayType : new Class[]{boolean[].class, byte[].class, char[].class,
+                double[].class, float[].class, int[].class, long[].class, short[].class, Object[].class}) {
+            result.add("copyOf" +
+                    TransformerTools.descriptor(arrayType, arrayType, int.class));
+            result.add("copyOfRange" +
+                    TransformerTools.descriptor(arrayType, arrayType, int.class, int.class));
+        }
+        result.add("copyOf" +
+                TransformerTools.descriptor(Object[].class, Object[].class, int.class, Class.class));
+        result.add("copyOfRange" +
+                TransformerTools.descriptor(Object[].class, Object[].class, int.class, int.class, Class.class));
+        return result;
+    }
+
+    private static Set<String> getCollectionMethods() {
+        Set<String> result = new HashSet<String>();
+        for (String method : new String[]{
+                getMethod(boolean.class, "addAll", Collection.class, Object[].class),
+                getMethod(Collection.class, "checkedCollection", Collection.class, Class.class),
+                getMethod(List.class, "checkedList", List.class, Class.class),
+                getMethod(Map.class, "checkedMap", Map.class, Class.class, Class.class),
+                getMethod(Set.class, "checkedSet", Set.class, Class.class),
+                getMethod(SortedMap.class, "checkedSortedMap", SortedMap.class, Class.class, Class.class),
+                getMethod(SortedSet.class, "checkedSortedSet", SortedSet.class, Class.class),
+                getMethod(boolean.class, "disjoint", Collection.class, Collection.class),
+                getMethod(int.class, "frequency", Collection.class, Object.class),
+                getMethod(Comparator.class, "reverseOrder", Comparator.class),
+                getMethod(Set.class, "newSetFromMap", Map.class)}) {
+            result.add(method);
+        }
+        return result;
+    }
+
+    private static String getMethod(Class returnType, String name, Class... parameterTypes) {
+        return name + TransformerTools.descriptor(returnType, parameterTypes);
+    }
+
+    private static Map<String, String> getCollectionFields() {
+        Map<String, String> result = new HashMap<String, String>();
+        result.put("emptyList", "EMPTY_LIST");
+        result.put("emptyMap", "EMPTY_MAP");
+        result.put("emptySet", "EMPTY_SET");
+        return result;
     }
 
 }

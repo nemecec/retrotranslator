@@ -316,6 +316,10 @@ and concurrency utilities
     &lt;/retrotranslator&gt;
 </pre>
 <p>
+    The source directories specified by <code>srcdir</code>, <code>dirset</code>,
+    and the <code>dir</code> attribute of <code>fileset</code> should contain the "root" package of your classes.
+</p>
+<p>
     For <a href="http://maven.apache.org/">Maven</a> there is a
     <a href="http://mojo.codehaus.org/retrotranslator-maven-plugin/">Retrotranslator plugin</a>
     from the <a href="http://mojo.codehaus.org/">Mojo Project</a>.
@@ -390,7 +394,8 @@ and concurrency utilities
     <tr><td><code>Boolean</code></td><td><code>parseBoolean(String),<br>
         compareTo(Boolean)</code></td><td>&nbsp;</td></tr>
     <tr><td><code>Byte</code></td><td><code>valueOf(byte)</code></td><td>&nbsp;</td></tr>
-    <tr><td><code>Character</code></td><td><code>valueOf(char)</code></td><td>&nbsp;</td></tr>
+    <tr><td><code>Character</code></td><td>*</td><td>New members of <code>Character.UnicodeBlock</code> are not supported.
+    All supplementary code points are considered as unassigned.</td></tr>
     <tr><td><code>Class</code></td><td>* (21 new methods)</td><td>
         <code>Class.getMethod(String, Class...)</code> and <code>Class.getDeclaredMethod(String, Class...)</code>
         are intercepted to better support generics and covariant return types
@@ -410,19 +415,20 @@ and concurrency utilities
     <tr><td><code>Package</code></td><td>* (4 new methods)</td><td>&nbsp;</td></tr>
     <tr><td><code>Readable<sup><a href="#2">2</a></sup></code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>Short</code></td><td><code>valueOf(short)</code></td><td>&nbsp;</td></tr>
-    <tr><td><code>String</code></td><td><code>contains(CharSequence),<br>
-        contentEquals(CharSequence),<br>
-        format(Locale, String, Object...),<br>
-        format(String, Object...),<br>
-        replace(CharSequence, CharSequence),<br>
+    <tr><td><code>String</code></td><td>*<br><code>
         isEmpty()<sup><a href="#4">4</a></sup>
     </code></td><td>&nbsp;</td></tr>
     <tr><td><code>StringBuffer</code></td><td><code>
         StringBuffer(CharSequence),<br>
         append(CharSequence),<br>
         append(CharSequence, int, int),<br>
+        appendCodePoint(int),<br>
+        codePointAt(int),<br>
+        codePointBefore(int),<br>
+        codePointCount(int, int),<br>
         insert(int, CharSequence),<br>
-        insert(int, CharSequence, int, int)
+        insert(int, CharSequence, int, int),<br>
+        offsetByCodePoints(int, int)
     </code></td><td>&nbsp;</td></tr>
     <tr><td><code>StringBuilder</code></td><td>
         All methods supported in <code>StringBuffer</code>
@@ -497,13 +503,19 @@ and concurrency utilities
         <code>append(CharSequence),<br> append(CharSequence, int, int),<br> append(char),<br> read(CharBuffer)</code>
         </td><td>&nbsp;</td></tr>
 
-    <tr><td rowspan="10"><code>java.util</code></td><td><code>AbstractQueue<sup><a href="#1">1</a></sup></code></td>
+    <tr><td rowspan="12"><code>java.util</code></td><td><code>AbstractQueue<sup><a href="#1">1</a></sup></code></td>
         <td>*</td><td>&nbsp;</td></tr>
-    <tr><td><code>Arrays</code></td><td>* (21 new methods)</td><td>&nbsp;</td></tr>
-    <tr><td><code>Collections<sup><a href="#1">1</a></sup></code></td><td>* (13 new methods)<br>
-        newSetFromMap(Map)<sup><a href="#4">4</a></sup>
-
+    <tr><td><code>ArrayDeque<sup><a href="#1">1</a>,<a href="#4">4</a></sup></code></td>
+        <td>*</td><td>&nbsp;</td></tr>
+    <tr><td><code>Arrays</code></td><td>* (21 new methods)<br>
+        <code>copyOf(...)</code><sup><a href="#4">4</a></sup> (10 methods)<br>
+        <code>copyOfRange(...)</code><sup><a href="#4">4</a></sup> (10 methods)
     </td><td>&nbsp;</td></tr>
+    <tr><td><code>Collections<sup><a href="#1">1</a></sup></code></td><td>* (13 new methods)<br>
+        <code>newSetFromMap(Map)</code><sup><a href="#4">4</a></sup>
+    </td><td>&nbsp;</td></tr>
+    <tr><td><code>Deque<sup><a href="#1">1</a>,<a href="#2">2</a>,<a href="#4">4</a></sup></code></td>
+        <td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>EnumMap</code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>EnumSet</code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>Formatter</code></td><td>*</td><td>&nbsp;</td></tr>
@@ -559,7 +571,6 @@ and concurrency utilities
     <code>argument1</code>...<code>argumentN</code> methods and optional public void <code>initialize</code> method.
     All <code>argumentX</code> methods provide arguments for a Java 1.4 constuctor and should not have any parameters.
     The <code>initialize</code> method has a single parameter for the created instance and may be used for postprocessing.
-
 </p>
 <p>
     However, if the backported methods require access
@@ -574,7 +585,10 @@ and concurrency utilities
     For example, specify the following at the command line to make Retrotranslator use
     <code>com.mycompany.internal.java.lang._String</code> and to rewrite all references to
     <code>com.sun.org.apache.xerces.internal.*</code> with <code>org.apache.xerces.*</code>:<br>
-    <code>-backport&nbsp;com.mycompany.internal;com.sun.org.apache.xerces.internal:org.apache.xerces</code>
+    <code>-backport&nbsp;com.mycompany.internal;com.sun.org.apache.xerces.internal:org.apache.xerces</code><br>
+    It is even possible to substitute specific classes. The following options can be used to replace
+    <code>StringBuilder</code> with <code>StringBuffer</code> and disable use of backported Java 5 classes:<br>
+    <code>-retainapi -backport java.lang.StringBuilder:java.lang.StringBuffer</code>
 </p>
 <p>
     If you have written an extension that does not contain copyrighted code, you may send
@@ -590,8 +604,6 @@ and concurrency utilities
 </p>
 <ul>
     <li>Reflection-based tools may be unable to discover additional classes and methods introduced in Java 5 when running on JRE 1.4.</li>
-    <li>Some applications enable all features only if they detect Java 5, so you may need to override system properties:<br>
-        <code>&nbsp;java -Djava.version=1.5.0 -Djava.specification.version=1.5 -Djava.class.version=49.0 ...</code></li>
     <li>Translated code running on JRE 5.0 may be incompatible with other Java 5 code when Java 5 API is used.</li>
     <li>Reflection on generics and metadata may return incomplete information for dynamically generated classes.</li>
     <li>Constants inlined by a compiler and access modifiers are ignored during the verification.</li>
@@ -602,12 +614,9 @@ and concurrency utilities
 
 <h4><a name="alternative">Alternative tools</a></h4>
 <ul>
-    <li><a href="http://retroweaver.sourceforge.net/">Retroweaver</a>
-        - a Java bytecode weaver that enables you to take advantage
-        of the new 1.5 language features in your source code,
-        while still retaining compatibility with 1.4 virtual machines.</li>
-    <li><a href="http://tinyurl.com/r8xba">Declawer</a>
-        - a customized Java compiler which reduces 1.5 Generics to equivalent 1.4 syntax.</li>
+    <li><a href="http://retroweaver.sourceforge.net/">Retroweaver</a></li>
+    <li><a href="http://tinyurl.com/r8xba">Declawer</a></li>
+    <li><a href="http://wiki.jboss.org/wiki/Wiki.jsp?page=JBossRetro">JBossRetro</a></li>
 </ul>
 
 <h4><a name="contact">Contact</a></h4>

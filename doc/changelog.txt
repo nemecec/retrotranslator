@@ -1,6 +1,13 @@
 Retrotranslator Changelog
 =================================
 
+1.2.1 (2007-02-01)
+---------------------------------
+  - Support for java.util.Deque and java.util.ArrayDeque.
+  - Support for java.util.Arrays.copyOf(...) and java.util.Arrays.copyOfRange(...).
+  - Limited support for UNICODE-related methods of Character, String, and StringBuffer.
+  - The -backport option accepts individual classes and is used even when -retainapi is specified.
+
 1.2.0 (2007-01-10)
   WARNING: This release is not fully compatible with the previous one.
 ---------------------------------

@@ -44,15 +44,17 @@ class ReplacementLocatorFactory {
 
     private final ClassVersion target;
     private final boolean advanced;
+    private final boolean retainapi;
     private List<Backport> backports;
 
     private SoftReference<ReplacementLocator> softReference = new SoftReference<ReplacementLocator>(null);
 
-    public ReplacementLocatorFactory(ClassVersion target, boolean advanced, List<Backport> backports) {
+    public ReplacementLocatorFactory(ClassVersion target, boolean advanced, boolean retainapi, List<Backport> backports) {
         this.target = target;
         this.advanced = advanced;
+        this.retainapi = retainapi;
         this.backports = backports;
-        if (target == ClassVersion.VERSION_14) {
+        if (target == ClassVersion.VERSION_14 && !retainapi) {
             addDefault(backports);
         }
     }
@@ -61,7 +63,8 @@ class ReplacementLocatorFactory {
         backports.add(new Backport("", RUNTIME_PREFIX, null, null));
         backports.add(new Backport(null, null, "java/lang/StringBuilder", "java/lang/StringBuffer"));
         backports.add(new Backport(JAVA_UTIL_CONCURRENT, CONCURRENT_PREFIX + JAVA_UTIL_CONCURRENT, null, null));
-        for (String name : new String[] {"java/util/Queue", "java/util/AbstractQueue", "java/util/PriorityQueue"}) {
+        for (String name : new String[]{"java/util/Deque", "java/util/ArrayDeque",
+                "java/util/Queue", "java/util/AbstractQueue", "java/util/PriorityQueue"}) {
             backports.add(new Backport(null, null, name, CONCURRENT_PREFIX + name));
         }
     }
@@ -70,12 +73,16 @@ class ReplacementLocatorFactory {
         return target;
     }
 
-    public boolean isTarget14() {
-        return target == ClassVersion.VERSION_14;
-    }
-
     public boolean isAdvanced() {
         return advanced;
+    }
+
+    public boolean isRetainapi() {
+        return retainapi;
+    }
+
+    public boolean isEmpty() {
+        return backports.isEmpty();
     }
 
     public synchronized ReplacementLocator getLocator() {

@@ -109,8 +109,8 @@ public class SignatureListGenerator extends EmptyVisitor {
     }
 
     private void execute(String fileName) throws Exception {
-        ClassTransformer classTransformer = new ClassTransformer(false, false, false, false, null, null,
-                new ReplacementLocatorFactory(ClassVersion.VERSION_14, false, new ArrayList<Backport>()));
+        ClassTransformer classTransformer = new ClassTransformer(false, false, false, null, null,
+                new ReplacementLocatorFactory(ClassVersion.VERSION_14, false, false, new ArrayList<Backport>()));
         for (Object[] objects : CLASSES_14) {
             Class aClass = (Class) objects[0];
             specialSignature = objects.length > 1 ? (String) objects[1] : null;

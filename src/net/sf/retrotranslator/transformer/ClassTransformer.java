@@ -41,17 +41,15 @@ class ClassTransformer implements BytecodeTransformer {
 
     private boolean lazy;
     private boolean stripsign;
-    private boolean retainapi;
     private boolean retainflags;
     private EmbeddingConverter converter;
     private SystemLogger logger;
     private ReplacementLocatorFactory factory;
 
-    public ClassTransformer(boolean lazy, boolean stripsign, boolean retainapi, boolean retainflags,
-                            EmbeddingConverter converter, SystemLogger logger, ReplacementLocatorFactory factory) {
+    public ClassTransformer(boolean lazy, boolean stripsign, boolean retainflags, SystemLogger logger,
+                            EmbeddingConverter converter, ReplacementLocatorFactory factory) {
         this.lazy = lazy;
         this.stripsign = stripsign;
-        this.retainapi = retainapi;
         this.retainflags = retainflags;
         this.converter = converter;
         this.logger = logger;
@@ -69,17 +67,17 @@ class ClassTransformer implements BytecodeTransformer {
         MethodCounter counter = new MethodCounter();
         ClassVisitor visitor = new DuplicateInterfacesVisitor(
                 new VersionVisitor(classWriter, factory.getTarget()), logger, counter);
-        boolean isTarget14 = factory.isTarget14();
+        boolean isTarget14 = factory.getTarget() == ClassVersion.VERSION_14;
         if (isTarget14) {
             visitor = new ArrayCloningVisitor(new ClassLiteralVisitor(visitor));
         }
         if (converter != null) {
             visitor = new PrefixingVisitor(visitor, converter);
         }
-        if (!retainapi) {
-            if (isTarget14) {
-                visitor = new SpecificReplacementVisitor(visitor, factory.isAdvanced());
-            }
+        if (isTarget14 && !factory.isRetainapi()) {
+            visitor = new SpecificReplacementVisitor(visitor, factory.isAdvanced());
+        }
+        if (!factory.isEmpty()) {
             visitor = new GeneralReplacementVisitor(new EnumVisitor(visitor), factory.getLocator());
         }
         if (stripsign) {

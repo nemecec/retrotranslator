@@ -39,6 +39,101 @@ import junit.framework.TestCase;
  */
 public class _StringTestCase extends TestCase {
 
+    public void testConvertConstructorArguments() throws Exception {
+        assertEquals("b\uD834\uDD1Ec", new String(new int[]{'a', 'b', 0x1D11E, 'c', 'd'}, 1, 3));
+        try {
+            new String(new int[]{-1, 'b'}, 0, 1);
+            fail();
+        } catch (IllegalArgumentException e) {
+            //ok
+        }
+        try {
+            new String(new int[]{'a', 'b'}, -1, 1);
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+            //ok
+        }
+        try {
+            new String(new int[]{'a', 'b'}, 1, -1);
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+            //ok
+        }
+        try {
+            new String(new int[]{'a', 'b'}, 1, 2);
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+            //ok
+        }
+    }
+
+    public void testCodePointAt() throws Exception {
+        assertEquals('b', "ab".codePointAt(1));
+        assertEquals(0x1D11E, "b\uD834\uDD1Ec".codePointAt(1));
+        assertEquals(0xD834, "b\uD834".codePointAt(1));
+        try {
+            "abc".codePointAt(-1);
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+            //ok
+        }
+        try {
+            "abc".codePointAt(3);
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+            //ok
+        }
+    }
+
+    public void testCodePointBefore() throws Exception {
+        assertEquals('a', "ab".codePointBefore(1));
+        assertEquals(0x1D11E, "b\uD834\uDD1Ec".codePointBefore(3));
+        assertEquals(0xDD1E, "\uDD1E".codePointBefore(1));
+        try {
+            "abc".codePointBefore(0);
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+            //ok
+        }
+        try {
+            "abc".codePointBefore(4);
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+            //ok
+        }
+    }
+
+    public void testCodePointCount() throws Exception {
+        assertEquals(2, "abcd".codePointCount(1, 3));
+        assertEquals(3, "b\uD834\uDD1Ec".codePointCount(0, 4));
+        assertEquals(2, "b\uD834\uDD1Ec".codePointCount(0, 2));
+        assertEquals(2, "b\uD834".codePointCount(0, 2));
+        try {
+            "abc".codePointCount(-1, 1);
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+            //ok
+        }
+        try {
+            "abc".codePointCount(1, 0);
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+            //ok
+        }
+        try {
+            "abc".codePointCount(5, 5);
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+            //ok
+        }
+        try {
+            "abc".codePointCount(1, 5);
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+            //ok
+        }
+    }
+
     public void testContains() throws Exception {
         assertTrue("abcd".contains("bc"));
         assertFalse("abcd".contains("xy"));
@@ -52,6 +147,36 @@ public class _StringTestCase extends TestCase {
     public void testFormat() throws Exception {
         assertEquals("1234", String.format("%d", 1234));
         assertEquals("1.234", String.format(Locale.GERMAN, "%,d", 1234));
+    }
+
+    public void testOffsetByCodePoints() throws Exception {
+        assertEquals(3, "abc".offsetByCodePoints(1, 2));
+        assertEquals(1, "abc".offsetByCodePoints(1, 0));
+        assertEquals(3, "b\uD834\uDD1Ec".offsetByCodePoints(0, 2));
+        try {
+            "abc".offsetByCodePoints(-1, 1);
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+            //ok
+        }
+        try {
+            "abc".offsetByCodePoints(10, 0);
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+            //ok
+        }
+        try {
+            "abc".offsetByCodePoints(0, 5);
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+            //ok
+        }
+        try {
+            "abc".offsetByCodePoints(2, -5);
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+            //ok
+        }
     }
 
     public void testReplace() throws Exception {

@@ -56,8 +56,8 @@ public class JITRetrotranslator {
     public boolean run() {
         if (isJava5Supported()) return true;
         ReplacementLocatorFactory factory = new ReplacementLocatorFactory(
-                ClassVersion.VERSION_14, advanced, Backport.asList(backport));
-        ClassTransformer transformer = new ClassTransformer(true, false, false, false, null, null, factory);
+                ClassVersion.VERSION_14, advanced, false, Backport.asList(backport));
+        ClassTransformer transformer = new ClassTransformer(true, false, false, null, null, factory);
         ClassDescriptor.setBytecodeTransformer(transformer);
         SunJITRetrotranslator.install(transformer);
         if (isJava5Supported()) return true;

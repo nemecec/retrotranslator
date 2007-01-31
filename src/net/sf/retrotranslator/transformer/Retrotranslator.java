@@ -162,9 +162,9 @@ public class Retrotranslator implements MessageLogger {
             converter = new EmbeddingConverter(embed);
         }
         SystemLogger systemLogger = new SystemLogger(logger, verbose);
-        ReplacementLocatorFactory locatorFactory = new ReplacementLocatorFactory(target, advanced, backports);
+        ReplacementLocatorFactory locatorFactory = new ReplacementLocatorFactory(target, advanced, retainapi, backports);
         ClassTransformer classTransformer = new ClassTransformer(
-                lazy, stripsign, retainapi, retainflags, converter, systemLogger, locatorFactory);
+                lazy, stripsign, retainflags, systemLogger, converter, locatorFactory);
         TextFileTransformer fileTransformer = new TextFileTransformer(locatorFactory);
         FileTranslator translator = new FileTranslator(
                 classTransformer, fileTransformer, converter, systemLogger, sourceMask);

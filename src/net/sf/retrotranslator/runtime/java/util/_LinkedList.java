@@ -31,12 +31,30 @@
  */
 package net.sf.retrotranslator.runtime.java.util;
 
-import java.util.LinkedList;
+import java.util.*;
 
 /**
  * @author Taras Puchko
  */
 public class _LinkedList {
+
+    public static Iterator descendingIterator(final LinkedList list) {
+        return new Iterator() {
+            private final ListIterator iterator = list.listIterator(list.size());
+
+            public boolean hasNext() {
+                return iterator.hasPrevious();
+            }
+
+            public Object next() {
+                return iterator.previous();
+            }
+
+            public void remove() {
+                iterator.remove();
+            }
+        };
+    }
 
     public static Object element(LinkedList list) {
         return list.getFirst();
@@ -46,16 +64,74 @@ public class _LinkedList {
         return list.add(o);
     }
 
+    public static boolean offerFirst(LinkedList list, Object o) {
+        list.addFirst(o);
+        return true;
+    }
+
+    public static boolean offerLast(LinkedList list, Object o) {
+        list.addLast(o);
+        return true;
+    }
+
     public static Object peek(LinkedList list) {
         return list.isEmpty() ? null : list.getFirst();
+    }
+
+    public static Object peekFirst(LinkedList list) {
+        return list.isEmpty() ? null : list.getFirst();
+    }
+
+    public static Object peekLast(LinkedList list) {
+        return list.isEmpty() ? null : list.getLast();
     }
 
     public static Object poll(LinkedList list) {
         return list.isEmpty() ? null : list.removeFirst();
     }
 
+    public static Object pollFirst(LinkedList list) {
+        return list.isEmpty() ? null : list.removeFirst();
+    }
+
+    public static Object pollLast(LinkedList list) {
+        return list.isEmpty() ? null : list.removeLast();
+    }
+
+    public static Object pop(LinkedList list) {
+        return list.removeFirst();
+    }
+
+    public static void push(LinkedList list, Object o) {
+        list.addFirst(o);
+    }
+
     public static Object remove(LinkedList list) {
         return list.removeFirst();
     }
-    
+
+    public static boolean removeFirstOccurrence(LinkedList list, Object o) {
+        return list.remove(o);
+    }
+
+    public static boolean removeLastOccurrence(LinkedList list, Object o) {
+        ListIterator iterator = list.listIterator(list.size());
+        if (o != null) {
+            while (iterator.hasPrevious()) {
+                if (o.equals(iterator.previous())) {
+                    iterator.remove();
+                    return true;
+                }
+            }
+        } else {
+            while (iterator.hasPrevious()) {
+                if (iterator.previous() == null) {
+                    iterator.remove();
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 }
