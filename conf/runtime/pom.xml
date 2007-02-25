@@ -26,7 +26,7 @@
         <url>http://sourceforge.net/users/tarasp/</url>
     </organization>
     <scm>
-        <url>http://cvs.sourceforge.net/viewcvs.py/retrotranslator/</url>
+        <url>http://retrotranslator.cvs.sourceforge.net/retrotranslator/</url>
     </scm>
     <dependencies>
         <dependency>
