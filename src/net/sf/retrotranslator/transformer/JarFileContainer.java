@@ -53,7 +53,7 @@ class JarFileContainer extends FileContainer {
     }
 
     public Collection<? extends FileEntry> getEntries() {
-        if (entries == null) init();
+        if (entries == null) loadEntries();
         return new ArrayList<JarFileEntry>(entries.values());
     }
 
@@ -63,9 +63,10 @@ class JarFileContainer extends FileContainer {
         }
     }
 
-    private void init() {
-        entries = new LinkedHashMap<String, JarFileEntry>();
+    private void loadEntries() {
+        initEntries();
         try {
+            long lastModified = location.lastModified();
             FileInputStream fileInputStream = new FileInputStream(location);
             try {
                 ZipInputStream stream = new ZipInputStream(fileInputStream);
@@ -73,7 +74,7 @@ class JarFileContainer extends FileContainer {
                 while ((entry = stream.getNextEntry()) != null) {
                     if (!entry.isDirectory()) {
                         byte[] content = readFully(stream, (int) entry.getSize());
-                        entries.put(entry.getName(), new JarFileEntry(entry.getName(), content));
+                        entries.put(entry.getName(), new JarFileEntry(entry.getName(), content, lastModified));
                     }
                 }
             } finally {
@@ -85,9 +86,15 @@ class JarFileContainer extends FileContainer {
     }
 
     public void putEntry(String name, byte[] contents) {
-        if (entries == null) entries = new LinkedHashMap<String, JarFileEntry>();
-        entries.put(name, new JarFileEntry(name, contents));
+        initEntries();
+        entries.put(name, new JarFileEntry(name, contents, 0));
         modified = true;
+    }
+
+    private void initEntries() {
+        if (entries == null) {
+            entries = new LinkedHashMap<String, JarFileEntry>();
+        }
     }
 
     public void flush(SystemLogger logger) {
@@ -103,6 +110,10 @@ class JarFileContainer extends FileContainer {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public boolean containsUpToDate(String name, long sourceTime) {
+        return false;
     }
 
     private void flush(FileOutputStream fileOutputStream, SystemLogger logger) throws IOException {
@@ -156,14 +167,20 @@ class JarFileContainer extends FileContainer {
     private static class JarFileEntry extends FileEntry {
 
         private byte[] content;
+        private long lastModified;
 
-        public JarFileEntry(String name, byte[] content) {
+        public JarFileEntry(String name, byte[] content, long lastModified) {
             super(name);
+            this.lastModified = lastModified;
             this.content = content;
         }
 
         public byte[] getContent() {
             return content;
+        }
+
+        public long lastModified() {
+            return lastModified;
         }
     }
 }

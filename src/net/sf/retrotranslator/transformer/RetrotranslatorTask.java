@@ -55,6 +55,7 @@ public class RetrotranslatorTask extends Task implements MessageLogger {
     private boolean lazy;
     private boolean advanced;
     private boolean verify;
+    private boolean uptodatecheck;
     private boolean failonwarning = true;
     private String srcmask;
     private String embed;
@@ -119,6 +120,10 @@ public class RetrotranslatorTask extends Task implements MessageLogger {
 
     public void setVerify(boolean verify) {
         this.verify = verify;
+    }
+
+    public void setUptodatecheck(boolean uptodatecheck) {
+        this.uptodatecheck = uptodatecheck;
     }
 
     public void setFailonwarning(boolean failonwarning) {
@@ -192,6 +197,7 @@ public class RetrotranslatorTask extends Task implements MessageLogger {
         retrotranslator.setLazy(lazy);
         retrotranslator.setAdvanced(advanced);
         retrotranslator.setVerify(verify);
+        retrotranslator.setUptodatecheck(uptodatecheck);
         retrotranslator.setSrcmask(srcmask);
         retrotranslator.setEmbed(embed);
         retrotranslator.setBackport(backport);

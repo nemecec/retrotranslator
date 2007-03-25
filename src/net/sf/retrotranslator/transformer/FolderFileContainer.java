@@ -47,7 +47,7 @@ class FolderFileContainer extends FileContainer {
 
     public FolderFileContainer(File location, List<String> fileNames) {
         super(location);
-        entries = new LinkedHashMap<String, FolderFileEntry>();
+        initEntries();
         for (String fileName : fileNames) {
             String name = fileName.replace(File.separatorChar, '/');
             entries.put(name, new FolderFileEntry(name, new File(location, name)));
@@ -56,7 +56,7 @@ class FolderFileContainer extends FileContainer {
 
     public Collection<? extends FileEntry> getEntries() {
         if (entries == null) {
-            entries = new LinkedHashMap<String, FolderFileEntry>();
+            initEntries();
             scanFolder(location, location.getPath().length() + 1);
         }
         return new ArrayList<FolderFileEntry>(entries.values());
@@ -83,8 +83,8 @@ class FolderFileContainer extends FileContainer {
     }
 
     public void putEntry(String name, byte[] contents) {
+        initEntries();
         File file = new File(location, name);
-        if (entries == null) entries = new LinkedHashMap<String, FolderFileEntry>();
         entries.put(name, new FolderFileEntry(name, file));
         file.getParentFile().mkdirs();
         try {
@@ -99,8 +99,20 @@ class FolderFileContainer extends FileContainer {
         }
     }
 
+    private void initEntries() {
+        if (entries == null) {
+            entries = new LinkedHashMap<String, FolderFileEntry>();
+        }
+    }
+
     public void flush(SystemLogger logger) {
-        //no-op
+        initEntries();
+    }
+
+    public boolean containsUpToDate(String name, long sourceTime) {
+        if (sourceTime == 0) return false;
+        long targetTime = new File(location, name).lastModified();
+        return targetTime != 0 && targetTime > sourceTime;
     }
 
     private static class FolderFileEntry extends FileEntry {
@@ -123,6 +135,10 @@ class FolderFileContainer extends FileContainer {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+        }
+
+        public long lastModified() {
+            return file.lastModified();
         }
     }
 }

@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
+ *
  * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
@@ -50,45 +50,56 @@ class FileTranslator {
     private final EmbeddingConverter converter;
     private final SystemLogger logger;
     private final SourceMask mask;
+    private final boolean uptodatecheck;
+    private int filesTransformed;
+    private int filesSkipped;
 
     public FileTranslator(ClassTransformer classTransformer, TextFileTransformer fileTransformer,
-                          EmbeddingConverter converter, SystemLogger logger, SourceMask mask) {
+                          EmbeddingConverter converter, SystemLogger logger, SourceMask mask, boolean uptodatecheck) {
         this.classTransformer = classTransformer;
         this.fileTransformer = fileTransformer;
         this.converter = converter;
         this.logger = logger;
         this.mask = mask;
+        this.uptodatecheck = uptodatecheck;
     }
 
     public void transform(FileContainer source, FileContainer destination) {
+        filesTransformed = 0;
+        filesSkipped = 0;
         logger.log(new Message(Level.INFO, "Transforming " + source.getFileCount() + " file(s)" +
                 (source == destination ? " in " + source : " from " + source + " to " + destination) + "."));
         for (FileEntry entry : source.getEntries()) {
             transform(entry, source, destination);
         }
         source.flush(logger);
-        logger.log(new Message(Level.INFO,
-                "Transformation of " + source.getFileCount() + " file(s) completed successfully."));
+        logger.log(new Message(Level.INFO, "Transformed " + filesTransformed + " file(s)" +
+                (filesSkipped == 0 ? "." : ", skipped " + filesSkipped + " file(s).")));
     }
 
     private void transform(FileEntry entry, FileContainer source, FileContainer destination) {
         String name = entry.getName();
+        String fixedName = converter == null ? name : converter.convertFileName(name);
+        if (uptodatecheck && destination.containsUpToDate(fixedName, entry.lastModified())) {
+            filesSkipped++;
+            return;
+        }
+        filesTransformed++;
         if (converter != null && name.equals(SIGNATURES_PATH)) {
-            destination.putEntry(converter.convertFileName(name), transformSignatures(entry.getContent()));
-        } else if (mask.matches(name)) {
+            destination.putEntry(fixedName, transformSignatures(entry.getContent()));
+        } else if (mask.matches(name) || !name.equals(fixedName)) {
             logger.setFile(source.getLocation(), name);
             logger.logForFile(Level.VERBOSE, "Transformation");
             byte[] sourceData = entry.getContent();
             byte[] resultData = TransformerTools.isClassFile(sourceData)
                     ? classTransformer.transform(sourceData, 0, sourceData.length)
                     : fileTransformer.transform(sourceData, converter);
-            String fixedName = converter == null ? name : converter.convertFileName(name);
             if (source != destination || sourceData != resultData || !fixedName.equals(name)) {
                 if (!fixedName.equals(name)) destination.removeEntry(name);
                 destination.putEntry(fixedName, resultData);
             }
         } else if (source != destination) {
-            destination.putEntry(entry.getName(), entry.getContent());
+            destination.putEntry(name, entry.getContent());
         }
     }
 

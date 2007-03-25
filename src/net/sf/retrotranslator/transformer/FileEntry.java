@@ -44,6 +44,8 @@ abstract class FileEntry {
 
     public abstract byte[] getContent();
 
+    public abstract long lastModified();
+
     public String getName() {
         return name;
     }

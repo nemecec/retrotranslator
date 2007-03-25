@@ -48,6 +48,7 @@ public class Retrotranslator implements MessageLogger {
     private boolean lazy;
     private boolean advanced;
     private boolean verify;
+    private boolean uptodatecheck;
     private List<File> classpath = new ArrayList<File>();
     private MessageLogger logger = this;
     private SourceMask sourceMask = new SourceMask(null);
@@ -114,6 +115,10 @@ public class Retrotranslator implements MessageLogger {
         this.verify = verify;
     }
 
+    public void setUptodatecheck(boolean uptodatecheck) {
+        this.uptodatecheck = uptodatecheck;
+    }
+
     public void addClasspathElement(File classpathElement) {
         this.classpath.add(classpathElement);
     }
@@ -162,12 +167,13 @@ public class Retrotranslator implements MessageLogger {
             converter = new EmbeddingConverter(embed);
         }
         SystemLogger systemLogger = new SystemLogger(logger, verbose);
-        ReplacementLocatorFactory locatorFactory = new ReplacementLocatorFactory(target, advanced, retainapi, backports);
+        ReplacementLocatorFactory locatorFactory = new ReplacementLocatorFactory(
+                target, advanced, retainapi, backports);
         ClassTransformer classTransformer = new ClassTransformer(
                 lazy, stripsign, retainflags, systemLogger, converter, locatorFactory);
         TextFileTransformer fileTransformer = new TextFileTransformer(locatorFactory);
         FileTranslator translator = new FileTranslator(
-                classTransformer, fileTransformer, converter, systemLogger, sourceMask);
+                classTransformer, fileTransformer, converter, systemLogger, sourceMask, uptodatecheck);
         for (FileContainer container : src) {
             translator.transform(container, dest != null ? dest : container);
         }
@@ -223,9 +229,8 @@ public class Retrotranslator implements MessageLogger {
                 }
             }
         }
-        String result = warningCount != 0 ? " with " + warningCount + " warning(s)." : " successfully.";
-        systemLogger.log(new Message(Level.INFO,
-                "Verification of " + container.getFileCount() + " file(s) completed" + result));
+        systemLogger.log(new Message(Level.INFO, "Verified " + container.getFileCount() + " file(s)" + 
+                (warningCount == 0 ? "." : " with " + warningCount + " warning(s).")));
     }
 
     private boolean execute(String[] args) {
@@ -254,6 +259,8 @@ public class Retrotranslator implements MessageLogger {
                 setAdvanced(true);
             } else if (string.equals("-verify")) {
                 setVerify(true);
+            } else if (string.equals("-uptodatecheck")) {
+                setUptodatecheck(true);
             } else if (string.equals("-classpath") && i < args.length) {
                 addClasspath(args[i++]);
             } else if (string.equals("-srcmask") && i < args.length) {
@@ -275,8 +282,8 @@ public class Retrotranslator implements MessageLogger {
         String version = Retrotranslator.class.getPackage().getImplementationVersion();
         String suffix = (version == null) ? "" : "-" + version;
         System.out.println("Usage: java -jar retrotranslator-transformer" + suffix + ".jar" +
-                " [-srcdir <path> | -srcjar <file>] [-destdir <path> | -destjar <file>] [-stripsign]" +
-                " [-verbose] [-lazy] [-advanced] [-retainapi] [-retainflags] [-verify] [-target <version>]" +
+                " [-srcdir <path> | -srcjar <file>] [-destdir <path> | -destjar <file>] [-stripsign] [-verbose]" +
+                " [-lazy] [-advanced] [-retainapi] [-retainflags] [-verify] [-uptodatecheck] [-target <version>]" +
                 " [-classpath <classpath>] [-srcmask <mask>] [-embed <package>] [-backport <packages>]");
     }
 

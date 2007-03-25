@@ -57,6 +57,8 @@ abstract class FileContainer {
 
     public abstract void flush(SystemLogger logger);
 
+    public abstract boolean containsUpToDate(String name, long sourceTime);
+
     protected static byte[] readFully(InputStream stream, int length) throws IOException {
         if (length <= 0) length = 0x8000;
         byte[] buffer = new byte[length];
