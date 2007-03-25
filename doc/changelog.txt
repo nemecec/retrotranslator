@@ -1,6 +1,9 @@
 Retrotranslator Changelog
 =================================
 
+  - Limited support for java.nio.charset.Charset.defaultCharset().
+  - Bug fixed: Enum static field assignment ordered wrong.
+
 1.2.1 (2007-02-01)
 ---------------------------------
   - Support for java.util.Deque and java.util.ArrayDeque.

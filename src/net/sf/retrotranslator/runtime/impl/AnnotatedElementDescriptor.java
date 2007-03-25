@@ -35,7 +35,6 @@ import java.lang.reflect.*;
 import java.util.*;
 import net.sf.retrotranslator.runtime.asm.*;
 import net.sf.retrotranslator.runtime.asm.Type;
-import net.sf.retrotranslator.runtime.java.lang.Enum_;
 import net.sf.retrotranslator.runtime.java.lang.annotation.*;
 
 /**

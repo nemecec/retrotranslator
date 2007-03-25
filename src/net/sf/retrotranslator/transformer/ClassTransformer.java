@@ -78,7 +78,7 @@ class ClassTransformer implements BytecodeTransformer {
             visitor = new SpecificReplacementVisitor(visitor, factory.isAdvanced());
         }
         if (!factory.isEmpty()) {
-            visitor = new GeneralReplacementVisitor(new EnumVisitor(visitor), factory.getLocator());
+            visitor = new GeneralReplacementVisitor(visitor, factory.getLocator());
         }
         if (stripsign) {
             visitor = new SignatureStrippingVisitor(visitor);

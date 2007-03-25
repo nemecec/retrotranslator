@@ -94,4 +94,17 @@ public class Enum_TestCase extends BaseTestCase {
         assertSame(MyColor.BLUE, pump(MyColor.BLUE));
         assertSame(CardinalPoint.SOUTH, pump(CardinalPoint.SOUTH));
     }
+
+    enum Letter {
+        A, B, C;
+        public static Letter DEFAULT = Letter.valueOf("B");
+    }
+
+    public void testInitOrder() throws Exception {
+        assertEquals("A", Letter.A.name());
+        assertEquals("B", Letter.B.name());
+        assertEquals("C", Letter.C.name());
+        assertEquals("B", Letter.DEFAULT.name());
+    }
+
 }

@@ -489,6 +489,13 @@ and concurrency utilities
     <tr><td><code>Proxy</code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>ProxySelector</code></td><td>*</td><td>&nbsp;</td></tr>
 
+    <tr><td rowspan="2"><code>java.nio</code></td><td><code>CharBuffer</code></td><td>
+        <code>append(CharSequence),<br> append(CharSequence, int, int),<br> append(char),<br> read(CharBuffer)</code>
+        </td><td>&nbsp;</td></tr>
+    <tr><td><code>Charset</code></td><td>
+        <code>defaultCharset()</code>
+        </td><td>UTF-8 is used on JDK 1.4.0 if the default charset is unavailable.</td></tr>
+
     <tr><td ><code>java.rmi.server</code></td><td><code>RemoteObjectInvocationHandler</code></td>
         <td>*</td><td>&nbsp;</td></tr>
 
@@ -498,10 +505,6 @@ and concurrency utilities
         <code>BigDecimal</code> parsing and formatting precision is limited by
         <code>java.lang.Double</code> or <code>java.lang.Long</code> precision.
         </td></tr>
-
-    <tr><td><code>java.util.nio</code></td><td><code>CharBuffer</code></td><td>
-        <code>append(CharSequence),<br> append(CharSequence, int, int),<br> append(char),<br> read(CharBuffer)</code>
-        </td><td>&nbsp;</td></tr>
 
     <tr><td rowspan="12"><code>java.util</code></td><td><code>AbstractQueue<sup><a href="#1">1</a></sup></code></td>
         <td>*</td><td>&nbsp;</td></tr>
