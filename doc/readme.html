@@ -5,12 +5,19 @@
 </head>
 
 <body>
+
 <table border="0" width="98%">
     <tr>
         <td><h2>Retrotranslator</h2></td>
-        <td width="125" align="left"><a href="http://sourceforge.net"><img
+        <td width="125"><a href="http://sourceforge.net"><img
                 src="http://sflogo.sourceforge.net/sflogo.php?group_id=153566&amp;type=2"
                 width="125" height="37" border="0" alt="SourceForge.net Logo"/></a>
+        </td>
+        <td width="10">&nbsp;
+        </td>
+        <td width="127"><a href="http://www.jetbrains.com/idea/"><img
+                src="http://www.jetbrains.com/idea/opensource/img/banners/idea125x37_white.gif"
+                width="127" height="37" border="0" alt="The best Java IDE"/></a>
         </td>
     </tr>
 </table>
@@ -20,6 +27,7 @@
     <li><a href="#what">What is Retrotranslator?</a></li>
     <li><a href="#features">What Java 5 features are supported?</a></li>
     <li><a href="#commandline">How to use Retrotranslator from a command line?</a></li>
+    <li><a href="#jarfile">How to produce a JAR file compatible with J2SE 1.4?</a></li>
     <li><a href="#ant">How to use Retrotranslator from Apache Ant or Maven?</a></li>
     <li><a href="#idea">How to use Retrotranslator from IntelliJ IDEA?</a></li>
     <li><a href="#jit">How to use Just-in-Time Retrotranslator?</a></li>
@@ -181,10 +189,13 @@ and concurrency utilities
         <td>Off</td>
     </tr>
 </table>
+
+<h4><a name="jarfile">How to produce a JAR file compatible with J2SE 1.4?</a></h4>
+
 <p>
-    For example, if you have a Java 5 application <code>myapplication5.jar</code> you can use the following command
-    to produce <code>myapplication4.jar</code> that will run on J2SE 1.4 and is independent of Retrotranslator,
-    since required classes are added to the translated application with a different package name:
+    If you have <code>myapplication5.jar</code> file built with JDK 5.0 you can use the following command to produce
+    <code>myapplication4.jar</code>. It will be compatible with JDK 1.4 and independent of Retrotranslator because
+    backported classes are added to the translated application with a different package name:
 </p>
 <p>
     <code>java -jar retrotranslator-transformer-<i>n.n.n</i>.jar
@@ -399,7 +410,7 @@ and concurrency utilities
             append(CharSequence, int, int),<br>
             append(char)</code>
         </td><td>&nbsp;</td></tr>
-    <tr><td rowspan="26"><code>java.lang</code></td><td><code>Appendable<sup><a href="#2">2</a></sup></code></td><td>*
+    <tr><td rowspan="27"><code>java.lang</code></td><td><code>Appendable<sup><a href="#2">2</a></sup></code></td><td>*
     </td><td>&nbsp;</td></tr>
     <tr><td><code>Boolean</code></td><td><code>parseBoolean(String),<br>
         compareTo(Boolean)</code></td><td>&nbsp;</td></tr>
@@ -425,6 +436,8 @@ and concurrency utilities
     <tr><td><code>Package</code></td><td>* (4 new methods)</td><td>&nbsp;</td></tr>
     <tr><td><code>Readable<sup><a href="#2">2</a></sup></code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>Short</code></td><td><code>valueOf(short)</code></td><td>&nbsp;</td></tr>
+    <tr><td><code>StackTraceElement</code></td><td><code>
+        StackTraceElement(String, String, String, int)</code></td><td>&nbsp;</td></tr>
     <tr><td><code>String</code></td><td>*<br><code>
         isEmpty()<sup><a href="#4">4</a></sup>
     </code></td><td>&nbsp;</td></tr>
@@ -584,6 +597,10 @@ and concurrency utilities
     <code>argument1</code>...<code>argumentN</code> methods and optional public void <code>initialize</code> method.
     All <code>argumentX</code> methods provide arguments for a Java 1.4 constuctor and should not have any parameters.
     The <code>initialize</code> method has a single parameter for the created instance and may be used for postprocessing.
+    If the previous methods to backport constructors are insufficient there is another flexible but not always supported way used by
+    <a href="http://retrotranslator.cvs.sourceforge.net/retrotranslator/Retrotranslator/src/net/sf/retrotranslator/runtime/java/lang/_StackTraceElement.java?view=markup">
+    <code>net.sf.retrotranslator.runtime.java.lang.<b>_</b>StackTraceElement</code></a>.
+
 </p>
 <p>
     However, if the backported methods require access

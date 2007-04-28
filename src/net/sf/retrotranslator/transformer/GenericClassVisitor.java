@@ -151,16 +151,15 @@ abstract class GenericClassVisitor extends NameTranslator implements ClassVisito
         }
     }
 
-    private class GenericMethodVisitor implements MethodVisitor {
+    private class GenericMethodVisitor extends AbstractMethodVisitor {
 
-        protected final MethodVisitor mv;
         private String deferredConstant;
 
         public GenericMethodVisitor(MethodVisitor visitor) {
-            mv = visitor;
+            super(visitor);
         }
 
-        private void flush() {
+        protected void flush() {
             if (deferredConstant != null) {
                 mv.visitLdcInsn(deferredConstant);
                 deferredConstant = null;
@@ -168,18 +167,15 @@ abstract class GenericClassVisitor extends NameTranslator implements ClassVisito
         }
 
         public AnnotationVisitor visitAnnotationDefault() {
-            flush();
-            return wrap(mv.visitAnnotationDefault());
+            return wrap(super.visitAnnotationDefault());
         }
 
         public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-            flush();
-            return wrap(mv.visitAnnotation(typeDescriptor(desc), visible));
+            return wrap(super.visitAnnotation(typeDescriptor(desc), visible));
         }
 
         public AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {
-            flush();
-            return wrap(mv.visitParameterAnnotation(parameter, typeDescriptor(desc), visible));
+            return wrap(super.visitParameterAnnotation(parameter, typeDescriptor(desc), visible));
         }
 
         public void visitTypeInsn(int opcode, String desc) {
@@ -212,83 +208,15 @@ abstract class GenericClassVisitor extends NameTranslator implements ClassVisito
         }
 
         public void visitMultiANewArrayInsn(String desc, int dims) {
-            flush();
-            mv.visitMultiANewArrayInsn(typeDescriptor(desc), dims);
+            super.visitMultiANewArrayInsn(typeDescriptor(desc), dims);
         }
 
         public void visitTryCatchBlock(Label start, Label end, Label handler, String type) {
-            flush();
-            mv.visitTryCatchBlock(start, end, handler, typeName(type));
+            super.visitTryCatchBlock(start, end, handler, typeName(type));
         }
 
         public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index) {
-            flush();
-            mv.visitLocalVariable(identifier(name), typeDescriptor(desc), typeSignature(signature), start, end, index);
-        }
-
-        public void visitAttribute(Attribute attr) {
-            flush();
-            mv.visitAttribute(attr);
-        }
-
-        public void visitCode() {
-            flush();
-            mv.visitCode();
-        }
-
-        public void visitInsn(int opcode) {
-            flush();
-            mv.visitInsn(opcode);
-        }
-
-        public void visitIntInsn(int opcode, int operand) {
-            flush();
-            mv.visitIntInsn(opcode, operand);
-        }
-
-        public void visitVarInsn(int opcode, int var) {
-            flush();
-            mv.visitVarInsn(opcode, var);
-        }
-
-        public void visitJumpInsn(int opcode, Label label) {
-            flush();
-            mv.visitJumpInsn(opcode, label);
-        }
-
-        public void visitLabel(Label label) {
-            flush();
-            mv.visitLabel(label);
-        }
-
-        public void visitIincInsn(int var, int increment) {
-            flush();
-            mv.visitIincInsn(var, increment);
-        }
-
-        public void visitTableSwitchInsn(int min, int max, Label dflt, Label labels[]) {
-            flush();
-            mv.visitTableSwitchInsn(min, max, dflt, labels);
-        }
-
-        public void visitLookupSwitchInsn(Label dflt, int keys[], Label labels[]) {
-            flush();
-            mv.visitLookupSwitchInsn(dflt, keys, labels);
-        }
-
-        public void visitLineNumber(int line, Label start) {
-            flush();
-            mv.visitLineNumber(line, start);
-        }
-
-        public void visitMaxs(int maxStack, int maxLocals) {
-            flush();
-            mv.visitMaxs(maxStack, maxLocals);
-        }
-
-        public void visitEnd() {
-            flush();
-            mv.visitEnd();
+            super.visitLocalVariable(identifier(name), typeDescriptor(desc), typeSignature(signature), start, end, index);
         }
     }
 

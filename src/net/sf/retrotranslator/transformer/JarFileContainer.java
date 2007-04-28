@@ -135,7 +135,7 @@ class JarFileContainer extends FileContainer {
             if (content != null) stream.write(content);
         }
         if (signatureRemoved) {
-            logger.log(new Message(Level.INFO, "Removing signature from " + location, location, null));
+            logger.log(new Message(Level.INFO, "Removing digital signature from " + location, location, null));
         }
         stream.close();
     }

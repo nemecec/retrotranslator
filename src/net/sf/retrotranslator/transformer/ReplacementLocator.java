@@ -168,24 +168,28 @@ class ReplacementLocator {
             MemberReplacement replacement = new MemberReplacement(classDescriptor.getName(), methodName, methodDesc);
             classReplacement.getMethodReplacements().put(methodKey, replacement);
             if (methodName.equals("convertConstructorArguments")) {
-                String converterKey = Type.getMethodDescriptor(Type.VOID_TYPE, Type.getArgumentTypes(methodDesc));
-                if (!classReplacement.getConverterReplacements().containsKey(converterKey)) {
-                    classReplacement.getConverterReplacements().put(converterKey, replacement);
-                }
-            }
-            if (classReplacement.getInstanceOfReplacement() == null &&
+                putForConstructor(classReplacement.getConverterReplacements(), methodDesc, replacement);
+            } else if (methodName.equals("createNewInstance")) {
+                putForConstructor(classReplacement.getInstantiationReplacements(), methodDesc, replacement);
+            } else if (methodName.equals("createInstanceBuilder")) {
+                loadConstructor(classReplacement.getConstructorReplacements(), replacement, originalName);
+            } else if (classReplacement.getInstanceOfReplacement() == null &&
                     methodName.equals("executeInstanceOfInstruction") &&
                     methodDesc.equals(TransformerTools.descriptor(boolean.class, Object.class))) {
                 classReplacement.setInstanceOfReplacement(replacement);
-            }
-            if (classReplacement.getCheckCastReplacement() == null &&
+            } else if (classReplacement.getCheckCastReplacement() == null &&
                     methodName.equals("executeCheckCastInstruction") &&
                     Arrays.equals(new Type[]{Type.getType(Object.class)}, Type.getArgumentTypes(methodDesc))) {
                 classReplacement.setCheckCastReplacement(replacement);
             }
-            if (methodName.equals("createInstanceBuilder")) {
-                loadConstructor(classReplacement.getConstructorReplacements(), replacement, originalName);
-            }
+        }
+    }
+
+    private static void putForConstructor(Map<String, MemberReplacement> map,
+                                          String desc, MemberReplacement replacement) {
+        String key = Type.getMethodDescriptor(Type.VOID_TYPE, Type.getArgumentTypes(desc));
+        if (!map.containsKey(key)) {
+            map.put(key, replacement);
         }
     }
 

@@ -51,8 +51,7 @@ class FileTranslator {
     private final SystemLogger logger;
     private final SourceMask mask;
     private final boolean uptodatecheck;
-    private int filesTransformed;
-    private int filesSkipped;
+    private int countTransformed;
 
     public FileTranslator(ClassTransformer classTransformer, TextFileTransformer fileTransformer,
                           EmbeddingConverter converter, SystemLogger logger, SourceMask mask, boolean uptodatecheck) {
@@ -65,38 +64,43 @@ class FileTranslator {
     }
 
     public void transform(FileContainer source, FileContainer destination) {
-        filesTransformed = 0;
-        filesSkipped = 0;
-        logger.log(new Message(Level.INFO, "Transforming " + source.getFileCount() + " file(s)" +
+        countTransformed = 0;
+        logger.log(new Message(Level.INFO, "Processing " + source.getFileCount() + " file(s)" +
                 (source == destination ? " in " + source : " from " + source + " to " + destination) + "."));
         for (FileEntry entry : source.getEntries()) {
             transform(entry, source, destination);
         }
         source.flush(logger);
-        logger.log(new Message(Level.INFO, "Transformed " + filesTransformed + " file(s)" +
-                (filesSkipped == 0 ? "." : ", skipped " + filesSkipped + " file(s).")));
+        logger.log(new Message(Level.INFO, "Transformed " + countTransformed + " file(s)."));
     }
 
     private void transform(FileEntry entry, FileContainer source, FileContainer destination) {
         String name = entry.getName();
         String fixedName = converter == null ? name : converter.convertFileName(name);
+        logger.setFile(source.getLocation(), name);
         if (uptodatecheck && destination.containsUpToDate(fixedName, entry.lastModified())) {
-            filesSkipped++;
+            logger.logForFile(Level.VERBOSE, "Up to date");
             return;
         }
-        filesTransformed++;
         if (converter != null && name.equals(SIGNATURES_PATH)) {
+            logger.logForFile(Level.VERBOSE, "Transformation");
             destination.putEntry(fixedName, transformSignatures(entry.getContent()));
+            countTransformed++;
         } else if (mask.matches(name) || !name.equals(fixedName)) {
-            logger.setFile(source.getLocation(), name);
             logger.logForFile(Level.VERBOSE, "Transformation");
             byte[] sourceData = entry.getContent();
             byte[] resultData = TransformerTools.isClassFile(sourceData)
                     ? classTransformer.transform(sourceData, 0, sourceData.length)
                     : fileTransformer.transform(sourceData, converter);
-            if (source != destination || sourceData != resultData || !fixedName.equals(name)) {
-                if (!fixedName.equals(name)) destination.removeEntry(name);
+            boolean transformed = sourceData != resultData || !fixedName.equals(name);
+            if (transformed || source != destination) {
+                if (!fixedName.equals(name)) {
+                    destination.removeEntry(name);
+                }
                 destination.putEntry(fixedName, resultData);
+            }
+            if (transformed) {
+                countTransformed++;
             }
         } else if (source != destination) {
             destination.putEntry(name, entry.getContent());
@@ -118,7 +122,7 @@ class FileTranslator {
                 break;
             }
         }
-        logger.log(new Message(Level.INFO, "Embedding of backported classes completed successfully."));
+        logger.log(new Message(Level.INFO, "Embedded required files."));
     }
 
     private boolean embed(FileContainer source, FileContainer destination, Map<String, Boolean> fileNames) {

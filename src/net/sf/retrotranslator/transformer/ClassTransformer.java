@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
+ *
  * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
@@ -31,6 +31,7 @@
  */
 package net.sf.retrotranslator.transformer;
 
+import java.util.*;
 import net.sf.retrotranslator.runtime.asm.*;
 import net.sf.retrotranslator.runtime.impl.BytecodeTransformer;
 
@@ -63,23 +64,19 @@ class ClassTransformer implements BytecodeTransformer {
             System.arraycopy(bytes, offset, result, 0, length);
             return result;
         }
-        ClassWriter classWriter = new ClassWriter(true);
+        ReplacementLocator locator = factory.getLocator();
         MethodCounter counter = new MethodCounter();
-        ClassVisitor visitor = new DuplicateInterfacesVisitor(
-                new VersionVisitor(classWriter, factory.getTarget()), logger, counter);
-        boolean isTarget14 = factory.getTarget() == ClassVersion.VERSION_14;
-        if (isTarget14) {
+        Map<String, List<InstantiationPoint>> pointListMap = new HashMap<String, List<InstantiationPoint>>();
+        ClassWriter classWriter = new ClassWriter(true);
+        ClassVisitor visitor = new InstantiationAnalysisVisitor(classWriter, locator, pointListMap, logger);
+        visitor = new DuplicateInterfacesVisitor(new VersionVisitor(visitor, factory.getTarget()), logger, counter);
+        if (factory.getTarget() == ClassVersion.VERSION_14) {
             visitor = new ArrayCloningVisitor(new ClassLiteralVisitor(visitor));
+            if (!factory.isRetainapi()) {
+                visitor = new SpecificReplacementVisitor(visitor, factory.isAdvanced());
+            }
         }
-        if (converter != null) {
-            visitor = new PrefixingVisitor(visitor, converter);
-        }
-        if (isTarget14 && !factory.isRetainapi()) {
-            visitor = new SpecificReplacementVisitor(visitor, factory.isAdvanced());
-        }
-        if (!factory.isEmpty()) {
-            visitor = new GeneralReplacementVisitor(visitor, factory.getLocator());
-        }
+        visitor = new GeneralReplacementVisitor(visitor, locator);
         if (stripsign) {
             visitor = new SignatureStrippingVisitor(visitor);
         }
@@ -87,9 +84,21 @@ class ClassTransformer implements BytecodeTransformer {
         if (counter.containsDuplicates()) {
             byte[] bytecode = classWriter.toByteArray();
             classWriter = new ClassWriter(true);
-            new ClassReader(bytecode).accept(new DuplicateMethodsVisitor(classWriter, logger, counter), false);
+            pointListMap.clear();
+            visitor = new InstantiationAnalysisVisitor(classWriter, locator, pointListMap, logger);
+            new ClassReader(bytecode).accept(new DuplicateMethodsVisitor(visitor, logger, counter), false);
         }
-        return classWriter.toByteArray(isTarget14 && !retainflags);
+        if (!pointListMap.isEmpty()) {
+            byte[] bytecode = classWriter.toByteArray();
+            classWriter = new ClassWriter(true);
+            new ClassReader(bytecode).accept(new InstantiationReplacementVisitor(classWriter, pointListMap), false);
+        }
+        if (converter != null) {
+            byte[] bytecode = classWriter.toByteArray();
+            classWriter = new ClassWriter(true);
+            new ClassReader(bytecode).accept(new PrefixingVisitor(classWriter, converter), false);
+        }
+        return classWriter.toByteArray(factory.getTarget() == ClassVersion.VERSION_14 && !retainflags);
     }
 
 }

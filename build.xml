@@ -130,7 +130,7 @@
     <target name="test-embedded" depends="compile-tests">
         <mkdir dir="build/test-embedded"/>
         <jar destfile="build/test-embedded.jar">
-            <fileset dir="build/test-embedded" />
+            <fileset dir="build/test-classes15" />
         </jar>
         <retrotranslator destdir="build/test-embedded" advanced="true"
                          embed="com.mycompany.internal" srcmask="*.class;*.properties">

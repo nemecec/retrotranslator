@@ -33,8 +33,8 @@ package net.sf.retrotranslator.transformer;
 
 import net.sf.retrotranslator.runtime.asm.*;
 import static net.sf.retrotranslator.runtime.asm.Opcodes.*;
-import static net.sf.retrotranslator.runtime.impl.RuntimeTools.CONSTRUCTOR_NAME;
 import net.sf.retrotranslator.runtime.impl.RuntimeTools;
+import static net.sf.retrotranslator.runtime.impl.RuntimeTools.CONSTRUCTOR_NAME;
 import net.sf.retrotranslator.runtime.java.lang.Enum_;
 
 /**

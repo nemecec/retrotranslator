@@ -32,7 +32,7 @@
 package net.sf.retrotranslator.transformer;
 
 import java.lang.ref.SoftReference;
-import java.util.*;
+import java.util.List;
 import static net.sf.retrotranslator.transformer.TransformerTools.*;
 
 /**
@@ -79,10 +79,6 @@ class ReplacementLocatorFactory {
 
     public boolean isRetainapi() {
         return retainapi;
-    }
-
-    public boolean isEmpty() {
-        return backports.isEmpty();
     }
 
     public synchronized ReplacementLocator getLocator() {

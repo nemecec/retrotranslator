@@ -50,6 +50,8 @@ class ClassReplacement {
             new Hashtable<String, MemberReplacement>();
     private final Map<String, MemberReplacement> methodReplacements =
             new Hashtable<String, MemberReplacement>();
+    private final Map<String, MemberReplacement> instantiationReplacements =
+            new Hashtable<String, MemberReplacement>();
 
     public ClassReplacement() {
     }
@@ -102,6 +104,10 @@ class ClassReplacement {
         return methodReplacements;
     }
 
+    public Map<String, MemberReplacement> getInstantiationReplacements() {
+        return instantiationReplacements;
+    }
+
     public boolean isEmpty() {
         return uniqueTypeName == null &&
                 referenceTypeName == null &&
@@ -110,7 +116,8 @@ class ClassReplacement {
                 fieldReplacements.isEmpty() &&
                 constructorReplacements.isEmpty() &&
                 converterReplacements.isEmpty() &&
-                methodReplacements.isEmpty();
+                methodReplacements.isEmpty() &&
+                instantiationReplacements.isEmpty();
     }
 
 }
