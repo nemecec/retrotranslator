@@ -35,6 +35,7 @@ import java.util.*;
 import static net.sf.retrotranslator.runtime.asm.Opcodes.*;
 import net.sf.retrotranslator.runtime.asm.Type;
 import net.sf.retrotranslator.runtime.impl.*;
+import net.sf.retrotranslator.runtime.java.lang.annotation.Annotation_;
 
 /**
  * @author Taras Puchko
@@ -43,12 +44,12 @@ class ReplacementLocator {
 
     private static final ClassReplacement NULL = new ClassReplacement();
 
-    private final boolean advanced;
+    private final OperationMode mode;
     private final List<Backport> backports;
     private final Map<String, ClassReplacement> replacements = new Hashtable<String, ClassReplacement>();
 
-    public ReplacementLocator(boolean advanced, List<Backport> backports) {
-        this.advanced = advanced;
+    public ReplacementLocator(OperationMode mode, List<Backport> backports) {
+        this.mode = mode;
         this.backports = backports;
     }
 
@@ -137,7 +138,7 @@ class ReplacementLocator {
             if (!fieldDescriptor.isAccess(ACC_PUBLIC) || !fieldDescriptor.isAccess(ACC_STATIC)) {
                 continue;
             }
-            if (!advanced && fieldDescriptor.isAnnotationPresent(Advanced.class)) {
+            if (!isSupportedFeature(fieldDescriptor)) {
                 continue;
             }
             String fieldName = fieldDescriptor.getName();
@@ -156,7 +157,7 @@ class ReplacementLocator {
             if (!methodDescriptor.isAccess(ACC_PUBLIC) || !methodDescriptor.isAccess(ACC_STATIC)) {
                 continue;
             }
-            if (!advanced && methodDescriptor.isAnnotationPresent(Advanced.class)) {
+            if (!isSupportedFeature(methodDescriptor)) {
                 continue;
             }
             String methodName = methodDescriptor.getName();
@@ -258,7 +259,20 @@ class ReplacementLocator {
                 ReplacementLocator.class, '/' + internalName + RuntimeTools.CLASS_EXTENSION);
         if (bytecode == null) return null;
         ClassDescriptor descriptor = new ClassDescriptor(ReplacementLocator.class, bytecode);
-        return !advanced && descriptor.isAnnotationPresent(Advanced.class) ? null : descriptor;
+        return isSupportedFeature(descriptor) ? descriptor : null;
+    }
+
+    private boolean isSupportedFeature(AnnotatedElementDescriptor descriptor) {
+        Annotation_ annotation = descriptor.getAnnotation(Advanced.class);
+        if (annotation == null) {
+            return true;
+        }
+        for (String feature : ((Advanced) annotation).value()) {
+            if (mode.isSupportedFeature(feature)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

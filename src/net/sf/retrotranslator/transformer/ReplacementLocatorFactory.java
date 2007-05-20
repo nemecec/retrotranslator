@@ -43,15 +43,15 @@ class ReplacementLocatorFactory {
     private static final String JAVA_UTIL_CONCURRENT = "java/util/concurrent/";
 
     private final ClassVersion target;
-    private final boolean advanced;
+    private final OperationMode mode;
     private final boolean retainapi;
     private List<Backport> backports;
 
     private SoftReference<ReplacementLocator> softReference = new SoftReference<ReplacementLocator>(null);
 
-    public ReplacementLocatorFactory(ClassVersion target, boolean advanced, boolean retainapi, List<Backport> backports) {
+    public ReplacementLocatorFactory(ClassVersion target, OperationMode mode, boolean retainapi, List<Backport> backports) {
         this.target = target;
-        this.advanced = advanced;
+        this.mode = mode;
         this.retainapi = retainapi;
         this.backports = backports;
         if (target == ClassVersion.VERSION_14 && !retainapi) {
@@ -73,8 +73,8 @@ class ReplacementLocatorFactory {
         return target;
     }
 
-    public boolean isAdvanced() {
-        return advanced;
+    public OperationMode getMode() {
+        return mode;
     }
 
     public boolean isRetainapi() {
@@ -84,7 +84,7 @@ class ReplacementLocatorFactory {
     public synchronized ReplacementLocator getLocator() {
         ReplacementLocator locator = softReference.get();
         if (locator == null) {
-            locator = new ReplacementLocator(advanced, backports);
+            locator = new ReplacementLocator(mode, backports);
             softReference = new SoftReference<ReplacementLocator>(locator);
         }
         return locator;

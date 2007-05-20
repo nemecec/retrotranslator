@@ -67,7 +67,7 @@ class Backport {
     }
 
     public static List<Backport> asList(String s) {
-        ArrayList<Backport> result = new ArrayList<Backport>();
+        List<Backport> result = new Vector<Backport>();
         if (s != null) {
             for (String token : s.split(";")) {
                 result.add(Backport.valueOf(token));

@@ -73,7 +73,7 @@ class ClassTransformer implements BytecodeTransformer {
         if (factory.getTarget() == ClassVersion.VERSION_14) {
             visitor = new ArrayCloningVisitor(new ClassLiteralVisitor(visitor));
             if (!factory.isRetainapi()) {
-                visitor = new SpecificReplacementVisitor(visitor, factory.isAdvanced());
+                visitor = new SpecificReplacementVisitor(visitor, factory.getMode());
             }
         }
         visitor = new GeneralReplacementVisitor(visitor, locator);

@@ -66,11 +66,11 @@ class SpecificReplacementVisitor extends ClassAdapter {
     private static final Set<String> COLLECTIONS_METHODS = getCollectionMethods();
     private static final Map<String, String> COLLECTIONS_FIELDS = getCollectionFields();
 
-    private final boolean advanced;
+    private final OperationMode mode;
 
-    public SpecificReplacementVisitor(ClassVisitor visitor, boolean advanced) {
+    public SpecificReplacementVisitor(ClassVisitor visitor, OperationMode mode) {
         super(visitor);
-        this.advanced = advanced;
+        this.mode = mode;
     }
 
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
@@ -210,7 +210,15 @@ class SpecificReplacementVisitor extends ClassAdapter {
         }
 
         private boolean fixReference(String owner, String desc) {
-            if (!advanced || (!owner.equals(SOFT_REFERENCE) && !owner.equals(WEAK_REFERENCE))) {
+            if (owner.equals(SOFT_REFERENCE)) {
+                if (!mode.isSupportedFeature("SoftReference.NullReferenceQueue")) {
+                    return false;
+                }
+            } else if (owner.equals(WEAK_REFERENCE)) {
+                if (!mode.isSupportedFeature("WeakReference.NullReferenceQueue")) {
+                    return false;
+                }
+            } else {
                 return false;
             }
             if (!desc.equals(TransformerTools.descriptor(void.class, Object.class, ReferenceQueue.class))) {

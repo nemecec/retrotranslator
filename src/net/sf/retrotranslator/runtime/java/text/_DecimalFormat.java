@@ -52,33 +52,32 @@ public class _DecimalFormat {
     protected _DecimalFormat() {
     }
 
-    @Advanced
     public static boolean isParseBigDecimal(DecimalFormat format) {
         _DecimalFormat value = formats.lookup(format);
         return value != null && value.parseBigDecimal;
     }
 
-    @Advanced
+    @Advanced("DecimalFormat.setParseBigDecimal")
     public static void setParseBigDecimal(DecimalFormat format, boolean newValue) {
         formats.obtain(format).parseBigDecimal = newValue;
     }
 
-    @Advanced
+    @Advanced("DecimalFormat.setParseBigDecimal")
     public static Number parse(DecimalFormat format, String source) throws ParseException {
         return correctNumber(format, format.parse(source));
     }
 
-    @Advanced
+    @Advanced("DecimalFormat.setParseBigDecimal")
     public static Number parse(DecimalFormat format, String source, ParsePosition parsePosition) {
         return correctNumber(format, format.parse(source, parsePosition));
     }
 
-    @Advanced
+    @Advanced("DecimalFormat.setParseBigDecimal")
     public static Object parseObject(DecimalFormat format, String source) throws ParseException {
         return correctObject(format, format.parseObject(source));
     }
 
-    @Advanced
+    @Advanced("DecimalFormat.setParseBigDecimal")
     public static Object parseObject(DecimalFormat format, String source, ParsePosition pos) {
         return correctObject(format, format.parseObject(source, pos));
     }

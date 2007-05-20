@@ -111,8 +111,15 @@ and concurrency utilities
         <td>Location of sources</td>
     </tr>
     <tr>
+        <td nowrap><a name="option_support"><code>-support</code></a></td>
+        <td>Enables advanced features specified by names that should be separated with semicolons, e.g.
+            "<code>ThreadLocal.remove;BigDecimal.setScale</code>".</td>
+        <td>-</td>
+    </tr>
+    <tr>
         <td nowrap><a name="option_advanced"><code>-advanced</code></a></td>
-        <td>Whether to use alternative implementations of Java 1.4 classes and methods for better Java 5 compatibility.</td>
+        <td>Enables all advanced features, but it's recommended to enable only
+            necessary ones with the -<code>support</code> option.</td>
         <td>Off</td>
     </tr>
     <tr>
@@ -146,7 +153,7 @@ and concurrency utilities
     <tr>
         <td nowrap><a name="option_backport"><code>-backport</code></a></td>
         <td>Informs the translator about <a href="#extension">user-defined</a> backport packages.
-            Package names should be separated by semicolons.</td>
+            Package names should be separated with semicolons.</td>
         <td>-</td>
     </tr>
     <tr>
@@ -228,9 +235,17 @@ and concurrency utilities
         <td>The JAR file to place translated classes.</td>
         <td>Location of sources</td>
     </tr>
+
+    <tr>
+        <td><code>support</code></td>
+        <td>Enables advanced features specified by names that should be separated with semicolons, e.g.
+            "<code>ThreadLocal.remove;BigDecimal.setScale</code>".</td>
+        <td>-</td>
+    </tr>
     <tr>
         <td><code>advanced</code></td>
-        <td>Whether to use alternative implementations of Java 1.4 classes and methods for better Java 5 compatibility.</td>
+        <td>Enables all advanced features, but it's recommended to enable only
+            necessary ones with the <code>support</code> attribute.</td>
         <td>Off</td>
     </tr>
     <tr>
@@ -271,7 +286,7 @@ and concurrency utilities
     <tr>
         <td><code>backport</code></td>
         <td>Informs the translator about <a href="#extension">user-defined</a> backport packages.
-            Package names should be separated by semicolons.</td>
+            Package names should be separated with semicolons.</td>
         <td>-</td>
     </tr>
     <tr>
@@ -377,8 +392,9 @@ and concurrency utilities
     </li>
 </ul>
 <p>
-    JIT Retrotranslator can accept the <code><a href="#option_advanced">advanced</a></code>
-    and <code><a href="#option_backport">backport</a></code> options.
+    JIT Retrotranslator accepts the <code><a href="#option_support">support</a></code>,
+    <code><a href="#option_advanced">advanced</a></code>, and
+    <code><a href="#option_backport">backport</a></code> options.
 </p>
 
 <h4><a name="supported">What Java 5 classes and methods are supported?</a></h4>
@@ -418,9 +434,8 @@ and concurrency utilities
     <tr><td><code>Character</code></td><td>*</td><td>New members of <code>Character.UnicodeBlock</code> are not supported.
     All supplementary code points are considered as unassigned.</td></tr>
     <tr><td><code>Class</code></td><td>* (21 new methods)</td><td>
-        <code>Class.getMethod(String, Class...)</code> and <code>Class.getDeclaredMethod(String, Class...)</code>
-        are intercepted to better support generics and covariant return types
-        on several platforms<sup><a href="#3">3</a></sup>.
+        Enable features "<code>Class.getMethod</code>" and "<code>Class.getDeclaredMethod</code>" for more
+        uniform support of generics and covariant return types on different platforms<sup><a href="#3">3</a></sup>.
     </td></tr>
     <tr><td><code>Deprecated</code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>Double</code></td><td><code>valueOf(double)</code></td><td>&nbsp;</td></tr>
@@ -468,18 +483,22 @@ and concurrency utilities
         The <code>Thread.getId()</code> method does not reflect the order in which threads are created.</td></tr>
     <tr><td><code>Thread.State</code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>ThreadLocal</code></td><td><code>remove()<sup><a href="#3">3</a></sup></code></td>
-        <td><code>ThreadLocal</code> and <code>InheritableThreadLocal</code>
-            are replaced by corresponding classes from the runtime library.<sup><a href="#3">3</a></sup>.</td></tr>
+        <td>Enable feature "<code>ThreadLocal.remove</code>" to use alternative <code>ThreadLocal</code>
+            and <code>InheritableThreadLocal</code> implementations that have method 
+            <code>ThreadLocal.remove()</code><sup><a href="#3">3</a></sup>.</td>
+    </tr>
     <tr><td><code>TypeNotPresentException</code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td rowspan="2"><code>java.lang.ref</code></td>
         <td><code>SoftReference</code></td><td>*</td><td>
+        Enable feature "<code>SoftReference.NullReferenceQueue</code>" to
+        support <code>null</code> for the second parameter of
         <code>SoftReference(Object,ReferenceQueue)</code>
-        supports <code>null</code> for the second parameter
         on all platforms<sup><a href="#3">3</a></sup>.
         </td></tr>
     <tr><td><code>WeakReference</code></td><td>*</td><td>
+        Enable feature "<code>WeakReference.NullReferenceQueue</code>" to
+        support <code>null</code> for the second parameter of
         <code>WeakReference(Object,ReferenceQueue)</code>
-        supports <code>null</code> for the second parameter
         on all platforms<sup><a href="#3">3</a></sup>.
         </td></tr>
 
@@ -502,8 +521,9 @@ and concurrency utilities
         <code>BigDecimal(int),<br> BigDecimal(long),<br> ZERO, ONE, TEN,<br> divideAndRemainder(BigDecimal),<br>
             divideToIntegralValue(BigDecimal),<br> pow(int),<br> remainder(BigDecimal),<br>
             toPlainString(),<br> valueOf(double),<br>
-            valueOf(long)</code></td><td>The <code>BigDecimal.setScale(int, int)</code>
-        method supports negative scales<sup><a href="#3">3</a></sup>.</td></tr>
+            valueOf(long)</code></td><td>
+        Enable feature "<code>BigDecimal.setScale</code>" to support negative scales in method
+        <code>BigDecimal.setScale(int, int)</code><sup><a href="#3">3</a></sup>.</td></tr>
 
     <tr><td rowspan="3"><code>java.net</code></td><td><code>URL</code></td>
         <td><code>openConnection(Proxy)</code>,<br>
@@ -523,10 +543,12 @@ and concurrency utilities
         <td>*</td><td>&nbsp;</td></tr>
 
     <tr><td ><code>java.text</code></td><td><code>DecimalFormat</code></td>
-        <td><code>isParseBigDecimal()<sup><a href="#3">3</a></sup>,<br>
+        <td><code>isParseBigDecimal(),<br>
             setParseBigDecimal(boolean)<sup><a href="#3">3</a></sup></code></td><td>
-        <code>BigDecimal</code> parsing and formatting precision is limited by
-        <code>java.lang.Double</code> or <code>java.lang.Long</code> precision.
+        Enable feature "<code>DecimalFormat.setParseBigDecimal</code>" to support the
+        <code>DecimalFormat.setParseBigDecimal(boolean)</code> method, but
+        parsing and formatting precision will still be limited by <code>java.lang.Double</code>
+        or <code>java.lang.Long</code> precision<sup><a href="#3">3</a></sup>.
         </td></tr>
 
     <tr><td rowspan="12"><code>java.util</code></td><td><code>AbstractQueue<sup><a href="#1">1</a></sup></code></td>
@@ -559,9 +581,10 @@ and concurrency utilities
     <a name="1"><sup>1</sup></a> Supported via the
         <a href="http://dcl.mathcs.emory.edu/util/backport-util-concurrent/index.php"> Backport of JSR 166</a>.<br>
     <a name="2"><sup>2</sup></a> In most cases this type is being replaced with it's base type.<br>
-    <a name="3"><sup>3</sup></a> Supported only in advanced mode, i.e. when
-    the <code><a href="#option_advanced">advanced</a></code> option is specified.<br>
-    <a name="4"><sup>4</sup></a> Introduced in Java 6, but available only for 1.4 target.<br>
+    <a name="3"><sup>3</sup></a> Supported only when the corresponding feature is enabled via the
+    <code><a href="#option_support">support</a></code> or
+    <code><a href="#option_advanced">advanced</a></code> options.<br>
+    <a name="4"><sup>4</sup></a> Introduced in Java 6 but available only for 1.4 target.<br>
 </p>
 
 <h4><a name="extension">How to write an extension for Retrotranslator?</a></h4>

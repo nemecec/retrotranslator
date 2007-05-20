@@ -39,22 +39,22 @@ import net.sf.retrotranslator.runtime.impl.Advanced;
  */
 public class _NumberFormat {
 
-    @Advanced
+    @Advanced("DecimalFormat.setParseBigDecimal")
     public static Number parse(NumberFormat format, String source) throws ParseException {
         return _DecimalFormat.fixNumber(format, format.parse(source));
     }
 
-    @Advanced
+    @Advanced("DecimalFormat.setParseBigDecimal")
     public static Number parse(NumberFormat format, String source, ParsePosition parsePosition) {
         return _DecimalFormat.fixNumber(format, format.parse(source, parsePosition));
     }
 
-    @Advanced
+    @Advanced("DecimalFormat.setParseBigDecimal")
     public static Object parseObject(NumberFormat format, String source) throws ParseException {
         return _DecimalFormat.fixObject(format, format.parseObject(source));
     }
 
-    @Advanced
+    @Advanced("DecimalFormat.setParseBigDecimal")
     public static Object parseObject(NumberFormat format, String source, ParsePosition pos) {
         return _DecimalFormat.fixObject(format, format.parseObject(source, pos));
     }

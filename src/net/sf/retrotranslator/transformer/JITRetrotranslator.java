@@ -40,6 +40,7 @@ import net.sf.retrotranslator.runtime.impl.*;
 public class JITRetrotranslator {
 
     private boolean advanced;
+    private String support;
     private String backport;
 
     public JITRetrotranslator() {
@@ -49,14 +50,19 @@ public class JITRetrotranslator {
         this.advanced = advanced;
     }
 
+    public void setSupport(String support) {
+        this.support = support;
+    }
+
     public void setBackport(String backport) {
         this.backport = backport;
     }
 
     public boolean run() {
+        OperationMode mode = new OperationMode(advanced, support);
         if (isJava5Supported()) return true;
         ReplacementLocatorFactory factory = new ReplacementLocatorFactory(
-                ClassVersion.VERSION_14, advanced, false, Backport.asList(backport));
+                ClassVersion.VERSION_14, mode, false, Backport.asList(backport));
         ClassTransformer transformer = new ClassTransformer(true, false, false, null, null, factory);
         ClassDescriptor.setBytecodeTransformer(transformer);
         SunJITRetrotranslator.install(transformer);
@@ -89,6 +95,8 @@ public class JITRetrotranslator {
             String option = args[i];
             if (option.equals("-advanced")) {
                 jit.setAdvanced(true);
+            } else if (option.equals("-support") && i + 1 < args.length) {
+                jit.setSupport(args[++i]);
             } else if (option.equals("-backport") && i + 1 < args.length) {
                 jit.setBackport(args[++i]);
             } else if (option.equals("-jar")) {
@@ -145,10 +153,10 @@ public class JITRetrotranslator {
         StringBuilder builder = new StringBuilder("Usage: java -cp retrotranslator-transformer").append(suffix);
         builder.append(".jar").append(File.pathSeparator);
         builder.append("<classpath> net.sf.retrotranslator.transformer.JITRetrotranslator" +
-                " [-advanced] [-backport <packages>] <class> [<args...>]\n");
+                " [-advanced] [-support <features>] [-backport <packages>] <class> [<args...>]\n");
         builder.append("   or  java -cp retrotranslator-transformer").append(suffix);
         builder.append(".jar net.sf.retrotranslator.transformer.JITRetrotranslator" +
-                " [-advanced] [-backport <packages>] -jar <jarfile> [<args...>]");
+                " [-advanced] [-support <features>] [-backport <packages>] -jar <jarfile> [<args...>]");
         System.out.println(builder);
         System.exit(1);
     }

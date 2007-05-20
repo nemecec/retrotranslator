@@ -53,6 +53,7 @@ public class Retrotranslator implements MessageLogger {
     private MessageLogger logger = this;
     private SourceMask sourceMask = new SourceMask(null);
     private String embed;
+    private String support;
     private List<Backport> backports = new ArrayList<Backport>();
     private ClassVersion target = ClassVersion.VERSION_14;
     private ClassLoader classLoader;
@@ -138,6 +139,10 @@ public class Retrotranslator implements MessageLogger {
         this.embed = embed;
     }
 
+    public void setSupport(String support) {
+        this.support = support;
+    }
+
     public void setBackport(String backport) {
         backports = Backport.asList(backport);
     }
@@ -166,9 +171,9 @@ public class Retrotranslator implements MessageLogger {
             if (lazy) throw new IllegalArgumentException("Embedding cannot be lazy!");
             converter = new EmbeddingConverter(embed);
         }
+        OperationMode mode = new OperationMode(advanced, support);
         SystemLogger systemLogger = new SystemLogger(logger, verbose);
-        ReplacementLocatorFactory locatorFactory = new ReplacementLocatorFactory(
-                target, advanced, retainapi, backports);
+        ReplacementLocatorFactory locatorFactory = new ReplacementLocatorFactory(target, mode, retainapi, backports);
         ClassTransformer classTransformer = new ClassTransformer(
                 lazy, stripsign, retainflags, systemLogger, converter, locatorFactory);
         TextFileTransformer fileTransformer = new TextFileTransformer(locatorFactory);
@@ -267,6 +272,8 @@ public class Retrotranslator implements MessageLogger {
                 setSrcmask(args[i++]);
             } else if (string.equals("-embed") && i < args.length) {
                 setEmbed(args[i++]);
+            } else if (string.equals("-support") && i < args.length) {
+                setSupport(args[i++]);
             } else if (string.equals("-backport") && i < args.length) {
                 setBackport(args[i++]);
             } else if (string.equals("-target") && i < args.length) {
@@ -282,9 +289,9 @@ public class Retrotranslator implements MessageLogger {
         String version = Retrotranslator.class.getPackage().getImplementationVersion();
         String suffix = (version == null) ? "" : "-" + version;
         System.out.println("Usage: java -jar retrotranslator-transformer" + suffix + ".jar" +
-                " [-srcdir <path> | -srcjar <file>] [-destdir <path> | -destjar <file>] [-stripsign] [-verbose]" +
-                " [-lazy] [-advanced] [-retainapi] [-retainflags] [-verify] [-uptodatecheck] [-target <version>]" +
-                " [-classpath <classpath>] [-srcmask <mask>] [-embed <package>] [-backport <packages>]");
+                " [-srcdir <path> | -srcjar <file>] [-destdir <path> | -destjar <file>] [-support <features>] [-lazy]" +
+                " [-stripsign] [-advanced] [-retainapi] [-retainflags] [-verify] [-uptodatecheck] [-target <version>]" +
+                " [-classpath <classpath>] [-srcmask <mask>] [-embed <package>] [-backport <packages>] [-verbose]");
     }
 
     public static void main(String[] args) {

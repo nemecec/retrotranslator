@@ -82,7 +82,7 @@ public class _BigDecimal {
         return dividend.subtract(divideToIntegralValue(dividend, divisor).multiply(divisor));
     }
 
-    @Advanced
+    @Advanced("BigDecimal.setScale")
     public static BigDecimal setScale(BigDecimal bigDecimal, int newScale, int roundingMode) {
         if (newScale >= 0) {
             return bigDecimal.setScale(newScale, roundingMode);

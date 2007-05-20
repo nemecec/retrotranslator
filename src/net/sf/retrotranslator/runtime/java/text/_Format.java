@@ -39,12 +39,12 @@ import net.sf.retrotranslator.runtime.impl.Advanced;
  */
 public class _Format {
 
-    @Advanced
+    @Advanced("DecimalFormat.setParseBigDecimal")
     public static Object parseObject(Format format, String source) throws ParseException {
         return _DecimalFormat.fixObject(format, format.parseObject(source));
     }
 
-    @Advanced
+    @Advanced("DecimalFormat.setParseBigDecimal")
     public static Object parseObject(Format format, String source, ParsePosition pos) {
         return _DecimalFormat.fixObject(format, format.parseObject(source, pos));
     }

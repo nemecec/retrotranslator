@@ -59,6 +59,7 @@ public class RetrotranslatorTask extends Task implements MessageLogger {
     private boolean failonwarning = true;
     private String srcmask;
     private String embed;
+    private String support;
     private String backport;
     private String target;
     private Path classpath;
@@ -138,6 +139,10 @@ public class RetrotranslatorTask extends Task implements MessageLogger {
         this.embed = embed;
     }
 
+    public void setSupport(String support) {
+        this.support = support;
+    }
+
     public void setBackport(String backport) {
         this.backport = backport;
     }
@@ -200,6 +205,7 @@ public class RetrotranslatorTask extends Task implements MessageLogger {
         retrotranslator.setUptodatecheck(uptodatecheck);
         retrotranslator.setSrcmask(srcmask);
         retrotranslator.setEmbed(embed);
+        retrotranslator.setSupport(support);
         retrotranslator.setBackport(backport);
         if (target != null) retrotranslator.setTarget(target);
         for (String fileName : getClasspath().list()) {

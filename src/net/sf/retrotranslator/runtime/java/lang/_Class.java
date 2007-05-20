@@ -75,7 +75,7 @@ public class _Class {
         return ClassDescriptor.getInstance(aClass).getDeclaredAnnotations();
     }
 
-    @Advanced
+    @Advanced("Class.getDeclaredMethod")
     public static Method getDeclaredMethod(Class aClass, String name, Class... parameterTypes)
             throws NoSuchMethodException, SecurityException {
         Method method = findMethod(aClass.getDeclaredMethods(), name, parameterTypes);
@@ -112,7 +112,7 @@ public class _Class {
         return genericSuperclass != null ? genericSuperclass : aClass.getSuperclass();
     }
 
-    @Advanced
+    @Advanced("Class.getMethod")
     public static Method getMethod(Class aClass, String name, Class... parameterTypes)
             throws NoSuchMethodException, SecurityException {
         Method method = findMethod(aClass.getMethods(), name, parameterTypes);

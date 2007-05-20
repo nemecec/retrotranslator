@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
+ *
  * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
@@ -29,51 +29,33 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.runtime.java.lang;
+package net.sf.retrotranslator.transformer;
 
-import net.sf.retrotranslator.runtime.impl.*;
 import java.util.*;
 
 /**
  * @author Taras Puchko
  */
-@Advanced("ThreadLocal.remove")
-public class ThreadLocal_ {
+class OperationMode {
 
-    private static class Key {}
+    private final boolean advanced;
+    private final Set<String> features = Collections.synchronizedSet(new HashSet<String>());
 
-    private static class Container extends ThreadLocal<Map<Key, Object>> {
-        protected Map<Key, Object> initialValue() {
-            return new WeakHashMap<Key, Object>();
+    public OperationMode(boolean advanced, String support) {
+        if (support != null) {
+            if (advanced) {
+                throw new IllegalArgumentException("The -support option is unnecessary when -advanced is specified.");
+            }
+            StringTokenizer tokenizer = new StringTokenizer(support, ";");
+            while (tokenizer.hasMoreTokens()) {
+                features.add(tokenizer.nextToken());
+            }
         }
+        this.advanced = advanced;
     }
 
-    private static final Container container = new Container();
-
-    private final Key key = new Key();
-
-    public ThreadLocal_() {
-    }
-
-    public Object get() {
-        Map<Key, Object> map = container.get();
-        Object value = map.get(key);
-        if (value == null && !map.containsKey(key)) {
-            map.put(key, value = initialValue());
-        }
-        return value;
-    }
-
-    public void set(Object value) {
-        container.get().put(key, value);
-    }
-
-    public void remove() {
-        container.get().remove(key);
-    }
-
-    protected Object initialValue() {
-        return null;
+    public boolean isSupportedFeature(String feature) {
+        return advanced || features.contains(feature);
     }
 
 }

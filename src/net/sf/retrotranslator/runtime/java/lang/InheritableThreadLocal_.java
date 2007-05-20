@@ -37,7 +37,7 @@ import java.util.*;
 /**
  * @author Taras Puchko
  */
-@Advanced
+@Advanced("ThreadLocal.remove")
 public class InheritableThreadLocal_ extends ThreadLocal_ {
 
     private class Key {

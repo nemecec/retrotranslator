@@ -5,6 +5,7 @@ Retrotranslator Changelog
   - Bug fixed: Enum static field assignment ordered wrong.
   - New -uptodatecheck option to skip translation of files if the destination files are newer.
   - Support for java.lang.StackTraceElement(String, String, String, int).
+  - New option -support to selectively enable advanced features.
 
 1.2.1 (2007-02-01)
 ---------------------------------
