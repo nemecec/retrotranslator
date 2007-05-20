@@ -1,6 +1,6 @@
 <project name="retrotranslator" default="build" basedir=".">
 
-    <property name="version" value="1.2.1"/>
+    <property name="version" value="1.2.2"/>
 
     <property file="build.properties"/>
 
@@ -140,6 +140,7 @@
         <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
                jvm="${java14_home}/bin/java" failureproperty="test.failed">
             <jvmarg value="-Xfuture"/>
+            <classpath location="lib/junit.jar"/>
             <classpath location="build/test-embedded"/>
             <formatter type="brief" usefile="false"/>
             <batchtest>
@@ -190,6 +191,7 @@
                jvm="${java14_home}/bin/java" failureproperty="test.failed">
             <jvmarg value="-Xfuture"/>
             <sysproperty key="net.sf.retrotranslator.retain-api" value="true"/>
+            <classpath location="lib/junit.jar"/>
             <classpath location="build/test-retainapi"/>
             <formatter type="brief" usefile="false"/>
             <test name="net.sf.retrotranslator.tests.RetainAPITestCase"/>
