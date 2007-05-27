@@ -247,7 +247,7 @@ class ReplacementLocator {
 
     private static String createServiceName(String prefix, String suffix) {
         int index = suffix.lastIndexOf('/');
-        return prefix + suffix.substring(0, index + 1) + '_' + suffix.substring(index + 1);
+        return prefix + suffix.substring(0, index + 1) + '_' + suffix.substring(index + 1).replace('$', '_');
     }
 
     private boolean isClassAvailable(String internalName) {
