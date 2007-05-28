@@ -477,11 +477,26 @@ and concurrency utilities
         <a href="http://dcl.mathcs.emory.edu/util/backport-util-concurrent/doc/api/edu/emory/mathcs/backport/java/util/concurrent/helpers/Utils.html#nanoTime()">
             may vary</a> on different platforms.
     </td></tr>
-    <tr><td><code>Thread</code></td><td><code>getStackTrace(),<br> getId()
-    </code></td><td>The <code>Thread.getStackTrace()</code>
-        method returns non-empty stack trace only for the current thread.<br>
-        The <code>Thread.getId()</code> method does not reflect the order in which threads are created.</td></tr>
+    <tr><td><code>Thread</code></td><td><code>
+        getId(),<br>
+        getStackTrace(),<br>
+        getUncaughtExceptionHandler(),<br>
+        getDefaultUncaughtExceptionHandler(),<br>
+        setUncaughtExceptionHandler(
+        Thread.UncaughtExceptionHandler)<sup><a href="#3">3</a></sup>,<br>
+        setDefaultUncaughtExceptionHandler(
+        Thread.UncaughtExceptionHandler)<sup><a href="#3">3</a></sup>
+    </code></td><td>
+        The <code>Thread.getId()</code> method does not reflect the order in which threads are created.<br>
+        The <code>Thread.getStackTrace()</code> method returns non-empty stack trace only for the current thread.<br>
+
+        Enable features "<code>Thread.setUncaughtExceptionHandler</code>" and
+        "<code>Thread.setDefaultUncaughtExceptionHandler</code>" to support exception handlers for threads
+        created by translated code (in contrast to J2SE 5.0 the default <code>UncaughtExceptionHandler</code>
+        takes precedence over <code>ThreadGroup</code>)<sup><a href="#3">3</a></sup>.
+    </td></tr>
     <tr><td><code>Thread.State</code></td><td>*</td><td>&nbsp;</td></tr>
+    <tr><td><code>Thread.UncaughtExceptionHandler<sup><a href="#2">2</a></sup></code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>ThreadLocal</code></td><td><code>remove()<sup><a href="#3">3</a></sup></code></td>
         <td>Enable feature "<code>ThreadLocal.remove</code>" to use alternative <code>ThreadLocal</code>
             and <code>InheritableThreadLocal</code> implementations that have method 

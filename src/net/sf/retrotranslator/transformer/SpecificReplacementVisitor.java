@@ -39,6 +39,7 @@ import java.util.*;
 import net.sf.retrotranslator.runtime.asm.*;
 import static net.sf.retrotranslator.runtime.asm.Opcodes.*;
 import net.sf.retrotranslator.runtime.impl.RuntimeTools;
+import net.sf.retrotranslator.runtime.java.lang._Thread;
 
 /**
  * @author Taras Puchko
@@ -50,6 +51,7 @@ class SpecificReplacementVisitor extends ClassAdapter {
     private static final String SOFT_REFERENCE = Type.getInternalName(SoftReference.class);
     private static final String WEAK_REFERENCE = Type.getInternalName(WeakReference.class);
 
+    private static final String THREAD_NAME = Type.getInternalName(Thread.class);
     private static final String SYSTEM_NAME = Type.getInternalName(System.class);
     private static final String CONDITION_NAME = Type.getInternalName(Condition.class);
     private static final String DELAY_QUEUE_NAME = Type.getInternalName(DelayQueue.class);
@@ -67,20 +69,60 @@ class SpecificReplacementVisitor extends ClassAdapter {
     private static final Map<String, String> COLLECTIONS_FIELDS = getCollectionFields();
 
     private final OperationMode mode;
+    private boolean customThread;
 
     public SpecificReplacementVisitor(ClassVisitor visitor, OperationMode mode) {
         super(visitor);
         this.mode = mode;
     }
 
-    public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-        MethodVisitor visitor = super.visitMethod(access, name, desc, signature, exceptions);
-        return visitor == null ? null : new ConstructorReplacementMethodVisitor(visitor);
+    public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
+        super.visit(version, access, name, signature, superName, interfaces);
+        customThread = THREAD_NAME.equals(superName) &&
+                (mode.isSupportedFeature("Thread.setDefaultUncaughtExceptionHandler") ||
+                        mode.isSupportedFeature("Thread.setUncaughtExceptionHandler"));
     }
 
-    private class ConstructorReplacementMethodVisitor extends MethodAdapter {
+    public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+        MethodVisitor visitor = super.visitMethod(access, name, desc, signature, exceptions);
+        if (visitor == null) {
+            return null;
+        }
+        visitor = new SpecificReplacementMethodVisitor(visitor);
+        if (customThread && name.equals("run") && desc.equals(TransformerTools.descriptor(void.class))) {
+            visitor = new RunMethodVisitor(visitor);
+        }
+        return visitor;
+    }
 
-        public ConstructorReplacementMethodVisitor(MethodVisitor visitor) {
+    private class RunMethodVisitor extends MethodAdapter {
+
+        private final Label end = new Label();
+
+        public RunMethodVisitor(MethodVisitor visitor) {
+            super(visitor);
+        }
+
+        public void visitCode() {
+            Label start = new Label();
+            mv.visitTryCatchBlock(start, end, end, Type.getInternalName(Throwable.class));
+            mv.visitLabel(start);
+            super.visitCode();
+
+        }
+
+        public void visitMaxs(final int maxStack, final int maxLocals) {
+            mv.visitLabel(end);
+            mv.visitMethodInsn(INVOKESTATIC, Type.getInternalName(_Thread.class),
+                    "handleUncaughtException", TransformerTools.descriptor(void.class, Throwable.class));
+            mv.visitInsn(RETURN);
+            super.visitMaxs(maxStack, maxLocals);
+        }
+    }
+
+    private class SpecificReplacementMethodVisitor extends MethodAdapter {
+
+        public SpecificReplacementMethodVisitor(MethodVisitor visitor) {
             super(visitor);
         }
 

@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
+ *
  * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
@@ -31,7 +31,8 @@
  */
 package net.sf.retrotranslator.runtime.java.lang;
 
-import net.sf.retrotranslator.runtime.impl.WeakIdentityTable;
+import static java.lang.Thread.UncaughtExceptionHandler;
+import net.sf.retrotranslator.runtime.impl.*;
 
 /**
  * @author Taras Puchko
@@ -48,19 +49,131 @@ public class _Thread {
             };
 
     private static long lastId;
+    private static UncaughtExceptionHandler defaultHandler;
 
     private volatile long id;
+    private UncaughtExceptionHandler handler;
 
-    public static StackTraceElement[] getStackTrace(Thread thread) {
-        return thread == Thread.currentThread() ? getStackTrace() : EMPTY_STACK_TRACE;
+    public static class BasicThreadBuilder {
+
+        private ThreadGroup group;
+        private Runnable target;
+
+        protected BasicThreadBuilder(ThreadGroup group, Runnable target) {
+            this.group = group;
+            this.target = target;
+        }
+
+        public ThreadGroup argument1() {
+            return group;
+        }
+
+        public Runnable argument2() {
+            return target;
+        }
+    }
+
+    public static class AdvancedThreadBuilder {
+
+        private ThreadGroup group;
+        private Runnable target;
+        private String name;
+        private long stackSize;
+
+        protected AdvancedThreadBuilder(ThreadGroup group, Runnable target, String name, long stackSize) {
+            this.group = group;
+            this.target = target;
+            this.name = name;
+            this.stackSize = stackSize;
+        }
+
+        public ThreadGroup argument1() {
+            return group;
+        }
+
+        public Runnable argument2() {
+            return target;
+        }
+
+        public String argument3() {
+            return name;
+        }
+
+        public long argument4() {
+            return stackSize;
+        }
+    }
+
+    private static class RunnableWrapper implements Runnable {
+
+        private Runnable target;
+
+        private RunnableWrapper(Runnable target) {
+            this.target = target;
+        }
+
+        public void run() {
+            try {
+                target.run();
+            } catch (Throwable e) {
+                handleUncaughtException(e);
+            }
+        }
+
+        protected static Runnable wrap(Runnable target) {
+            return target == null || target instanceof RunnableWrapper ? target : new RunnableWrapper(target);
+        }
+    }
+
+    public static void handleUncaughtException(Throwable throwable) {
+        Thread thread = Thread.currentThread();
+        UncaughtExceptionHandler handler = threads.obtain(thread).getHandler();
+        if (handler == null) {
+            handler = getDefaultUncaughtExceptionHandler();
+        }
+        if (handler == null) {
+            handler = thread.getThreadGroup();
+        }
+        handler.uncaughtException(thread, throwable);
+    }
+
+    @Advanced({"Thread.setDefaultUncaughtExceptionHandler", "Thread.setUncaughtExceptionHandler"})
+    public static Runnable convertConstructorArguments(Runnable target) {
+        return RunnableWrapper.wrap(target);
+    }
+
+    @Advanced({"Thread.setDefaultUncaughtExceptionHandler", "Thread.setUncaughtExceptionHandler"})
+    public static BasicThreadBuilder createInstanceBuilder(ThreadGroup group, Runnable target) {
+        return new BasicThreadBuilder(group, RunnableWrapper.wrap(target));
+    }
+
+    @Advanced({"Thread.setDefaultUncaughtExceptionHandler", "Thread.setUncaughtExceptionHandler"})
+    public static AdvancedThreadBuilder createInstanceBuilder(Runnable target, String name) {
+        return new AdvancedThreadBuilder(null, RunnableWrapper.wrap(target), name, 0);
+    }
+
+    @Advanced({"Thread.setDefaultUncaughtExceptionHandler", "Thread.setUncaughtExceptionHandler"})
+    public static AdvancedThreadBuilder createInstanceBuilder(ThreadGroup group, Runnable target, String name) {
+        return new AdvancedThreadBuilder(group, RunnableWrapper.wrap(target), name, 0);
+    }
+
+    @Advanced({"Thread.setDefaultUncaughtExceptionHandler", "Thread.setUncaughtExceptionHandler"})
+    public static AdvancedThreadBuilder createInstanceBuilder(
+            ThreadGroup group, Runnable target, String name, long stackSize) {
+        return new AdvancedThreadBuilder(group, RunnableWrapper.wrap(target), name, stackSize);
+    }
+
+    public static synchronized UncaughtExceptionHandler getDefaultUncaughtExceptionHandler() {
+        return defaultHandler;
+    }
+
+    @Advanced("Thread.setDefaultUncaughtExceptionHandler")
+    public static synchronized void setDefaultUncaughtExceptionHandler(UncaughtExceptionHandler handler) {
+        defaultHandler = handler;
     }
 
     public static long getId(Thread thread) {
         return threads.obtain(thread).getId();
-    }
-
-    private static StackTraceElement[] getStackTrace() {
-        return new Throwable().getStackTrace();
     }
 
     private long getId() {
@@ -72,6 +185,32 @@ public class _Thread {
             }
         }
         return id;
+    }
+
+    public static StackTraceElement[] getStackTrace(Thread thread) {
+        return thread == Thread.currentThread() ? getStackTrace() : EMPTY_STACK_TRACE;
+    }
+
+    private static StackTraceElement[] getStackTrace() {
+        return new Throwable().getStackTrace();
+    }
+
+    public static UncaughtExceptionHandler getUncaughtExceptionHandler(Thread thread) {
+        UncaughtExceptionHandler handler = threads.obtain(thread).getHandler();
+        return handler != null ? handler : thread.getThreadGroup();
+    }
+
+    @Advanced("Thread.setUncaughtExceptionHandler")
+    public static void setUncaughtExceptionHandler(Thread thread, UncaughtExceptionHandler handler) {
+        threads.obtain(thread).setHandler(handler);
+    }
+
+    private synchronized UncaughtExceptionHandler getHandler() {
+        return handler;
+    }
+
+    private synchronized void setHandler(UncaughtExceptionHandler handler) {
+        this.handler = handler;
     }
 
 }

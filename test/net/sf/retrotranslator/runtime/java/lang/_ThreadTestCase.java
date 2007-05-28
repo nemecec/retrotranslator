@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
+ *
  * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
@@ -37,6 +37,38 @@ import junit.framework.TestCase;
  * @author Taras Puchko
  */
 public class _ThreadTestCase extends TestCase {
+
+    private Thread.UncaughtExceptionHandler defaultUncaughtExceptionHandler;
+
+    protected void setUp() throws Exception {
+        super.setUp();
+        defaultUncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
+    }
+
+    protected void tearDown() throws Exception {
+        Thread.setDefaultUncaughtExceptionHandler(defaultUncaughtExceptionHandler);
+        super.tearDown();
+    }
+
+    private static class MyHandler implements Thread.UncaughtExceptionHandler {
+
+        public Thread thread;
+        public Throwable exception;
+
+        public void uncaughtException(Thread t, Throwable e) {
+            thread = t;
+            exception = e;
+        }
+    }
+
+    private static class MyThread extends Thread {
+
+        public boolean done;
+
+        public void run() {
+            done = true;
+        }
+    }
 
     public void testGetStackTrace() throws Exception {
         StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
@@ -82,4 +114,112 @@ public class _ThreadTestCase extends TestCase {
         assertTrue(thread2.getId() != Thread.currentThread().getId());
         assertTrue(thread1.getId() != thread2.getId());
     }
+
+    public void testSetUncaughtExceptionHandler() throws Exception {
+        final ThreadGroup group = Thread.currentThread().getThreadGroup();
+        final IllegalStateException exception = new IllegalStateException("test");
+        Runnable runnable = new Runnable() {
+            public void run() {
+                throw exception;
+            }
+        };
+        Thread[] threads = {
+                new Thread() {
+                    public void run() {
+                        throw exception;
+                    }
+                },
+                new Thread(runnable),
+                new Thread(group, runnable),
+                new Thread("name") {
+                    public void run() {
+                        throw exception;
+                    }
+                },
+                new Thread(group, "name") {
+                    public void run() {
+                        throw exception;
+                    }
+                },
+                new Thread(runnable, "name"),
+                new Thread(group, runnable, "name"),
+                new Thread(group, runnable, "name", 0),
+        };
+        for (Thread thread : threads) {
+            MyHandler handler = new MyHandler();
+            assertSame(thread.getThreadGroup(), thread.getUncaughtExceptionHandler());
+            thread.setUncaughtExceptionHandler(handler);
+            assertSame(handler, thread.getUncaughtExceptionHandler());
+            thread.start();
+            thread.join();
+            assertSame(thread, handler.thread);
+            assertSame(exception, handler.exception);
+        }
+    }
+
+    public void testSetUncaughtExceptionHandler_NoException() throws Exception {
+        MyThread myThread = new MyThread();
+        MyHandler myHandler = new MyHandler();
+        ((Thread) myThread).setUncaughtExceptionHandler(myHandler);
+        assertFalse(myThread.done);
+        myThread.start();
+        myThread.join();
+        assertTrue(myThread.done);
+        assertNull(myHandler.thread);
+        assertNull(myHandler.exception);
+    }
+
+    public void testSetDefaultUncaughtExceptionHandler() throws Exception {
+        final ThreadGroup group = Thread.currentThread().getThreadGroup();
+        final IllegalStateException exception = new IllegalStateException("test");
+        Runnable runnable = new Runnable() {
+            public void run() {
+                throw exception;
+            }
+        };
+        Thread[] threads = {
+                new Thread() {
+                    public void run() {
+                        throw exception;
+                    }
+                },
+                new Thread(runnable),
+                new Thread(group, runnable),
+                new Thread("name") {
+                    public void run() {
+                        throw exception;
+                    }
+                },
+                new Thread(group, "name") {
+                    public void run() {
+                        throw exception;
+                    }
+                },
+                new Thread(runnable, "name"),
+                new Thread(group, runnable, "name"),
+                new Thread(group, runnable, "name", 0),
+        };
+        for (Thread thread : threads) {
+            MyHandler handler = new MyHandler();
+            Thread.setDefaultUncaughtExceptionHandler(handler);
+            assertSame(handler, Thread.getDefaultUncaughtExceptionHandler());
+            thread.start();
+            thread.join();
+            assertSame(thread, handler.thread);
+            assertSame(exception, handler.exception);
+        }
+    }
+    
+    public void testSetDefaultUncaughtExceptionHandler_NoException() throws Exception {
+        MyThread myThread = new MyThread();
+        MyHandler myHandler = new MyHandler();
+        Thread.setDefaultUncaughtExceptionHandler(myHandler);
+        assertFalse(myThread.done);
+        myThread.start();
+        myThread.join();
+        assertTrue(myThread.done);
+        assertNull(myHandler.thread);
+        assertNull(myHandler.exception);
+    }
+
 }
