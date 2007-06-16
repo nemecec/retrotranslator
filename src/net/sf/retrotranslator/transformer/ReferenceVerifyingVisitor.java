@@ -61,9 +61,13 @@ class ReferenceVerifyingVisitor extends GenericClassVisitor {
         try {
             factory.getClassReader(s);
         } catch (ClassNotFoundException e) {
-            println("Class not found: " + getClassInfo(e.getMessage()));
+            printClassNotFound(e);
         }
         return s;
+    }
+
+    private void printClassNotFound(ClassNotFoundException e) {
+        println("Class not found: " + getClassInfo(e.getMessage()));
     }
 
     protected void visitFieldInstruction(MethodVisitor visitor, int opcode, String owner, String name, String desc) {
@@ -98,7 +102,8 @@ class ReferenceVerifyingVisitor extends GenericClassVisitor {
     }
 
     private void cannotVerify(String text, ClassNotFoundException e) {
-        println(text + " (class not found: " + getClassInfo(e.getMessage()) + ")");
+        printClassNotFound(e);
+        println(text);
     }
 
     private void println(String text) {

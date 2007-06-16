@@ -37,7 +37,7 @@ import java.util.*;
 /**
  * @author Taras Puchko
  */
-public class Retrotranslator implements MessageLogger {
+public class Retrotranslator {
 
     private LinkedList<FileContainer> src = new LinkedList<FileContainer>();
     private FileContainer dest;
@@ -50,7 +50,7 @@ public class Retrotranslator implements MessageLogger {
     private boolean verify;
     private boolean uptodatecheck;
     private List<File> classpath = new ArrayList<File>();
-    private MessageLogger logger = this;
+    private MessageLogger logger;
     private SourceMask sourceMask = new SourceMask(null);
     private String embed;
     private String support;
@@ -159,10 +159,6 @@ public class Retrotranslator implements MessageLogger {
         this.classLoader = classLoader;
     }
 
-    public void log(Message message) {
-        System.out.println(message);
-    }
-
     public boolean run() {
         if (src.isEmpty()) throw new IllegalArgumentException("Source not set.");
         EmbeddingConverter converter = null;
@@ -172,7 +168,7 @@ public class Retrotranslator implements MessageLogger {
             converter = new EmbeddingConverter(embed);
         }
         OperationMode mode = new OperationMode(advanced, support);
-        SystemLogger systemLogger = new SystemLogger(logger, verbose);
+        SystemLogger systemLogger = new SystemLogger(getMessageLogger(), verbose);
         ReplacementLocatorFactory locatorFactory = new ReplacementLocatorFactory(target, mode, retainapi, backports);
         ClassTransformer classTransformer = new ClassTransformer(
                 lazy, stripsign, retainflags, systemLogger, converter, locatorFactory);
@@ -197,6 +193,17 @@ public class Retrotranslator implements MessageLogger {
         } finally {
             factory.close();
         }
+    }
+
+    private MessageLogger getMessageLogger() {
+        if (logger != null) {
+            return logger;
+        }
+        return new AbstractLogger() {
+            protected void log(String text, Level level) {
+                System.out.println(text);
+            }
+        };
     }
 
     private boolean verify(ClassReaderFactory factory, SystemLogger systemLogger) {
@@ -234,7 +241,7 @@ public class Retrotranslator implements MessageLogger {
                 }
             }
         }
-        systemLogger.log(new Message(Level.INFO, "Verified " + container.getFileCount() + " file(s)" + 
+        systemLogger.log(new Message(Level.INFO, "Verified " + container.getFileCount() + " file(s)" +
                 (warningCount == 0 ? "." : " with " + warningCount + " warning(s).")));
     }
 
@@ -291,7 +298,7 @@ public class Retrotranslator implements MessageLogger {
         System.out.println("Usage: java -jar retrotranslator-transformer" + suffix + ".jar" +
                 " [-srcdir <path> | -srcjar <file>] [-destdir <path> | -destjar <file>] [-support <features>] [-lazy]" +
                 " [-stripsign] [-advanced] [-retainapi] [-retainflags] [-verify] [-uptodatecheck] [-target <version>]" +
-                " [-classpath <classpath>] [-srcmask <mask>] [-embed <package>] [-backport <packages>] [-verbose]");
+                " [-classpath <path>] [-srcmask <mask>] [-embed <package>] [-backport <packages>] [-verbose]");
     }
 
     public static void main(String[] args) {

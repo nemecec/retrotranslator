@@ -141,6 +141,7 @@
                jvm="${java14_home}/bin/java" failureproperty="test.failed">
             <jvmarg value="-Xfuture"/>
             <classpath location="lib/junit.jar"/>
+            <classpath location="lib/mx4j.jar"/>
             <classpath location="build/test-embedded"/>
             <formatter type="brief" usefile="false"/>
             <batchtest>

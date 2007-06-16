@@ -7,6 +7,8 @@ Retrotranslator Changelog
   - Support for java.lang.StackTraceElement(String, String, String, int).
   - New option -support to selectively enable advanced features.
   - Limited support for java.lang.Thread.UncaughtExceptionHandler.
+  - Limited support for java.lang.management.ManagementFactory.getPlatformMBeanServer().
+  - New format of verification warnings.
 
 1.2.1 (2007-02-01)
 ---------------------------------

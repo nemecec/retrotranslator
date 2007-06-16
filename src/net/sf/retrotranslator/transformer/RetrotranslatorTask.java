@@ -39,7 +39,7 @@ import org.apache.tools.ant.types.*;
 /**
  * @author Taras Puchko
  */
-public class RetrotranslatorTask extends Task implements MessageLogger {
+public class RetrotranslatorTask extends Task {
 
     private File srcdir;
     private File srcjar;
@@ -167,10 +167,6 @@ public class RetrotranslatorTask extends Task implements MessageLogger {
         return classpath != null ? classpath : (classpath = new Path(getProject()));
     }
 
-    public void log(Message message) {
-        log(message.toString(), message.getLevel().isCritical() ? Project.MSG_WARN : Project.MSG_INFO);
-    }
-
     public void execute() throws BuildException {
         Retrotranslator retrotranslator = new Retrotranslator();
         if (srcdir != null) retrotranslator.addSrcdir(srcdir);
@@ -211,10 +207,16 @@ public class RetrotranslatorTask extends Task implements MessageLogger {
         for (String fileName : getClasspath().list()) {
             retrotranslator.addClasspathElement(getProject().resolveFile(fileName));
         }
-        retrotranslator.setLogger(this);
+        retrotranslator.setLogger(new AbstractLogger() {
+            protected void log(String text, Level level) {
+                RetrotranslatorTask.this.log(text,
+                        level.isCritical() ? Project.MSG_WARN : Project.MSG_INFO);
+            }
+        });
         boolean success = retrotranslator.run();
         if (!success && failonwarning) {
             throw new BuildException("Translation failed.", getLocation());
         }
     }
+
 }

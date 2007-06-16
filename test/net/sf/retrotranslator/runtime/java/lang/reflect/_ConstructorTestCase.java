@@ -108,7 +108,7 @@ public class _ConstructorTestCase extends BaseTestCase {
         assertFalse(constructor.isAnnotationPresent(MyFormatter.class));
     }
 
-    private static class Test {
+    public static class Test {
         private Test() {
         }
     }
@@ -122,8 +122,6 @@ public class _ConstructorTestCase extends BaseTestCase {
             if (constructor.isSynthetic()) syntheticConstructor = constructor;
         }
         assertNotNull(syntheticConstructor);
-        Class parameterType = syntheticConstructor.getParameterTypes()[0];
-        assertTrue(parameterType.isSynthetic());
         assertFalse(Test.class.isSynthetic());
         assertFalse(_ConstructorTestCase.class.isSynthetic());
     }

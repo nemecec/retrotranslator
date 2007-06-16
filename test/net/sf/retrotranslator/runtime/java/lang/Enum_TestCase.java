@@ -32,6 +32,7 @@
 package net.sf.retrotranslator.runtime.java.lang;
 
 import net.sf.retrotranslator.tests.BaseTestCase;
+import java.util.EnumSet;
 
 /**
  * @author Taras Puchko
@@ -98,6 +99,7 @@ public class Enum_TestCase extends BaseTestCase {
     enum Letter {
         A, B, C;
         public static Letter DEFAULT = Letter.valueOf("B");
+        public static final EnumSet<Letter> SET = EnumSet.complementOf(EnumSet.of(B));
     }
 
     public void testInitOrder() throws Exception {
@@ -105,6 +107,10 @@ public class Enum_TestCase extends BaseTestCase {
         assertEquals("B", Letter.B.name());
         assertEquals("C", Letter.C.name());
         assertEquals("B", Letter.DEFAULT.name());
+        assertEquals(2, Letter.SET.size());
+        assertTrue(Letter.SET.contains(Letter.A));
+        assertFalse(Letter.SET.contains(Letter.B));
+        assertTrue(Letter.SET.contains(Letter.C));
     }
 
 }
