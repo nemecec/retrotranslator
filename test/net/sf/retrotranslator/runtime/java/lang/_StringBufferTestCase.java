@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
+ *
  * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
@@ -168,6 +168,12 @@ public class _StringBufferTestCase extends TestCase {
         } catch (IndexOutOfBoundsException e) {
             //ok
         }
+    }
+
+    public void testTrimToSize() throws Exception {
+        StringBuffer buffer = new StringBuffer(100);
+        buffer.append("abc");
+        buffer.trimToSize();
     }
 
 }

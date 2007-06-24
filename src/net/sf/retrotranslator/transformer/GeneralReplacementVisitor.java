@@ -33,9 +33,7 @@ package net.sf.retrotranslator.transformer;
 
 import net.sf.retrotranslator.runtime.asm.*;
 import static net.sf.retrotranslator.runtime.asm.Opcodes.*;
-import net.sf.retrotranslator.runtime.impl.RuntimeTools;
 import static net.sf.retrotranslator.runtime.impl.RuntimeTools.CONSTRUCTOR_NAME;
-import net.sf.retrotranslator.runtime.java.lang.Enum_;
 
 /**
  * @author Taras Puchko
@@ -49,7 +47,6 @@ class GeneralReplacementVisitor extends GenericClassVisitor {
     private final NameTranslator translator;
     private String currentClassName;
     private boolean threadLocalExcluded;
-    private boolean enumTranslated;
 
     public GeneralReplacementVisitor(ClassVisitor classVisitor, final ReplacementLocator locator) {
         super(classVisitor);
@@ -76,12 +73,6 @@ class GeneralReplacementVisitor extends GenericClassVisitor {
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
         currentClassName = name;
         threadLocalExcluded = name.endsWith("ThreadLocal_$Container");
-        if ((access & ACC_ENUM) != 0) {
-            String translatedSuperName = translator.typeName(superName);
-            if (!translatedSuperName.equals(superName)) {
-                enumTranslated = translatedSuperName.equals(Type.getInternalName(Enum_.class));
-            }
-        }
         super.visit(version, access,
                 translator.typeName(name),
                 translator.declarationSignature(signature),
@@ -92,12 +83,6 @@ class GeneralReplacementVisitor extends GenericClassVisitor {
     private boolean isExcluded(String name) {
         return name == null || threadLocalExcluded &&
                 (name.equals("java/lang/ThreadLocal") || name.equals("java/lang/InheritableThreadLocal"));
-    }
-
-    public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-        MethodVisitor visitor = super.visitMethod(access, name, desc, signature, exceptions);
-        return visitor != null && enumTranslated &&
-                name.equals(RuntimeTools.STATIC_NAME) ? new EnumMethodVisitor(visitor) : visitor;
     }
 
     protected void visitTypeInstruction(MethodVisitor visitor, int opcode, String desc) {
@@ -225,44 +210,6 @@ class GeneralReplacementVisitor extends GenericClassVisitor {
             visitor.visitInsn(POP2);
         } else {
             visitor.visitInsn(SWAP);
-        }
-    }
-
-    private class EnumMethodVisitor extends MethodAdapter {
-
-        private boolean complete;
-
-        public EnumMethodVisitor(final MethodVisitor visitor) {
-            super(visitor);
-        }
-
-        public void visitFieldInsn(final int opcode, final String owner, final String name, final String desc) {
-            super.visitFieldInsn(opcode, owner, name, desc);
-            if (opcode == PUTSTATIC && name.equals("$VALUES") &&
-                    owner.equals(currentClassName) && desc.equals("[L" + owner + ";")) {
-                loadClassLiteral();
-                mv.visitFieldInsn(GETSTATIC, owner, name, desc);
-                visitSetEnumConstants();
-            }
-        }
-
-        public void visitInsn(final int opcode) {
-            if (opcode == RETURN && !complete) {
-                loadClassLiteral();
-                mv.visitMethodInsn(INVOKESTATIC, currentClassName, "values", "()[L" + currentClassName + ";");
-                visitSetEnumConstants();
-            }
-            super.visitInsn(opcode);
-        }
-
-        private void loadClassLiteral() {
-            mv.visitLdcInsn(TransformerTools.getTypeByInternalName(currentClassName));
-        }
-
-        private void visitSetEnumConstants() {
-            mv.visitMethodInsn(INVOKESTATIC, Type.getInternalName(Enum_.class), "setEnumConstants",
-                    TransformerTools.descriptor(void.class, Class.class, Enum_[].class));
-            complete = true;
         }
     }
 

@@ -99,7 +99,7 @@ public class CustomBackportTestCase extends TestCase {
     }
 
     private boolean isCustomBackport() {
-        return Boolean.getBoolean("net.sf.retrotranslator.custom-backport");
+        return Boolean.getBoolean("net.sf.retrotranslator.tests.custom-backport");
     }
 
 }

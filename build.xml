@@ -111,7 +111,7 @@
     </target>
 
     <target name="test" depends="test-translated, test-with-jit, test-embedded,
-    test-retainapi, test-custom-backport, test-duplicates"/>
+    test-retainapi, test-support, test-custom-backport, test-duplicates"/>
 
     <target name="test-translated" depends="compile-tests">
         <mkdir dir="build/test-classes14"/>
@@ -170,7 +170,7 @@
         <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
                jvm="${java14_home}/bin/java" failureproperty="test.failed">
             <jvmarg value="-Xfuture"/>
-            <sysproperty key="net.sf.retrotranslator.custom-backport" value="true"/>
+            <sysproperty key="net.sf.retrotranslator.tests.custom-backport" value="true"/>
             <classpath>
                 <path refid="classpath"/>
                 <pathelement location="build/test-custom-backport"/>
@@ -191,11 +191,30 @@
         <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
                jvm="${java14_home}/bin/java" failureproperty="test.failed">
             <jvmarg value="-Xfuture"/>
-            <sysproperty key="net.sf.retrotranslator.retain-api" value="true"/>
+            <sysproperty key="net.sf.retrotranslator.tests.retain-api" value="true"/>
             <classpath location="lib/junit.jar"/>
             <classpath location="build/test-retainapi"/>
             <formatter type="brief" usefile="false"/>
             <test name="net.sf.retrotranslator.tests.RetainAPITestCase"/>
+        </junit>
+        <fail if="test.failed"/>
+    </target>
+
+    <target name="test-support" depends="compile-tests">
+        <mkdir dir="build/test-support"/>
+        <retrotranslator destdir="build/test-support" support="StringBuffer.trimToSize;ThreadLocal.remove">
+            <fileset dir="build/test-classes15" includes="**/SupportAPITestCase.class"/>
+        </retrotranslator>
+        <echo message="Running classes in build/test-support on ${java14_home}"/>
+        <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
+               jvm="${java14_home}/bin/java" failureproperty="test.failed">
+            <jvmarg value="-Xfuture"/>
+            <sysproperty key="net.sf.retrotranslator.tests.support" value="true"/>
+            <classpath location="lib/junit.jar"/>
+            <classpath location="build/retrotranslator-runtime-${version}.jar"/>
+            <classpath location="build/test-support"/>
+            <formatter type="brief" usefile="false"/>
+            <test name="net.sf.retrotranslator.tests.SupportAPITestCase"/>
         </junit>
         <fail if="test.failed"/>
     </target>

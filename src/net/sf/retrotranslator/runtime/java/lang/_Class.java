@@ -98,8 +98,7 @@ public class _Class {
     }
 
     public static Object[] getEnumConstants(Class aClass) {
-        Object[] constants = Enum_.getEnumConstants(aClass);
-        return constants == null ? null : constants.clone();
+        return Enum_.getEnumConstants(aClass);
     }
 
     public static Type[] getGenericInterfaces(Class aClass) {

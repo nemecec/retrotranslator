@@ -125,6 +125,7 @@ public class _Thread {
         }
     }
 
+    // Referenced from translated bytecode
     public static void handleUncaughtException(Throwable throwable) {
         Thread thread = Thread.currentThread();
         UncaughtExceptionHandler handler = threads.obtain(thread).getHandler();

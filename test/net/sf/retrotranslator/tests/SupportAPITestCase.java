@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
+ *
  * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
@@ -32,19 +32,23 @@
 package net.sf.retrotranslator.tests;
 
 import junit.framework.TestCase;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
 
 /**
  * @author Taras Puchko
  */
-public class RetainAPITestCase extends TestCase {
+public class SupportAPITestCase extends TestCase {
 
     public void test() {
-        if (Boolean.getBoolean("net.sf.retrotranslator.tests.retain-api") &&
+        if (Boolean.getBoolean("net.sf.retrotranslator.tests.support") &&
                 System.getProperty("java.version").startsWith("1.4")) {
+            new StringBuilder().append("a").trimToSize();
+            new ThreadLocal().remove();
             try {
-                new StringBuilder().append("a").append("b");
+                new BigDecimal(10).setScale(-1);
                 fail();
-            } catch (NoClassDefFoundError e) {
+            } catch (ArithmeticException e) {
                 //ok
             }
         }

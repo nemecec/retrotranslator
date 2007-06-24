@@ -32,7 +32,9 @@
 package net.sf.retrotranslator.runtime.java.lang;
 
 import net.sf.retrotranslator.tests.BaseTestCase;
+import net.sf.retrotranslator.runtime.impl.RuntimeTools;
 import java.util.EnumSet;
+import java.lang.ref.WeakReference;
 
 /**
  * @author Taras Puchko
@@ -53,6 +55,36 @@ public class Enum_TestCase extends BaseTestCase {
         assertEquals(2, CardinalPoint.SOUTH.ordinal());
     }
 
+    public void testToString() throws Exception {
+        assertEquals("GREEN", MyColor.GREEN.toString());
+        assertEquals("SOUTH", CardinalPoint.SOUTH.toString());
+    }
+
+    public void testEquals() throws Exception {
+        assertEquals(MyColor.GREEN, MyColor.GREEN);
+        assertFalse(MyColor.GREEN.equals(MyColor.RED));
+        assertEquals(CardinalPoint.SOUTH, CardinalPoint.SOUTH);
+        assertFalse(CardinalPoint.SOUTH.equals(CardinalPoint.NORTH));
+        assertFalse(MyColor.GREEN.equals(CardinalPoint.NORTH));
+        assertFalse(MyColor.GREEN.equals(null));
+    }
+
+    public void testCompareTo() throws Exception {
+        assertTrue(MyColor.BLUE.compareTo(MyColor.RED) > 0);
+        assertTrue(MyColor.GREEN.compareTo(MyColor.GREEN) == 0);
+        assertTrue(MyColor.RED.compareTo(MyColor.GREEN) < 0);
+        assertTrue(CardinalPoint.WEST.compareTo(CardinalPoint.NORTH) > 0);
+        assertTrue(CardinalPoint.EAST.compareTo(CardinalPoint.EAST) == 0);
+        assertTrue(CardinalPoint.SOUTH.compareTo(CardinalPoint.WEST) < 0);
+    }
+
+    public void testGetDeclaringClass() {
+        assertSame(MyColor.class, MyColor.GREEN.getClass());
+        assertSame(MyColor.class, MyColor.GREEN.getDeclaringClass());
+        assertNotSame(CardinalPoint.class, CardinalPoint.NORTH.getClass());
+        assertSame(CardinalPoint.class, CardinalPoint.NORTH.getDeclaringClass());
+    }
+
     public void testValueOf() throws Exception {
         MyColor color = Enum.valueOf(MyColor.class, "GREEN");
         assertEquals(MyColor.GREEN, color);
@@ -63,7 +95,6 @@ public class Enum_TestCase extends BaseTestCase {
         } catch (IllegalArgumentException e) {
             //ok
         }
-
         CardinalPoint point = Enum.valueOf(CardinalPoint.class, "WEST");
         assertEquals(CardinalPoint.WEST, point);
         assertSame(CardinalPoint.WEST, CardinalPoint.valueOf("WEST"));
@@ -76,14 +107,20 @@ public class Enum_TestCase extends BaseTestCase {
     }
 
     public void testValues() {
-        MyColor[] colors = MyColor.values();
+        checkColors(MyColor.values());
+        checkColors(MyColor.class.getEnumConstants());
+        checkPoints(CardinalPoint.values());
+        checkPoints(CardinalPoint.class.getEnumConstants());
+    }
+
+    private void checkColors(MyColor[] colors) {
         assertEquals(3, colors.length);
         assertEquals(MyColor.RED, colors[0]);
         assertEquals(MyColor.GREEN, colors[1]);
         assertEquals(MyColor.BLUE, colors[2]);
+    }
 
-
-        CardinalPoint[] points = CardinalPoint.values();
+    private void checkPoints(CardinalPoint[] points) {
         assertEquals(4, points.length);
         assertEquals(CardinalPoint.NORTH, points[0]);
         assertEquals(CardinalPoint.EAST, points[1]);
@@ -96,9 +133,20 @@ public class Enum_TestCase extends BaseTestCase {
         assertSame(CardinalPoint.SOUTH, pump(CardinalPoint.SOUTH));
     }
 
+    static class MyClassLoader extends ClassLoader {
+
+        public MyClassLoader(ClassLoader parent) {
+            super(parent);
+        }
+
+        public Class defineClass(byte[] code) {
+            return defineClass(null, code, 0, code.length);
+        }
+    }
+
     enum Letter {
         A, B, C;
-        public static Letter DEFAULT = Letter.valueOf("B");
+        public static Letter DEFAULT = Enum.valueOf(Letter.class, "B");
         public static final EnumSet<Letter> SET = EnumSet.complementOf(EnumSet.of(B));
     }
 
@@ -111,6 +159,21 @@ public class Enum_TestCase extends BaseTestCase {
         assertTrue(Letter.SET.contains(Letter.A));
         assertFalse(Letter.SET.contains(Letter.B));
         assertTrue(Letter.SET.contains(Letter.C));
+    }
+
+    public void testGarbageCollector() throws Exception {
+        String resourceName = "/" + MyColor.class.getName().replace('.', '/') + ".class";
+        byte[] bytes = RuntimeTools.readResourceToByteArray(MyColor.class, resourceName);
+        MyClassLoader classLoader = new MyClassLoader(MyColor.class.getClassLoader());
+        Class enumClass = classLoader.defineClass(bytes);
+        assertEquals(3, enumClass.getEnumConstants().length);
+        WeakReference<ClassLoader> reference = new WeakReference<ClassLoader>(classLoader);
+        classLoader = null;
+        System.gc();
+        assertSame(enumClass.getClassLoader(), reference.get());
+        enumClass = null;
+        System.gc();
+        assertNull(reference.get());
     }
 
 }

@@ -31,6 +31,8 @@
  */
 package net.sf.retrotranslator.runtime.java.lang;
 
+import net.sf.retrotranslator.runtime.impl.Advanced;
+
 /**
  * @author Taras Puchko
  */
@@ -83,6 +85,11 @@ public class _StringBuffer {
         synchronized (buffer) {
             return Character.offsetByCodePoints(buffer, index, codePointOffset);
         }
+    }
+
+    @Advanced("StringBuffer.trimToSize")
+    public static void trimToSize(StringBuffer buffer) {
+        //do nothing
     }
 
 }

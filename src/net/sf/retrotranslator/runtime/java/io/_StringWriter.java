@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
+ *
  * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
@@ -29,25 +29,28 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.tests;
+package net.sf.retrotranslator.runtime.java.io;
 
-import junit.framework.TestCase;
+import java.io.*;
 
 /**
  * @author Taras Puchko
  */
-public class RetainAPITestCase extends TestCase {
+public class _StringWriter {
 
-    public void test() {
-        if (Boolean.getBoolean("net.sf.retrotranslator.tests.retain-api") &&
-                System.getProperty("java.version").startsWith("1.4")) {
-            try {
-                new StringBuilder().append("a").append("b");
-                fail();
-            } catch (NoClassDefFoundError e) {
-                //ok
-            }
-        }
+    public static StringWriter append(StringWriter writer, CharSequence csq) throws IOException {
+        writer.write(String.valueOf(csq));
+        return writer;
+    }
+
+    public static StringWriter append(StringWriter writer, CharSequence csq, int start, int end) throws IOException {
+        writer.write(String.valueOf(csq).substring(start, end));
+        return writer;
+    }
+
+    public static StringWriter append(StringWriter writer, char c) throws IOException {
+        writer.write(c);
+        return writer;
     }
 
 }

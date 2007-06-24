@@ -32,8 +32,11 @@
 package net.sf.retrotranslator.runtime.java.lang;
 
 import java.io.*;
-import java.lang.reflect.Method;
+import java.lang.ref.WeakReference;
+import java.lang.reflect.*;
 import java.security.*;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import net.sf.retrotranslator.runtime.impl.WeakIdentityTable;
 
 /**
@@ -41,22 +44,12 @@ import net.sf.retrotranslator.runtime.impl.WeakIdentityTable;
  */
 public abstract class Enum_<E extends Enum_<E>> implements Comparable<E>, Serializable {
 
-    private static final WeakIdentityTable<Class, ConstantContainer> containers =
-            new WeakIdentityTable<Class, ConstantContainer>();
-
-    private static class ConstantContainer {
-
-        private Enum_[] constants;
-
-        public synchronized Enum_[] getConstants() {
-            return constants;
-        }
-
-        public synchronized void setConstants(Enum_[] constants) {
-            this.constants = constants;
-        }
-
-    }
+    private static final WeakIdentityTable<Class, Map<String, WeakReference<Enum_>>> table =
+            new WeakIdentityTable<Class, Map<String, WeakReference<Enum_>>>() {
+                protected Map<String, WeakReference<Enum_>> initialValue() {
+                    return new ConcurrentHashMap<String, WeakReference<Enum_>>();
+                }
+            };
 
     private final String name;
 
@@ -65,6 +58,7 @@ public abstract class Enum_<E extends Enum_<E>> implements Comparable<E>, Serial
     protected Enum_(String name, int ordinal) {
         this.name = name;
         this.ordinal = ordinal;
+        table.obtain(getDeclaringClass()).put(name, new WeakReference<Enum_>(this));
     }
 
     public final String name() {
@@ -105,13 +99,18 @@ public abstract class Enum_<E extends Enum_<E>> implements Comparable<E>, Serial
     }
 
     public static <T extends Enum_<T>> T valueOf(Class<T> enumType, String name) {
-        if (name == null) throw new NullPointerException("Name is null");
-        T[] enums = (T[]) getEnumConstants(enumType);
-        if (enums == null) throw new IllegalArgumentException(enumType.getName() + " is not an enum type");
-        for (T currentEnum : enums) {
-            if (currentEnum.name.equals(name)) return currentEnum;
+        if (name == null) {
+            throw new NullPointerException("Name is null");
         }
-        throw new IllegalArgumentException("No enum const " + enumType + "." + name);
+        Map<String, WeakReference<Enum_>> map = getMap(enumType);
+        if (map == null) {
+            throw new IllegalArgumentException(enumType.getName() + " is not an enum type");
+        }
+        WeakReference<Enum_> reference = map.get(name);
+        if (reference == null) {
+            throw new IllegalArgumentException("No enum const " + enumType + "." + name);
+        }
+        return (T) reference.get();
     }
 
     protected Object readResolve() throws InvalidObjectException {
@@ -125,36 +124,45 @@ public abstract class Enum_<E extends Enum_<E>> implements Comparable<E>, Serial
     }
 
     protected static Enum_[] getEnumConstants(Class aClass) {
-        ConstantContainer container = containers.lookup(aClass);
-        if (container != null) {
-            return container.getConstants();
+        Map<String, WeakReference<Enum_>> map = getMap(aClass);
+        if (map == null) {
+            return null;
         }
-        if (aClass.getSuperclass() != Enum_.class) return null;
-        initialize(aClass);
-        container = containers.lookup(aClass);
-        return container == null ? null : container.getConstants();
+        Enum_[] result = (Enum_[]) Array.newInstance(aClass, map.size());
+        for (WeakReference<Enum_> reference : map.values()) {
+            Enum_ constant = reference.get();
+            result[constant.ordinal] = constant;
+        }
+        return result;
     }
 
-    protected static void setEnumConstants(Class aClass, Enum_[] enumConstants) {
-        ConstantContainer container = new ConstantContainer();
-        container.setConstants(enumConstants);
-        containers.putIfAbsent(aClass, container);
+    protected static void setEnumConstants(Class enumType, Enum_[] enumConstants) {
+        // for backward compatibility with 1.2.1
     }
 
-    private static void initialize(final Class aClass) {
-        AccessController.doPrivileged(new PrivilegedAction<Object>() {
-            public Object run() {
+    private static Map<String, WeakReference<Enum_>> getMap(final Class enumType) {
+        Map<String, WeakReference<Enum_>> map = table.lookup(enumType);
+        if (map != null) {
+            return map;
+        }
+        if (enumType.getSuperclass() != Enum_.class) {
+            return null;
+        }
+        return AccessController.doPrivileged(new PrivilegedAction<Map<String, WeakReference<Enum_>>>() {
+            public Map<String, WeakReference<Enum_>> run() {
                 try {
-                    Class.forName(aClass.getName(), true, aClass.getClassLoader());
-                    if (containers.lookup(aClass) == null) {
-                        Method method = aClass.getMethod("values");
-                        method.setAccessible(true);
-                        method.invoke(null);
+                    Class.forName(enumType.getName(), true, enumType.getClassLoader());
+                    Map<String, WeakReference<Enum_>> result = table.lookup(enumType);
+                    if (result != null) {
+                        return result;
                     }
+                    Method method = enumType.getMethod("values");
+                    method.setAccessible(true);
+                    method.invoke(null);
                 } catch (Exception e) {
                     //ignore
                 }
-                return null;
+                return table.lookup(enumType);
             }
         });
     }
