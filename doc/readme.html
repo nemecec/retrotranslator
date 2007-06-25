@@ -92,23 +92,30 @@ and concurrency utilities
     <tr><th>Option</th><th>Description</th><th>Default</th></tr>
     <tr>
         <td nowrap><code>-srcdir &lt;path&gt;</code></td>
-        <td>The directory with classes that should be translated (may be specified several times).</td>
+        <td>The directory with the files to process (may be specified several times).</td>
         <td>-</td>
     </tr>
     <tr>
         <td nowrap><code>-srcjar &lt;file&gt;</code></td>
-        <td>The JAR file with classes that should be translated (may be specified several times).</td>
+        <td>The JAR archive file with the files to process (may be specified several times).</td>
         <td>-</td>
     </tr>
     <tr>
         <td nowrap><code>-destdir &lt;path&gt;</code></td>
-        <td>The directory to place translated classes.</td>
-        <td>Location of sources</td>
+        <td>The directory to place processed files.</td>
+        <td>Sources location</td>
     </tr>
     <tr>
         <td nowrap><code>-destjar &lt;file&gt;</code></td>
-        <td>The JAR file to place translated classes.</td>
-        <td>Location of sources</td>
+        <td>The JAR archive file to place processed files.</td>
+        <td>Sources location</td>
+    </tr>
+    <tr>
+        <td nowrap><code>-srcmask &lt;mask&gt;</code></td>
+        <td>The wildcard pattern specifying the files to transform rather than copy
+          (classes or UTF-8 text files), e.g. "<code>*.class;?*.tld</code>".
+        </td>
+        <td>*.class</td>
     </tr>
     <tr>
         <td nowrap><a name="option_support"><code>-support &lt;features&gt;</code></a></td>
@@ -129,17 +136,10 @@ and concurrency utilities
     </tr>
     <tr>
         <td nowrap><code>-classpath &lt;path&gt;</code></td>
-        <td>The classpath for verification including <code>rt.jar</code>, <code>jce.jar</code>,
+        <td>The classpath for the verification including <code>rt.jar</code>, <code>jce.jar</code>,
             <code>jsse.jar</code> (from JRE 1.4), <code>retrotranslator-runtime-<i>n.n.n</i>.jar</code>,
             and <code>backport-util-concurrent-<i>n.n</i>.jar</code>.</td>
         <td>Current classpath</td>
-    </tr>
-    <tr>
-        <td nowrap><code>-srcmask &lt;mask&gt;</code></td>
-        <td>The wildcard pattern specifying files to be translated (either bytecode or UTF-8 text),
-            e.g. "<code>*.class;*.tld</code>". There are three special characters: "<code>*?;</code>".
-        </td>
-        <td>*.class</td>
     </tr>
     <tr>
         <td nowrap><code>-embed &lt;package&gt;</code></td>
@@ -179,7 +179,7 @@ and concurrency utilities
     <tr>
         <td nowrap><code>-retainapi</code></td>
         <td>Asks the translator to modify classes for JVM 1.4 compatibility but keep use of Java 5 API.
-            References introduced by a compiler remain unchanged,
+            Any references introduced by a compiler remain unchanged,
             like the use of <code>java.lang.StringBuilder</code> for string concatenation
             or the implicit <code>valueOf</code> method call for autoboxing.</td>
         <td>Off</td>
@@ -191,7 +191,7 @@ and concurrency utilities
     </tr>
     <tr>
         <td nowrap><code>-uptodatecheck</code></td>
-        <td>Asks the translator to skip translation of files if the destination files are newer.</td>
+        <td>Asks the translator to skip processing of files if the destination files are newer.</td>
         <td>Off</td>
     </tr>
 </table>
@@ -216,25 +216,31 @@ and concurrency utilities
     <tr><th>Attribute</th><th>Description</th><th>Default</th></tr>
     <tr>
         <td><code>srcdir</code></td>
-        <td>The directory with classes that should be translated.</td>
+        <td>The directory with the files to process.</td>
         <td>-</td>
     </tr>
     <tr>
         <td><code>srcjar</code></td>
-        <td>The JAR file with classes that should be translated.</td>
+        <td>The JAR archive file with the files to process.</td>
         <td>-</td>
     </tr>
     <tr>
         <td><code>destdir</code></td>
-        <td>The directory to place translated classes.</td>
-        <td>Location of sources</td>
+        <td>The directory to place processed files.</td>
+        <td>Sources location</td>
     </tr>
     <tr>
         <td><code>destjar</code></td>
-        <td>The JAR file to place translated classes.</td>
-        <td>Location of sources</td>
+        <td>The JAR archive file to place processed files.</td>
+        <td>Sources location</td>
     </tr>
-
+    <tr>
+        <td><code>srcmask</code></td>
+        <td>The wildcard pattern specifying the files to transform rather than copy
+          (classes or UTF-8 text files), e.g. "<code>*.class;?*.tld</code>".
+        </td>
+        <td>*.class</td>
+    </tr>
     <tr>
         <td><code>support</code></td>
         <td>Enables advanced features. The names specified should be separated with semicolons, e.g.
@@ -254,7 +260,7 @@ and concurrency utilities
     </tr>
     <tr>
         <td><code>classpath</code></td>
-        <td>The classpath for the verification, including <code>rt.jar</code>, <code>jce.jar</code>,
+        <td>The classpath for the verification including <code>rt.jar</code>, <code>jce.jar</code>,
             <code>jsse.jar</code> (from JRE 1.4), <code>retrotranslator-runtime-<i>n.n.n</i>.jar</code>,
             and <code>backport-util-concurrent-<i>n.n</i>.jar</code>.
         </td>
@@ -262,16 +268,9 @@ and concurrency utilities
     </tr>
     <tr>
         <td><code>classpathref</code></td>
-        <td>The classpath for the verification, given as a reference to a path defined elsewhere.
+        <td>The classpath for the verification given as a reference to a path defined elsewhere.
         </td>
         <td>Current classpath</td>
-    </tr>
-    <tr>
-        <td><code>srcmask</code></td>
-        <td>The wildcard pattern specifying files to be translated (either bytecode or UTF-8 text),
-            e.g. "<code>*.class;*.tld</code>". There are three special characters: "<code>*?;</code>".
-        </td>
-        <td>*.class</td>
     </tr>
     <tr>
         <td><code>embed</code></td>
@@ -311,7 +310,7 @@ and concurrency utilities
     <tr>
         <td><code>retainapi</code></td>
         <td>Asks the translator to modify classes for JVM 1.4 compatibility but keep use of Java 5 API.
-            References introduced by a compiler remain unchanged,
+            Any references introduced by a compiler remain unchanged,
             like the use of <code>java.lang.StringBuilder</code> for string concatenation
             or the implicit <code>valueOf</code> method call for autoboxing.</td>
         <td>Off</td>
@@ -626,15 +625,15 @@ and concurrency utilities
     <a href="http://retrotranslator.cvs.sourceforge.net/retrotranslator/Retrotranslator/src/net/sf/retrotranslator/runtime/java/io/_PrintStream.java?view=markup">
     <code>net.sf.retrotranslator.runtime.java.io.<b>_</b>PrintStream</code></a>. There is a public static
     <code>createInstanceBuilder</code> method that accepts constructor's arguments an returns an object with public
-    <code>argument1</code>...<code>argumentN</code> methods and optional public void <code>initialize</code> method.
-    All <code>argumentX</code> methods provide arguments for a Java 1.4 constuctor and should not have any parameters.
+    <code>argument1</code>...<code>argumentN</code> methods and an optional public void <code>initialize</code> method.
+    All the <code>argumentX</code> methods provide arguments for a Java 1.4 constuctor and should not have any parameters.
     The <code>initialize</code> method has a single parameter for the created instance and may be used for postprocessing.
     If this approach does not work there is another flexible but not always supported one used by
     <a href="http://retrotranslator.cvs.sourceforge.net/retrotranslator/Retrotranslator/src/net/sf/retrotranslator/runtime/java/lang/_StackTraceElement.java?view=markup">
     <code>net.sf.retrotranslator.runtime.java.lang.<b>_</b>StackTraceElement</code></a>.
 </p>
 <p>
-    However, if the backported methods require access
+    However if backported methods require access
     to non-public methods or fields of the instance, they cannot be fully handled by Retrotranslator.
     While you can use reflection to access any data, translated code generally should not depend on security settings.
     For example, it is impossible to write an implementation for methods <code>getSource()</code>
