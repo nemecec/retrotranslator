@@ -38,6 +38,11 @@ import junit.framework.TestCase;
  */
 public class _ShortTestCase extends TestCase {
 
+    public void testReverseBytes() throws Exception {
+        assertEquals((short) 0x3412, Short.reverseBytes((short) 0x1234));
+        assertEquals((short) 0xCDAB, Short.reverseBytes((short) 0xABCD));
+    }
+
     public void testValueOf() throws Exception {
         Short aShort = -10;
         assertEquals(-10, aShort.shortValue());

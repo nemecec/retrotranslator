@@ -48,6 +48,8 @@ public class _BigDecimalTestCase extends BaseTestCase {
     public void testConvertConstructorArguments() throws Exception {
         assertEquals(10L, new BigDecimal(10L).longValue());
         assertEquals(20, new BigDecimal(20).intValue());
+        assertEquals(30, new BigDecimal("a30b".toCharArray(), 1, 2).intValue());
+        assertEquals(40, new BigDecimal("40".toCharArray()).intValue());
         class MyDecimal extends BigDecimal {
             public MyDecimal(int val) {
                 super(val);
@@ -56,9 +58,19 @@ public class _BigDecimalTestCase extends BaseTestCase {
             public MyDecimal(long val) {
                 super(val);
             }
+
+            public MyDecimal(char[] in, int offset, int len) {
+                super(in, offset, len);
+            }
+
+            public MyDecimal(char[] in) {
+                super(in);
+            }
         }
         assertEquals(10L, new MyDecimal(10L).longValue());
         assertEquals(20, new MyDecimal(20).intValue());
+        assertEquals(30, new MyDecimal("a30b".toCharArray(), 1, 2).intValue());
+        assertEquals(40, new MyDecimal("40".toCharArray()).intValue());
     }
 
     public void testDivideAndRemainder() throws Exception {

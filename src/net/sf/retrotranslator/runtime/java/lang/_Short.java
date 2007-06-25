@@ -42,8 +42,11 @@ public class _Short {
         for (int i = 0; i < cache.length; i++) cache[i] = new Short((byte) i);
     }
 
+    public static short reverseBytes(short s) {
+        return (short) ((s << 8) | ((s >> 8) & 0xFF));
+    }
+
     public static Short valueOf(short s) {
         return s >= -128 && s <= 127 ? cache[s & 0xFF] : new Short(s);
     }
-
 }

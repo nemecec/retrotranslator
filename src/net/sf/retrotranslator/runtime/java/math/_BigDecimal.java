@@ -51,6 +51,14 @@ public class _BigDecimal {
         return BigInteger.valueOf(value);
     }
 
+    public static String convertConstructorArguments(char[] in, int offset, int len) {
+        return new String(in, offset, len);
+    }
+
+    public static String convertConstructorArguments(char[] in) {
+        return new String(in);
+    }
+
     public static BigDecimal[] divideAndRemainder(BigDecimal dividend, BigDecimal divisor) {
         BigDecimal[] result = new BigDecimal[2];
         BigDecimal quotient = divideToIntegralValue(dividend, divisor);

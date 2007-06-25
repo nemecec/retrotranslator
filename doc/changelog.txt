@@ -1,14 +1,21 @@
 Retrotranslator Changelog
 =================================
 
-  - Limited support for java.nio.charset.Charset.defaultCharset().
-  - Bug fixed: Enum static field assignment ordered wrong.
-  - New -uptodatecheck option to skip translation of files if the destination files are newer.
+1.2.2 (2007-06-25)
+---------------------------------
+  - Support for java.math.BigInteger.TEN.
+  - Support for java.lang.Short.reverseBytes(short).
   - Support for java.lang.StackTraceElement(String, String, String, int).
-  - New option -support to selectively enable advanced features.
+  - Support for the append methods of java.io.StringWriter and java.io.CharArrayWriter.
+  - Support for java.math.BigDecimal(char[]) and java.math.BigDecimal(char[], int, int). 
+  - Limited support for java.lang.StringBuffer.trimToSize().
   - Limited support for java.lang.Thread.UncaughtExceptionHandler.
+  - Limited support for java.nio.charset.Charset.defaultCharset().
   - Limited support for java.lang.management.ManagementFactory.getPlatformMBeanServer().
-  - New format of verification warnings.
+  - New option -support to enable advanced features one by one.
+  - New option -uptodatecheck to skip translation of files if the destination files are newer.
+  - Changed the messages printed during translation.
+  - Fixed a bug with using enum values when initializing static fields of the same enum.
 
 1.2.1 (2007-02-01)
 ---------------------------------

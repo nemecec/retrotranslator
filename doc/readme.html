@@ -91,35 +91,34 @@ and concurrency utilities
 <table border="1" cellspacing="0" cellpadding="5">
     <tr><th>Option</th><th>Description</th><th>Default</th></tr>
     <tr>
-        <td nowrap><code>-srcdir</code></td>
+        <td nowrap><code>-srcdir &lt;path&gt;</code></td>
         <td>The directory with classes that should be translated (may be specified several times).</td>
         <td>-</td>
     </tr>
     <tr>
-        <td nowrap><code>-srcjar</code></td>
+        <td nowrap><code>-srcjar &lt;file&gt;</code></td>
         <td>The JAR file with classes that should be translated (may be specified several times).</td>
         <td>-</td>
     </tr>
     <tr>
-        <td nowrap><code>-destdir</code></td>
+        <td nowrap><code>-destdir &lt;path&gt;</code></td>
         <td>The directory to place translated classes.</td>
         <td>Location of sources</td>
     </tr>
     <tr>
-        <td nowrap><code>-destjar</code></td>
+        <td nowrap><code>-destjar &lt;file&gt;</code></td>
         <td>The JAR file to place translated classes.</td>
         <td>Location of sources</td>
     </tr>
     <tr>
-        <td nowrap><a name="option_support"><code>-support</code></a></td>
-        <td>Enables advanced features specified by names that should be separated with semicolons, e.g.
+        <td nowrap><a name="option_support"><code>-support &lt;features&gt;</code></a></td>
+        <td>Enables advanced features. The names specified should be separated with semicolons, e.g.
             "<code>ThreadLocal.remove;BigDecimal.setScale</code>".</td>
         <td>-</td>
     </tr>
     <tr>
         <td nowrap><a name="option_advanced"><code>-advanced</code></a></td>
-        <td>Enables all advanced features, but it's recommended to enable only
-            necessary ones with the -<code>support</code> option.</td>
+        <td>Enables all advanced features at once.</td>
         <td>Off</td>
     </tr>
     <tr>
@@ -129,42 +128,42 @@ and concurrency utilities
         <td>Off</td>
     </tr>
     <tr>
-        <td nowrap><code>-classpath</code></td>
+        <td nowrap><code>-classpath &lt;path&gt;</code></td>
         <td>The classpath for verification including <code>rt.jar</code>, <code>jce.jar</code>,
             <code>jsse.jar</code> (from JRE 1.4), <code>retrotranslator-runtime-<i>n.n.n</i>.jar</code>,
             and <code>backport-util-concurrent-<i>n.n</i>.jar</code>.</td>
         <td>Current classpath</td>
     </tr>
     <tr>
-        <td nowrap><code>-srcmask</code></td>
-        <td>The wildcard pattern specifying files that should be translated (either bytecode or UTF-8 text),
+        <td nowrap><code>-srcmask &lt;mask&gt;</code></td>
+        <td>The wildcard pattern specifying files to be translated (either bytecode or UTF-8 text),
             e.g. "<code>*.class;*.tld</code>". There are three special characters: "<code>*?;</code>".
         </td>
         <td>*.class</td>
     </tr>
     <tr>
-        <td nowrap><code>-embed</code></td>
-        <td>Package name for a private copy of <code>retrotranslator-runtime-<i>n.n.n</i>.jar</code> and
+        <td nowrap><code>-embed &lt;package&gt;</code></td>
+        <td>The package name for a private copy of <code>retrotranslator-runtime-<i>n.n.n</i>.jar</code> and
             <code>backport-util-concurrent-<i>n.n</i>.jar</code> to be put into <code>-destdir</code> or <code>-destjar</code>.
             This makes your application independent of other versions of Retrotranslator present in the classpath.
             </td>
         <td>-</td>
     </tr>
     <tr>
-        <td nowrap><a name="option_backport"><code>-backport</code></a></td>
+        <td nowrap><a name="option_backport"><code>-backport &lt;packages&gt;</code></a></td>
         <td>Informs the translator about <a href="#extension">user-defined</a> backport packages.
-            Package names should be separated with semicolons.</td>
+            The names specified should be separated with semicolons.</td>
         <td>-</td>
     </tr>
     <tr>
-        <td nowrap><code>-target</code></td>
+        <td nowrap><code>-target &lt;version&gt;</code></td>
         <td>To make Java 6 classes compatible with Java 5 set this option to 1.5 and supply
             <a href="#extension">user-defined</a> backport packages via the <code>backport</code> option.</td>
         <td>1.4</td>
     </tr>
     <tr>
         <td nowrap><code>-lazy</code></td>
-        <td>Asks the translator to only transform classes compiled with a <code>target</code> greater than the current one.</td>
+        <td>Asks the translator to transform only classes compiled with a <code>target</code> greater than the current one.</td>
         <td>Off</td>
     </tr>
     <tr>
@@ -180,7 +179,7 @@ and concurrency utilities
     <tr>
         <td nowrap><code>-retainapi</code></td>
         <td>Asks the translator to modify classes for JVM 1.4 compatibility but keep use of Java 5 API.
-            References introduced by a compiler will also remain unchanged,
+            References introduced by a compiler remain unchanged,
             like the use of <code>java.lang.StringBuilder</code> for string concatenation
             or the implicit <code>valueOf</code> method call for autoboxing.</td>
         <td>Off</td>
@@ -238,14 +237,13 @@ and concurrency utilities
 
     <tr>
         <td><code>support</code></td>
-        <td>Enables advanced features specified by names that should be separated with semicolons, e.g.
+        <td>Enables advanced features. The names specified should be separated with semicolons, e.g.
             "<code>ThreadLocal.remove;BigDecimal.setScale</code>".</td>
         <td>-</td>
     </tr>
     <tr>
         <td><code>advanced</code></td>
-        <td>Enables all advanced features, but it's recommended to enable only
-            necessary ones with the <code>support</code> attribute.</td>
+        <td>Enables all advanced features at once.</td>
         <td>Off</td>
     </tr>
     <tr>
@@ -270,14 +268,14 @@ and concurrency utilities
     </tr>
     <tr>
         <td><code>srcmask</code></td>
-        <td>The wildcard pattern specifying files that should be translated (either bytecode or UTF-8 text),
+        <td>The wildcard pattern specifying files to be translated (either bytecode or UTF-8 text),
             e.g. "<code>*.class;*.tld</code>". There are three special characters: "<code>*?;</code>".
         </td>
         <td>*.class</td>
     </tr>
     <tr>
         <td><code>embed</code></td>
-        <td>Package name for a private copy of <code>retrotranslator-runtime-<i>n.n.n</i>.jar</code> and
+        <td>The package name for a private copy of <code>retrotranslator-runtime-<i>n.n.n</i>.jar</code> and
             <code>backport-util-concurrent-<i>n.n</i>.jar</code> to be put into <code>-destdir</code> or <code>-destjar</code>.
             This makes your application independent of other versions of Retrotranslator present in the classpath.
             </td>
@@ -286,18 +284,18 @@ and concurrency utilities
     <tr>
         <td><code>backport</code></td>
         <td>Informs the translator about <a href="#extension">user-defined</a> backport packages.
-            Package names should be separated with semicolons.</td>
+            The names specified should be separated with semicolons.</td>
         <td>-</td>
     </tr>
     <tr>
         <td><code>target</code></td>
-        <td>Set this option to 1.5 and supply <a href="#extension">user-defined</a> backport packages via
-            the <code>backport</code> option to make Java 6 classes compatible with Java 5.</td>
+        <td>To make Java 6 classes compatible with Java 5 set this option to 1.5 and supply
+            <a href="#extension">user-defined</a> backport packages via the <code>backport</code> option.</td>
         <td>1.4</td>
     </tr>
     <tr>
         <td><code>lazy</code></td>
-        <td>Asks the translator to only transform classes compiled with a <code>target</code> greater than the current one.</td>
+        <td>Asks the translator to transform only classes compiled with a <code>target</code> greater than the current one.</td>
         <td>Off</td>
     </tr>
     <tr>
@@ -313,7 +311,7 @@ and concurrency utilities
     <tr>
         <td><code>retainapi</code></td>
         <td>Asks the translator to modify classes for JVM 1.4 compatibility but keep use of Java 5 API.
-            References introduced by a compiler will also remain unchanged,
+            References introduced by a compiler remain unchanged,
             like the use of <code>java.lang.StringBuilder</code> for string concatenation
             or the implicit <code>valueOf</code> method call for autoboxing.</td>
         <td>Off</td>
@@ -371,7 +369,7 @@ and concurrency utilities
 
 <p>
     JIT Retrotranslator is able to translate at runtime Java classes loaded with any classloader.
-    It works on J2SE 1.4 from most JVM vendors like Sun, IBM, BEA, and Apple, but does nothing on J2SE 5.0.
+    It works on J2SE 1.4 from most JVM vendors like Sun, IBM, BEA, and Apple, and does nothing on J2SE 5.0.
     However translation at runtime consumes additional memory and processing resources and it will not
 	work if your classes make use of Java 5 API but were compiled with "<code>-target 1.4</code>".
 </p>
@@ -387,8 +385,8 @@ and concurrency utilities
             net.sf.retrotranslator.transformer.JITRetrotranslator &lt;options&gt; &lt;class&gt; [&lt;args...&gt;]</code>
     </li>
     <li>
-        Alternatively you may simply call <code>new JITRetrotranslator().run()</code> from some JVM 1.4 compatible class
-        before Java 5 classes are loaded.
+        Alternatively you may simply call <code>new JITRetrotranslator().run()</code>
+        from some JVM 1.4 compatible class before loading of Java 5 classes.
     </li>
 </ul>
 <p>
@@ -400,18 +398,9 @@ and concurrency utilities
 <h4><a name="supported">What Java 5 classes and methods are supported?</a></h4>
 <table border="1" cellspacing="0" cellpadding="5">
     <tr><th>Package</th><th>Class</th><th>Methods and fields</th><th>Compatibility notes</th></tr>
-    <tr><td><code>java.lang.annotation</code></td><td>* (all classes)</td><td>* (all methods)</td><td>&nbsp;</td></tr>
-    <tr><td><code>java.lang.instrument</code></td><td>* (all classes)</td><td>* (all methods)</td><td>
-        Bytecode instrumentation is not implemented.</td></tr>
-    <tr><td><code>java.util.concurrent,<br>java.util.concurrent.atomic,<br>java.util.concurrent.locks</code></td>
-        <td>almost all classes<sup><a href="#1">1</a></sup></td><td>almost all methods</td>
-        <td>The <code>LockSupport</code> class may be unusable due to poor efficiency.
-            The <code>Condition.awaitNanos(long)</code> method has
-        <a href="http://dcl.mathcs.emory.edu/util/backport-util-concurrent/doc/api/edu/emory/mathcs/backport/java/util/concurrent/helpers/Utils.html#awaitNanos(edu.emory.mathcs.backport.java.util.concurrent.locks.Condition, long)">
-        little</a> accuracy guarantees.</td></tr>
     <tr><td rowspan="6"><code>java.io</code></td><td><code>Closeable<sup><a href="#2">2</a></sup></code>
-    </td><td><code>*</code></td><td>&nbsp;</td></tr>
-    <tr><td><code>Flushable<sup><a href="#2">2</a></sup></code></td><td><code>*</code></td><td>&nbsp;</td></tr>
+    </td><td>* (all methods)</td><td>&nbsp;</td></tr>
+    <tr><td><code>Flushable<sup><a href="#2">2</a></sup></code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>PrintStream</code></td><td>
         * (11 new methods and constructors)
         </td><td>&nbsp;</td></tr>
@@ -420,18 +409,13 @@ and concurrency utilities
         </td><td>
         The <code>PrintWriter.format</code> and <code>PrintWriter.printf</code> methods always flush the output buffer.
         </td></tr>
-    <tr><td><code>Reader</code></td><td><code>read(CharBuffer)</code></td><td>&nbsp;</td></tr>
-    <tr><td><code>Writer</code></td><td>
-        <code>append(CharSequence),<br>
-            append(CharSequence, int, int),<br>
-            append(char)</code>
-        </td><td>&nbsp;</td></tr>
-    <tr><td rowspan="27"><code>java.lang</code></td><td><code>Appendable<sup><a href="#2">2</a></sup></code></td><td>*
+    <tr><td><code>Reader</code></td><td>* (1 new method)</td><td>&nbsp;</td></tr>
+    <tr><td><code>Writer</code></td><td>* (3 new methods)</td><td>&nbsp;</td></tr>
+    <tr><td rowspan="28"><code>java.lang</code></td><td><code>Appendable<sup><a href="#2">2</a></sup></code></td><td>*
     </td><td>&nbsp;</td></tr>
-    <tr><td><code>Boolean</code></td><td><code>parseBoolean(String),<br>
-        compareTo(Boolean)</code></td><td>&nbsp;</td></tr>
-    <tr><td><code>Byte</code></td><td><code>valueOf(byte)</code></td><td>&nbsp;</td></tr>
-    <tr><td><code>Character</code></td><td>*</td><td>New members of <code>Character.UnicodeBlock</code> are not supported.
+    <tr><td><code>Boolean</code></td><td>* (2 new methods)</td><td>&nbsp;</td></tr>
+    <tr><td><code>Byte</code></td><td>* (1 new method)</td><td>&nbsp;</td></tr>
+    <tr><td><code>Character</code></td><td>* (44 new methods)</td><td>New members of <code>Character.UnicodeBlock</code> are not supported.
     All supplementary code points are considered as unassigned.</td></tr>
     <tr><td><code>Class</code></td><td>* (21 new methods)</td><td>
         Enable features "<code>Class.getMethod</code>" and "<code>Class.getDeclaredMethod</code>" for more
@@ -441,36 +425,23 @@ and concurrency utilities
     <tr><td><code>Double</code></td><td><code>valueOf(double)</code></td><td>&nbsp;</td></tr>
     <tr><td><code>Enum</code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>Float</code></td><td><code>valueOf(float)</code></td><td>&nbsp;</td></tr>
-    <tr><td><code>IllegalArgumentException</code></td><td><code>IllegalArgumentException(String, Throwable),<br>
-        IllegalArgumentException(Throwable)</code></td><td>&nbsp;</td></tr>
-    <tr><td><code>IllegalStateException</code></td><td><code>IllegalStateException(String, Throwable),<br>
-        IllegalStateException(Throwable)</code></td><td>&nbsp;</td></tr>
-    <tr><td><code>Integer</code></td><td><code>valueOf(int), signum(int)</code></td><td>&nbsp;</td></tr>
+    <tr><td><code>IllegalArgumentException</code></td><td>* (2 new constructors)</td><td>&nbsp;</td></tr>
+    <tr><td><code>IllegalStateException</code></td><td>* (2 new constructors)</td><td>&nbsp;</td></tr>
+    <tr><td><code>Integer</code></td><td><code>valueOf(int),<br>signum(int)</code></td><td>&nbsp;</td></tr>
     <tr><td><code>Iterable<sup><a href="#2">2</a></sup></code></td><td>*</td><td>&nbsp;</td></tr>
-    <tr><td><code>Long</code></td><td><code>valueOf(long), signum(long)</code></td><td>&nbsp;</td></tr>
+    <tr><td><code>Long</code></td><td><code>valueOf(long),<br>signum(long)</code></td><td>&nbsp;</td></tr>
     <tr><td><code>Package</code></td><td>* (4 new methods)</td><td>&nbsp;</td></tr>
     <tr><td><code>Readable<sup><a href="#2">2</a></sup></code></td><td>*</td><td>&nbsp;</td></tr>
-    <tr><td><code>Short</code></td><td><code>valueOf(short)</code></td><td>&nbsp;</td></tr>
-    <tr><td><code>StackTraceElement</code></td><td><code>
-        StackTraceElement(String, String, String, int)</code></td><td>&nbsp;</td></tr>
-    <tr><td><code>String</code></td><td>*<br><code>
+    <tr><td><code>Short</code></td><td>* (2 new methods)</td><td>&nbsp;</td></tr>
+    <tr><td><code>StackTraceElement</code></td><td>* (1 new constructor)</td><td>&nbsp;</td></tr>
+    <tr><td><code>String</code></td><td>* (10 new methods and constructors)<br><code>
         isEmpty()<sup><a href="#4">4</a></sup>
     </code></td><td>&nbsp;</td></tr>
-    <tr><td><code>StringBuffer</code></td><td><code>
-        StringBuffer(CharSequence),<br>
-        append(CharSequence),<br>
-        append(CharSequence, int, int),<br>
-        appendCodePoint(int),<br>
-        codePointAt(int),<br>
-        codePointBefore(int),<br>
-        codePointCount(int, int),<br>
-        insert(int, CharSequence),<br>
-        insert(int, CharSequence, int, int),<br>
-        offsetByCodePoints(int, int)
-    </code></td><td>&nbsp;</td></tr>
-    <tr><td><code>StringBuilder</code></td><td>
-        All methods supported in <code>StringBuffer</code>
-    </td><td><code>StringBuilder</code> is replaced with <code>StringBuffer</code>.</td></tr>
+    <tr><td><code>StringBuffer</code></td><td>* (11 new methods and constructors)</td><td>
+        Enable feature "<code>StringBuffer.trimToSize</code>" to use an implementation of
+        the <code>StringBuffer.trimToSize()</code> method that does nothing<sup><a href="#3">3</a></sup>.
+    </td></tr>
+    <tr><td><code>StringBuilder</code></td><td>*</td><td><code>StringBuilder</code> is replaced with <code>StringBuffer</code>.</td></tr>
     <tr><td><code>SuppressWarnings</code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>System</code></td><td><code>nanoTime()<sup><a href="#1">1</a></sup>,<br> clearProperty(String)</code></td><td>
         The <code>System.nanoTime()</code> method precision
@@ -497,12 +468,22 @@ and concurrency utilities
     </td></tr>
     <tr><td><code>Thread.State</code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>Thread.UncaughtExceptionHandler<sup><a href="#2">2</a></sup></code></td><td>*</td><td>&nbsp;</td></tr>
-    <tr><td><code>ThreadLocal</code></td><td><code>remove()<sup><a href="#3">3</a></sup></code></td>
+    <tr><td><code>ThreadLocal</code></td><td>* (1 new method)</td>
         <td>Enable feature "<code>ThreadLocal.remove</code>" to use alternative <code>ThreadLocal</code>
-            and <code>InheritableThreadLocal</code> implementations that have method 
-            <code>ThreadLocal.remove()</code><sup><a href="#3">3</a></sup>.</td>
+            and <code>InheritableThreadLocal</code> implementations with method
+            <code>remove()</code><sup><a href="#3">3</a></sup>.</td>
     </tr>
     <tr><td><code>TypeNotPresentException</code></td><td>*</td><td>&nbsp;</td></tr>
+
+    <tr><td><code>java.lang.annotation</code></td><td>* (all classes)</td><td>*</td><td>&nbsp;</td></tr>
+    <tr><td><code>java.lang.instrument</code></td><td>*</td><td>*</td><td>
+        Bytecode instrumentation is not implemented.</td></tr>
+    <tr><td ><code>java.lang.management</code></td><td><code>ManagementFactory</code></td><td>
+        <code>getPlatformMBeanServer()</code></td><td>
+        The <code>ManagementFactory.getPlatformMBeanServer()</code> method simply returns
+        the first registered <code>MBeanServer</code> or creates it when no one exists.  
+        An implementation of JMX 1.2 must be present in classpath.</td></tr>
+
     <tr><td rowspan="2"><code>java.lang.ref</code></td>
         <td><code>SoftReference</code></td><td>*</td><td>
         Enable feature "<code>SoftReference.NullReferenceQueue</code>" to
@@ -518,7 +499,7 @@ and concurrency utilities
         </td></tr>
 
     <tr><td rowspan="13"><code>java.lang.reflect</code></td>
-        <td><code>AccessibleObject</code></td><td>*</td><td>&nbsp;</td></tr>
+        <td><code>AccessibleObject</code></td><td>* (4 new methods)</td><td>&nbsp;</td></tr>
     <tr><td><code>AnnotatedElement<sup><a href="#2">2</a></sup></code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>Constructor</code></td><td>* (11 new methods)</td><td>&nbsp;</td></tr>
     <tr><td><code>Field</code></td><td>* (8 new methods)</td><td>&nbsp;</td></tr>
@@ -532,34 +513,40 @@ and concurrency utilities
     <tr><td><code>TypeVariable</code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>WildcardType</code></td><td>*</td><td>&nbsp;</td></tr>
 
-    <tr><td ><code>java.math</code></td><td><code>BigDecimal</code></td><td>
-        <code>BigDecimal(int),<br> BigDecimal(long),<br> ZERO, ONE, TEN,<br> divideAndRemainder(BigDecimal),<br>
-            divideToIntegralValue(BigDecimal),<br> pow(int),<br> remainder(BigDecimal),<br>
-            toPlainString(),<br> valueOf(double),<br>
+    <tr><td rowspan="2"><code>java.math</code></td><td><code>BigDecimal</code></td><td>
+        <code>ZERO, ONE, TEN,<br>
+            BigDecimal(int),<br>
+            BigDecimal(long),<br>
+            BigDecimal(char[]),<br>
+            BigDecimal(char[], int, int),<br> 
+            divideAndRemainder(BigDecimal),<br>
+            divideToIntegralValue(BigDecimal),<br>
+            pow(int),<br>
+            remainder(BigDecimal),<br>
+            toPlainString(),<br>
+            valueOf(double),<br>
             valueOf(long)</code></td><td>
         Enable feature "<code>BigDecimal.setScale</code>" to support negative scales in method
         <code>BigDecimal.setScale(int, int)</code><sup><a href="#3">3</a></sup>.</td></tr>
+    <tr><td><code>BigInteger</code></td><td><code>TEN</code></td><td>&nbsp;</td></tr>
 
     <tr><td rowspan="3"><code>java.net</code></td><td><code>URL</code></td>
-        <td><code>openConnection(Proxy)</code>,<br>
-            <code>toURI()</code>
-        </td><td>The <code>Proxy</code> is ignored by the <code>openConnection(Proxy)</code> method.</td></tr>
+        <td>* (2 new methods)</td><td>The <code>Proxy</code> is ignored by the
+        <code>URL.openConnection(Proxy)</code> method.</td></tr>
     <tr><td><code>Proxy</code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>ProxySelector</code></td><td>*</td><td>&nbsp;</td></tr>
 
-    <tr><td rowspan="2"><code>java.nio</code></td><td><code>CharBuffer</code></td><td>
-        <code>append(CharSequence),<br> append(CharSequence, int, int),<br> append(char),<br> read(CharBuffer)</code>
-        </td><td>&nbsp;</td></tr>
-    <tr><td><code>Charset</code></td><td>
-        <code>defaultCharset()</code>
-        </td><td>UTF-8 is used on JDK 1.4.0 if the default charset is unavailable.</td></tr>
+    <tr><td rowspan="2"><code>java.nio</code></td><td><code>CharBuffer</code></td>
+        <td>* (4 new methods)</td><td>&nbsp;</td></tr>
+    <tr><td><code>Charset</code></td><td>* (1 new method)</td>
+        <td>The <code>Charset.defaultCharset()</code> method returns UTF-8
+            if the default charset is unavailable (occurs on JDK 1.4.0).</td></tr>
 
     <tr><td ><code>java.rmi.server</code></td><td><code>RemoteObjectInvocationHandler</code></td>
         <td>*</td><td>&nbsp;</td></tr>
 
     <tr><td ><code>java.text</code></td><td><code>DecimalFormat</code></td>
-        <td><code>isParseBigDecimal(),<br>
-            setParseBigDecimal(boolean)<sup><a href="#3">3</a></sup></code></td><td>
+        <td>* (2 new methods)</td><td>
         Enable feature "<code>DecimalFormat.setParseBigDecimal</code>" to support the
         <code>DecimalFormat.setParseBigDecimal(boolean)</code> method, but
         parsing and formatting precision will still be limited by <code>java.lang.Double</code>
@@ -587,6 +574,13 @@ and concurrency utilities
     <tr><td><code>Queue<sup><a href="#1">1</a>,<a href="#2">2</a></sup></code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>UUID</code></td><td>*</td><td>&nbsp;</td></tr>
 
+    <tr><td><code>java.util.concurrent,<br>java.util.concurrent.atomic,<br>java.util.concurrent.locks</code></td>
+        <td>almost all classes<sup><a href="#1">1</a></sup></td><td>almost all methods</td>
+        <td>The <code>LockSupport</code> class may be unusable due to insufficient performance.
+            The <code>Condition.awaitNanos(long)</code> method has
+        <a href="http://dcl.mathcs.emory.edu/util/backport-util-concurrent/doc/api/edu/emory/mathcs/backport/java/util/concurrent/helpers/Utils.html#awaitNanos(edu.emory.mathcs.backport.java.util.concurrent.locks.Condition, long)">
+        little</a> accuracy guarantees.</td></tr>
+
     <tr><td rowspan="3"><code>java.util.regex</code></td><td><code>Matcher</code></td><td>
         <code>quoteReplacement(String),<br> toMatchResult()</code></td><td>&nbsp;</td></tr>
     <tr><td><code>MatchResult<sup><a href="#2">2</a></sup></code></td><td>*</td><td>&nbsp;</td></tr>
@@ -595,7 +589,7 @@ and concurrency utilities
 <p>
     <a name="1"><sup>1</sup></a> Supported via the
         <a href="http://dcl.mathcs.emory.edu/util/backport-util-concurrent/index.php"> Backport of JSR 166</a>.<br>
-    <a name="2"><sup>2</sup></a> In most cases this type is being replaced with it's base type.<br>
+    <a name="2"><sup>2</sup></a> In most cases this type is replaced with it's base type.<br>
     <a name="3"><sup>3</sup></a> Supported only when the corresponding feature is enabled via the
     <code><a href="#option_support">support</a></code> or
     <code><a href="#option_advanced">advanced</a></code> options.<br>
@@ -635,10 +629,9 @@ and concurrency utilities
     <code>argument1</code>...<code>argumentN</code> methods and optional public void <code>initialize</code> method.
     All <code>argumentX</code> methods provide arguments for a Java 1.4 constuctor and should not have any parameters.
     The <code>initialize</code> method has a single parameter for the created instance and may be used for postprocessing.
-    If the previous methods to backport constructors are insufficient there is another flexible but not always supported way used by
+    If this approach does not work there is another flexible but not always supported one used by
     <a href="http://retrotranslator.cvs.sourceforge.net/retrotranslator/Retrotranslator/src/net/sf/retrotranslator/runtime/java/lang/_StackTraceElement.java?view=markup">
     <code>net.sf.retrotranslator.runtime.java.lang.<b>_</b>StackTraceElement</code></a>.
-
 </p>
 <p>
     However, if the backported methods require access
@@ -654,6 +647,8 @@ and concurrency utilities
     <code>com.mycompany.internal.java.lang._String</code> and to rewrite all references to
     <code>com.sun.org.apache.xerces.internal.*</code> with <code>org.apache.xerces.*</code>:<br>
     <code>-backport&nbsp;com.mycompany.internal;com.sun.org.apache.xerces.internal:org.apache.xerces</code><br>
+</p>
+<p>
     It is even possible to substitute specific classes. The following options can be used to replace
     <code>StringBuilder</code> with <code>StringBuffer</code> and disable use of backported Java 5 classes:<br>
     <code>-retainapi -backport java.lang.StringBuilder:java.lang.StringBuffer</code>
@@ -666,18 +661,17 @@ and concurrency utilities
 
 <h4><a name="limitations">What are the limitations?</a></h4>
 
-<p>
-    Basically, only classes, methods, and fields listed <a href="#supported">above</a> should work, and other features,
-    like formatted input, are not supported. Known issues:
-</p>
 <ul>
-    <li>Reflection-based tools may be unable to discover additional classes and methods introduced in Java 5 when running on JRE 1.4.</li>
-    <li>Translated code running on JRE 5.0 may be incompatible with other Java 5 code when Java 5 API is used.</li>
-    <li>Reflection on generics and metadata may return incomplete information for dynamically generated classes.</li>
-    <li>Constants inlined by a compiler and access modifiers are ignored during the verification.</li>
-    <li>Inherited methods introduced in Java 5 may not work, however upcasting may help in some cases:<br>
+    <li>Only the classes, methods, and fields listed <a href="#supported">above</a> should work
+        and the other features, like formatted input, are not supported.</li>
+    <li>Java 5 reflection methods should be able to load compiled classes as resources,
+    so for dynamically generated classes they may return incomplete information.</li>
+    <li>The code processed by Retrotranslator is intended for running on J2SE 1.4
+        and is not fully compatible with J2SE 5.0 when Java 5 API is used.</li>
+    <li>Reflection-based tools may be unable to discover Java 5 API when running on J2SE 1.4.</li>
+    <li>The constants inlined by a compiler and access modifiers are ignored during the verification.</li>
+    <li>The inherited methods introduced in Java 5 may not work, however upcasting may help in some cases:<br>
         <code>&nbsp;((Writer) new FileWriter("file.tmp")).append("Hello").close();</code></li>
-    <li>Serialized objects produced by translated code may be incompatible with JRE 5.0.</li>
 </ul>
 
 <h4><a name="alternative">Alternative tools</a></h4>

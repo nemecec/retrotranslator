@@ -32,19 +32,18 @@
 package net.sf.retrotranslator.runtime.java.lang.management;
 
 import javax.management.*;
+import java.util.List;
 
 /**
  * @author Taras Puchko
  */
 public class ManagementFactory_ {
 
-    private static MBeanServer platformMBeanServer;
-
-    public static synchronized MBeanServer getPlatformMBeanServer() {
-        if (platformMBeanServer == null) {
-            platformMBeanServer = MBeanServerFactory.createMBeanServer(); 
+    public static MBeanServer getPlatformMBeanServer() {
+        synchronized (MBeanServerFactory.class) {
+            List<MBeanServer> servers = MBeanServerFactory.findMBeanServer(null);
+            return servers.isEmpty() ? MBeanServerFactory.createMBeanServer() : servers.get(0);
         }
-        return platformMBeanServer;
     }
 
 }
