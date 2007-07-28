@@ -34,6 +34,7 @@ package net.sf.retrotranslator.runtime.impl;
 import java.io.*;
 import java.lang.reflect.*;
 import java.util.MissingResourceException;
+import java.security.*;
 import net.sf.retrotranslator.runtime.asm.Type;
 
 /**
@@ -128,7 +129,7 @@ public class RuntimeTools {
                 byte[] buffer = new byte[0x1000];
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                 int count;
-                while((count = inputStream.read(buffer)) > 0) {
+                while ((count = inputStream.read(buffer)) > 0) {
                     outputStream.write(buffer, 0, count);
                 }
                 return outputStream.toByteArray();
@@ -146,6 +147,59 @@ public class RuntimeTools {
         int index = targetName.lastIndexOf('.');
         String simpleName = index < 0 ? targetName : targetName.substring(index + 1);
         return readResourceToByteArray(target, simpleName + CLASS_EXTENSION);
+    }
+
+    public static UndeclaredThrowableException unwrap(InvocationTargetException exception) {
+        try {
+            throw exception.getCause();
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Error e) {
+            throw e;
+        } catch (Throwable e) {
+            return new UndeclaredThrowableException(e);
+        }
+    }
+
+    public static Object invokeMethod(final Object target, final String name, final Class[] parameterTypes,
+                                      final Object[] args) throws NoSuchMethodException, InvocationTargetException {
+        try {
+            return AccessController.doPrivileged(new PrivilegedExceptionAction<Object>() {
+                public Object run() throws Exception {
+                    return invoke(target, name, parameterTypes, args);
+                }
+            });
+        } catch (PrivilegedActionException exception) {
+            try {
+                throw exception.getException();
+            } catch (NoSuchMethodException e) {
+                throw e;
+            } catch (InvocationTargetException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new Error(e);
+            }
+        }
+    }
+
+    private static Object invoke(Object target, String name, Class[] parameterTypes, Object[] args)
+            throws NoSuchMethodException, InvocationTargetException {
+        Method method;
+        try {
+            method = target.getClass().getMethod(name, parameterTypes);
+        } catch (SecurityException e) {
+            throw new NoSuchMethodException(e.getMessage());
+        }
+        try {
+            method.setAccessible(true);
+        } catch (SecurityException e) {
+            // ignore
+        }
+        try {
+            return method.invoke(target, args);
+        } catch (IllegalAccessException e) {
+            throw new NoSuchMethodException(e.getMessage());
+        }
     }
 
 }
