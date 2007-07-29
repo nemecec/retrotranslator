@@ -1,6 +1,12 @@
 Retrotranslator Changelog
 =================================
 
+1.2.3
+---------------------------------
+  - Support for Java 5 methods of java.util.Properties.
+  - Limited support for java.lang.Thread.getState() and java.lang.Thread.getAllStackTraces().
+  - Limited support for Java 5 methods of java.net.URLConnection and java.net.HttpURLConnection.
+
 1.2.2 (2007-06-25)
 ---------------------------------
   - Support for java.math.BigInteger.TEN.

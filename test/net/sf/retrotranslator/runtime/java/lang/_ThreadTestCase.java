@@ -32,6 +32,7 @@
 package net.sf.retrotranslator.runtime.java.lang;
 
 import junit.framework.TestCase;
+import java.util.Map;
 
 /**
  * @author Taras Puchko
@@ -209,7 +210,7 @@ public class _ThreadTestCase extends TestCase {
             assertSame(exception, handler.exception);
         }
     }
-    
+
     public void testSetDefaultUncaughtExceptionHandler_NoException() throws Exception {
         MyThread myThread = new MyThread();
         MyHandler myHandler = new MyHandler();
@@ -220,6 +221,32 @@ public class _ThreadTestCase extends TestCase {
         assertTrue(myThread.done);
         assertNull(myHandler.thread);
         assertNull(myHandler.exception);
+    }
+
+    public void testGetState() throws Exception {
+        assertSame(Thread.State.RUNNABLE, Thread.currentThread().getState());
+        Thread thread = new Thread() {
+            public void run() {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    // ignore
+                }
+            }
+        };
+        assertSame(Thread.State.NEW, thread.getState());
+        thread.start();
+        assertSame(Thread.State.RUNNABLE, thread.getState());
+        thread.join();
+        assertSame(Thread.State.TERMINATED, thread.getState());
+    }
+
+    public void testGetAllStackTraces() throws Exception {
+        Map<Thread,StackTraceElement[]> map = Thread.getAllStackTraces();
+        assertTrue(map.size() > 1);
+        StackTraceElement[] elements = map.get(Thread.currentThread());
+        assertNotNull(elements);
+        assertTrue(elements.length > 0);
     }
 
 }

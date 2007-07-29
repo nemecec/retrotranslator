@@ -32,6 +32,7 @@
 package net.sf.retrotranslator.runtime.java.lang;
 
 import static java.lang.Thread.UncaughtExceptionHandler;
+import java.util.*;
 import net.sf.retrotranslator.runtime.impl.*;
 
 /**
@@ -52,6 +53,7 @@ public class _Thread {
     private static UncaughtExceptionHandler defaultHandler;
 
     private volatile long id;
+    private volatile boolean started;
     private UncaughtExceptionHandler handler;
 
     public static class BasicThreadBuilder {
@@ -212,6 +214,46 @@ public class _Thread {
 
     private synchronized void setHandler(UncaughtExceptionHandler handler) {
         this.handler = handler;
+    }
+
+    @Advanced("Thread.getState")
+    public static void start(Thread thread) {
+        thread.start();
+        threads.obtain(thread).started = true;
+    }
+
+    @Advanced("Thread.getState")
+    public static Thread.State getState(Thread thread) {
+        if (thread.isAlive()) {
+            return Thread.State.RUNNABLE;
+        }
+        if (threads.obtain(thread).started) {
+            return Thread.State.TERMINATED;
+        }
+        return Thread.State.NEW;
+    }
+
+    public static Map<Thread, StackTraceElement[]> getAllStackTraces() {
+        HashMap<Thread, StackTraceElement[]> result = new HashMap<Thread, StackTraceElement[]>();
+        Thread currentThread = Thread.currentThread();
+        ThreadGroup group = currentThread.getThreadGroup();
+        ThreadGroup parent;
+        while ((parent = group.getParent()) != null) {
+            group = parent;
+        }
+        Thread[] threads = new Thread[group.activeCount() + 1];
+        int count = group.enumerate(threads);
+        while (count == threads.length) {
+            threads = new Thread[threads.length * 2];
+            count = group.enumerate(threads);
+        }
+        for (int i = 0; i < count; i++) {
+            Thread thread = threads[i];
+            if (thread.isAlive()) {
+                result.put(thread, thread == currentThread ? getStackTrace() : EMPTY_STACK_TRACE);
+            }
+        }
+        return result;
     }
 
 }
