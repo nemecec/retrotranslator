@@ -6,6 +6,7 @@ Retrotranslator Changelog
   - Support for Java 5 methods of java.util.Properties.
   - Limited support for java.lang.Thread.getState() and java.lang.Thread.getAllStackTraces().
   - Limited support for Java 5 methods of java.net.URLConnection and java.net.HttpURLConnection.
+  - Limited support for java.util.Timer(String), java.util.Timer(String, boolean), java.util.Timer.purge().
 
 1.2.2 (2007-06-25)
 ---------------------------------
