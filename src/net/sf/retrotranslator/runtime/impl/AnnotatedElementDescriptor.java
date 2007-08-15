@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
+ *
  * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
@@ -36,6 +36,7 @@ import java.util.*;
 import net.sf.retrotranslator.runtime.asm.*;
 import net.sf.retrotranslator.runtime.asm.Type;
 import net.sf.retrotranslator.runtime.java.lang.annotation.*;
+import net.sf.retrotranslator.runtime.java.lang.Enum_;
 
 /**
  * @author Taras Puchko
@@ -201,7 +202,7 @@ public abstract class AnnotatedElementDescriptor extends EmptyVisitor {
         return result;
     }
 
-    protected Annotation_ createAnnotation(AnnotationValue annotationValue) {
+    private Annotation_ createAnnotation(AnnotationValue annotationValue) {
         Class annotationType = getClassByDesc(annotationValue.getDesc());
         StringBuffer buffer = new StringBuffer("@").append(annotationType.getName()).append('(');
         Map<String, Object> values = new HashMap<String, Object>();
@@ -222,19 +223,44 @@ public abstract class AnnotatedElementDescriptor extends EmptyVisitor {
             append(buffer, resolvedValue);
         }
         buffer.append(")");
-        Class[] interfaces = Annotation_.class.isAssignableFrom(annotationType) ?
-                new Class[]{annotationType} : new Class[]{annotationType, Annotation_.class};
-        return (Annotation_) Proxy.newProxyInstance(getClassLoader(),
+        ClassLoader classLoader;
+        Class[] interfaces;
+        if (Annotation_.class.isAssignableFrom(annotationType)) {
+            classLoader = getClassLoader();
+            interfaces = new Class[]{annotationType};
+        } else {
+            classLoader = getProxyClassLoader(annotationType);
+            interfaces = new Class[]{annotationType, Annotation_.class};
+        }
+        return (Annotation_) Proxy.newProxyInstance(classLoader,
                 interfaces, new AnnotationHandler(annotationType, buffer.toString(), values));
     }
 
+    private ClassLoader getProxyClassLoader(Class annotationType) {
+        try {
+            if (Annotation_.class == Class.forName(Annotation_.class.getName(), false, getClassLoader())) {
+                return getClassLoader();
+            }
+        } catch (ClassNotFoundException e) {
+            // ignore
+        }
+        try {
+            if (annotationType == Class.forName(annotationType.getName(), false, Annotation_.class.getClassLoader())) {
+                return Annotation_.class.getClassLoader();
+            }
+        } catch (ClassNotFoundException e) {
+            // ignore
+        }
+        return getClassLoader();
+    }
+    
     protected Object resolveValue(Object value, Class type, MethodDescriptor descriptor) {
         if (value == null) return null;
         if (value instanceof net.sf.retrotranslator.runtime.asm.Type) {
             value = getClassByType((net.sf.retrotranslator.runtime.asm.Type) value);
         } else if (value instanceof EnumValue) {
             EnumValue enumValue = (EnumValue) value;
-            value = Enum.valueOf(getClassByDesc(enumValue.getDescriptor()), enumValue.getValue());
+            value = getEnumValue(getClassByDesc(enumValue.getDescriptor()), enumValue.getValue());
         } else if (value instanceof AnnotationValue) {
             value = createAnnotation((AnnotationValue) value);
         } else if (value instanceof AnnotationArray) {
@@ -252,6 +278,17 @@ public abstract class AnnotatedElementDescriptor extends EmptyVisitor {
         return value;
     }
 
+    private Object getEnumValue(Class enumType, String name) {
+        try {
+            return Enum_.valueOf(enumType, name);
+        } catch (IllegalArgumentException e) {
+            try {
+                return enumType.getMethod("valueOf", String.class).invoke(null, name);
+            } catch (Exception ex) {
+                throw e;
+            }
+        }
+    }
 
     private static void append(StringBuffer buffer, Object value) {
         if (value.getClass().isArray()) {
