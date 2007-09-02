@@ -447,19 +447,12 @@ and concurrency utilities
         <a href="http://dcl.mathcs.emory.edu/util/backport-util-concurrent/doc/api/edu/emory/mathcs/backport/java/util/concurrent/helpers/Utils.html#nanoTime()">
             may vary</a> on different platforms.
     </td></tr>
-    <tr><td><code>Thread</code></td><td><code>
-        getId(),<br>
-        getStackTrace(),<br>
-        getUncaughtExceptionHandler(),<br>
-        getDefaultUncaughtExceptionHandler(),<br>
-        setUncaughtExceptionHandler(
-        Thread.UncaughtExceptionHandler)<sup><a href="#3">3</a></sup>,<br>
-        setDefaultUncaughtExceptionHandler(
-        Thread.UncaughtExceptionHandler)<sup><a href="#3">3</a></sup>
-    </code></td><td>
+    <tr><td><code>Thread</code></td><td>* (8 new methods)</td><td>
         The <code>Thread.getId()</code> method does not reflect the order in which threads are created.<br>
-        The <code>Thread.getStackTrace()</code> method returns non-empty stack trace only for the current thread.<br>
-
+        The <code>Thread.getStackTrace()</code> and <code>Thread.getAllStackTraces()</code>
+        methods return non-empty stack trace only for the current thread.<br>
+        Enable feature "<code>Thread.getState</code>" to support the <code>Thread.getState()</code> method, but you will be able
+        to detect only <code>NEW</code>, <code>RUNNABLE</code> and <code>TERMINATED</code> states.<sup><a href="#3">3</a></sup><br>
         Enable features "<code>Thread.setUncaughtExceptionHandler</code>" and
         "<code>Thread.setDefaultUncaughtExceptionHandler</code>" to support exception handlers for threads
         created by translated code (in contrast to J2SE 5.0 the default <code>UncaughtExceptionHandler</code>
@@ -529,11 +522,23 @@ and concurrency utilities
         <code>BigDecimal.setScale(int, int)</code><sup><a href="#3">3</a></sup>.</td></tr>
     <tr><td><code>BigInteger</code></td><td><code>TEN</code></td><td>&nbsp;</td></tr>
 
-    <tr><td rowspan="3"><code>java.net</code></td><td><code>URL</code></td>
-        <td>* (2 new methods)</td><td>The <code>Proxy</code> is ignored by the
-        <code>URL.openConnection(Proxy)</code> method.</td></tr>
+    <tr><td rowspan="5"><code>java.net</code></td><td><code>HttpURLConnection</code></td><td>* (6 new methods)</td><td>
+        Enable features "<code>HttpURLConnection.setChunkedStreamingMode</code>",
+        "<code>HttpURLConnection.setFixedLengthStreamingMode</code>"
+        to use the corresponding methods, but on Java 1.4 they will simply return.
+        Consider using alternative or writing own protocol handlers.
+        </td></tr>
     <tr><td><code>Proxy</code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>ProxySelector</code></td><td>*</td><td>&nbsp;</td></tr>
+    <tr><td><code>URL</code></td>
+        <td>* (2 new methods)</td><td>The <code>Proxy</code> is ignored by the
+        <code>URL.openConnection(Proxy)</code> method.</td></tr>
+    <tr><td><code>URLConnection</code></td><td>* (4 new methods)</td><td>
+        Enable features "<code>URLConnection.getConnectTimeout</code>", "<code>URLConnection.setConnectTimeout</code>",
+        "<code>URLConnection.getReadTimeout</code>", "<code>URLConnection.setReadTimeout</code>"
+        to use the corresponding methods, but on Java 1.4 they will simply return.
+        Consider using alternative or writing own protocol handlers.
+        </td></tr>
 
     <tr><td rowspan="2"><code>java.nio</code></td><td><code>CharBuffer</code></td>
         <td>* (4 new methods)</td><td>&nbsp;</td></tr>
@@ -552,7 +557,7 @@ and concurrency utilities
         or <code>java.lang.Long</code> precision<sup><a href="#3">3</a></sup>.
         </td></tr>
 
-    <tr><td rowspan="12"><code>java.util</code></td><td><code>AbstractQueue<sup><a href="#1">1</a></sup></code></td>
+    <tr><td rowspan="14"><code>java.util</code></td><td><code>AbstractQueue<sup><a href="#1">1</a></sup></code></td>
         <td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>ArrayDeque<sup><a href="#1">1</a>,<a href="#4">4</a></sup></code></td>
         <td>*</td><td>&nbsp;</td></tr>
@@ -570,7 +575,13 @@ and concurrency utilities
     <tr><td><code>Formatter</code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>LinkedList</code></td><td>* (5 new methods)</td><td>&nbsp;</td></tr>
     <tr><td><code>PriorityQueue<sup><a href="#1">1</a></sup></code></td><td>*</td><td>&nbsp;</td></tr>
+    <tr><td><code>Properties</code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>Queue<sup><a href="#1">1</a>,<a href="#2">2</a></sup></code></td><td>*</td><td>&nbsp;</td></tr>
+    <tr><td><code>Timer</code></td><td>* (3 new methods and constructors)</td><td>
+        Enable feature "<code>Timer.All</code>" to use alternative <code>Timer</code>
+        and <code>TimerTask</code> implementations in order to be able to call <code>Timer(String)</code>,
+        <code>Timer(String, boolean)</code>, and <code>Timer.purge()</code><sup><a href="#3">3</a></sup>.
+    </td></tr>
     <tr><td><code>UUID</code></td><td>*</td><td>&nbsp;</td></tr>
 
     <tr><td><code>java.util.concurrent,<br>java.util.concurrent.atomic,<br>java.util.concurrent.locks</code></td>
@@ -584,11 +595,13 @@ and concurrency utilities
         <code>quoteReplacement(String),<br> toMatchResult()</code></td><td>&nbsp;</td></tr>
     <tr><td><code>MatchResult<sup><a href="#2">2</a></sup></code></td><td>*</td><td>&nbsp;</td></tr>
     <tr><td><code>Pattern</code></td><td><code>quote(String)</code></td><td>&nbsp;</td></tr>
+    <tr><td><code>javax.net.ssl</code></td><td><code>HttpsURLConnection</code></td>
+        <td> * (2 new methods)</td><td>&nbsp;</td></tr>
 </table>
 <p>
     <a name="1"><sup>1</sup></a> Supported via the
         <a href="http://dcl.mathcs.emory.edu/util/backport-util-concurrent/index.php"> Backport of JSR 166</a>.<br>
-    <a name="2"><sup>2</sup></a> In most cases this type is replaced with it's base type.<br>
+    <a name="2"><sup>2</sup></a> In most cases this type is replaced with its base type.<br>
     <a name="3"><sup>3</sup></a> Supported only when the corresponding feature is enabled via the
     <code><a href="#option_support">support</a></code> or
     <code><a href="#option_advanced">advanced</a></code> options.<br>
