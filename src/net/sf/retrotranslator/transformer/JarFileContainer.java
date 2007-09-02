@@ -116,6 +116,10 @@ class JarFileContainer extends FileContainer {
         return false;
     }
 
+    public long lastModified() {
+        return location.lastModified();
+    }
+
     private void flush(FileOutputStream fileOutputStream, SystemLogger logger) throws IOException {
         JarFileEntry manifestEntry = entries.get(JarFile.MANIFEST_NAME);
         Manifest manifest = manifestEntry == null ? new Manifest()

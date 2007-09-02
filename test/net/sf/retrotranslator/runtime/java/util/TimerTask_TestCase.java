@@ -67,7 +67,7 @@ public class TimerTask_TestCase extends TestCase {
     public void testCancel_2() throws Exception {
         Timer timer = new Timer();
         MyTimerTask task = new MyTimerTask();
-        timer.schedule(task, 100);
+        timer.schedule(task, 200);
         assertTrue(task.cancel());
         Thread.sleep(200);
         assertEquals(0, task.count);

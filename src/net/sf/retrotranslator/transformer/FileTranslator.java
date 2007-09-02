@@ -63,15 +63,20 @@ class FileTranslator {
         this.uptodatecheck = uptodatecheck;
     }
 
-    public void transform(FileContainer source, FileContainer destination) {
+    public boolean transform(FileContainer source, FileContainer destination) {
         countTransformed = 0;
         logger.log(new Message(Level.INFO, "Processing " + source.getFileCount() + " file(s)" +
                 (source == destination ? " in " + source : " from " + source + " to " + destination) + "."));
+        if (uptodatecheck && source.lastModified() < destination.lastModified()) {
+            logger.log(new Message(Level.INFO, "Skipped up-to-date file(s)."));
+            return false;
+        }
         for (FileEntry entry : source.getEntries()) {
             transform(entry, source, destination);
         }
         source.flush(logger);
         logger.log(new Message(Level.INFO, "Transformed " + countTransformed + " file(s)."));
+        return true;
     }
 
     private void transform(FileEntry entry, FileContainer source, FileContainer destination) {
@@ -111,9 +116,10 @@ class FileTranslator {
         Map<String, Boolean> runtimeNames = converter.getRuntimeFileNames();
         Map<String, Boolean> concurrentNames = converter.getConcurrentFileNames();
         if (runtimeNames.isEmpty() && concurrentNames.isEmpty()) {
+            logger.log(new Message(Level.INFO, "Embedding skipped."));
             return;
         }
-        logger.log(new Message(Level.INFO, "Embedding backported classes"));
+        logger.log(new Message(Level.INFO, "Embedding backported classes."));
         FileContainer runtimeContainer = findContainer(ClassDescriptor.class);
         FileContainer concurrentContainer = findContainer(Queue.class);
         while (true) {

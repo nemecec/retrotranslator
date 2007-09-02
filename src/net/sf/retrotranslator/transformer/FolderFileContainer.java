@@ -115,6 +115,14 @@ class FolderFileContainer extends FileContainer {
         return targetTime != 0 && targetTime > sourceTime;
     }
 
+    public long lastModified() {
+        long result = 0;
+        for (FileEntry entry : getEntries()) {
+            result = Math.max(result, entry.lastModified());
+        }
+        return result;
+    }
+
     private static class FolderFileEntry extends FileEntry {
 
         private File file;

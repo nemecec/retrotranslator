@@ -175,14 +175,19 @@ public class Retrotranslator {
         TextFileTransformer fileTransformer = new TextFileTransformer(locatorFactory);
         FileTranslator translator = new FileTranslator(
                 classTransformer, fileTransformer, converter, systemLogger, sourceMask, uptodatecheck);
+        boolean modified = false;
         for (FileContainer container : src) {
-            translator.transform(container, dest != null ? dest : container);
+            modified |= translator.transform(container, dest != null ? dest : container);
         }
-        if (converter != null) {
+        if (converter != null && modified) {
             translator.embed(dest);
         }
         if (dest != null) dest.flush(systemLogger);
         if (!verify) return true;
+        if (!modified) {
+            logger.log(new Message(Level.INFO, "Skipped verification of up-to-date file(s)."));
+            return true;
+        }
         ClassLoader loader = classLoader;
         if (loader == null && classpath.isEmpty()) {
             loader = this.getClass().getClassLoader();

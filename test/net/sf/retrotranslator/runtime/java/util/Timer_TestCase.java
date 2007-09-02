@@ -488,13 +488,13 @@ public class Timer_TestCase extends TestCase {
         Timer timer = new Timer();
         MyTimerTask task = new MyTimerTask();
         timer.schedule(new HalfSecondTimerTask(), 0);
-        timer.scheduleAtFixedRate(task, new Date(System.currentTimeMillis() + 100), 100);
-        Thread.sleep(450);
+        timer.scheduleAtFixedRate(task, new Date(System.currentTimeMillis() + 200), 200);
+        Thread.sleep(400);
         assertEquals(0, task.count);
-        Thread.sleep(100);
-        assertEquals(5, task.count);
-        Thread.sleep(100);
-        assertEquals(6, task.count);
+        Thread.sleep(300);
+        assertEquals(3, task.count);
+        Thread.sleep(200);
+        assertEquals(4, task.count);
         assertTrue(task.cancel());
     }
 
@@ -560,11 +560,10 @@ public class Timer_TestCase extends TestCase {
 
     public void testFinalize() throws Exception {
         MyTimerTask task = new MyTimerTask();
-        new Timer("MyTimer").schedule(task, 200, 200);
+        new Timer("MyTimer").schedule(task, 400, 400);
         Thread thread = getThread("MyTimer");
         assertTrue(thread.isAlive());
-        System.gc();
-        Thread.sleep(500);
+        Thread.sleep(1000);
         assertTrue(thread.isAlive());
         assertEquals(2, task.count);
         task.cancel();
