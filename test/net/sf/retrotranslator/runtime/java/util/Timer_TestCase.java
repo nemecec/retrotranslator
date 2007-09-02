@@ -184,7 +184,7 @@ public class Timer_TestCase extends TestCase {
         Timer timer = new Timer();
         MyTimerTask task = new MyTimerTask();
         timer.schedule(task, new Date(System.currentTimeMillis() - 200));
-        Thread.sleep(50);
+        Thread.sleep(100);
         assertEquals(1, task.count);
         try {
             timer.schedule(new MyTimerTask(), new Date(-200));

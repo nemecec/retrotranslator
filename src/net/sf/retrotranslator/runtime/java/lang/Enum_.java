@@ -141,6 +141,7 @@ public abstract class Enum_<E extends Enum_<E>> implements Comparable<E>, Serial
     }
 
     private static Map<String, WeakReference<Enum_>> getMap(final Class enumType) {
+        initFast(enumType);
         Map<String, WeakReference<Enum_>> map = table.lookup(enumType);
         if (map != null) {
             return map;
@@ -148,23 +149,36 @@ public abstract class Enum_<E extends Enum_<E>> implements Comparable<E>, Serial
         if (enumType.getSuperclass() != Enum_.class) {
             return null;
         }
-        return AccessController.doPrivileged(new PrivilegedAction<Map<String, WeakReference<Enum_>>>() {
-            public Map<String, WeakReference<Enum_>> run() {
-                try {
-                    Class.forName(enumType.getName(), true, enumType.getClassLoader());
-                    Map<String, WeakReference<Enum_>> result = table.lookup(enumType);
-                    if (result != null) {
-                        return result;
-                    }
-                    Method method = enumType.getMethod("values");
-                    method.setAccessible(true);
-                    method.invoke(null);
-                } catch (Exception e) {
-                    //ignore
-                }
-                return table.lookup(enumType);
+        initPrivileged(enumType);
+        return table.lookup(enumType);
+    }
+
+    private static void initFast(Class enumType) {
+        try {
+            Class.forName(enumType.getName(), true, enumType.getClassLoader());
+        } catch (ClassNotFoundException e) {
+            // ignore
+        }
+    }
+
+    private static void initPrivileged(final Class enumType) {
+        AccessController.doPrivileged(new PrivilegedAction<Void>() {
+            public Void run() {
+                initFast(enumType);
+                initEnum(enumType);
+                return null;
             }
         });
+    }
+
+    private static void initEnum(Class enumType) {
+        try {
+            Method method = enumType.getMethod("values");
+            method.setAccessible(true);
+            method.invoke(null);
+        } catch (Exception e) {
+            //ignore
+        }
     }
 
 }

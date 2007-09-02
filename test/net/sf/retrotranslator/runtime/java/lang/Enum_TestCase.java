@@ -176,4 +176,30 @@ public class Enum_TestCase extends BaseTestCase {
         assertNull(reference.get());
     }
 
+    enum MyEnum {
+        A, B, C, D;
+
+        MyEnum() {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void testSlowInitialization() throws Exception {
+        new Thread() {
+            public void run() {
+                checkEnumConstantCount();
+            }
+        }.start();
+        Thread.sleep(500);
+        checkEnumConstantCount();
+    }
+
+    private void checkEnumConstantCount() {
+        assertEquals(4, MyEnum.class.getEnumConstants().length);
+    }
+
 }
