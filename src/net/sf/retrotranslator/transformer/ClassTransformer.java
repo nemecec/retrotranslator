@@ -70,10 +70,11 @@ class ClassTransformer implements BytecodeTransformer {
         ClassWriter classWriter = new ClassWriter(true);
         ClassVisitor visitor = new InstantiationAnalysisVisitor(classWriter, locator, pointListMap, logger);
         visitor = new DuplicateInterfacesVisitor(new VersionVisitor(visitor, factory.getTarget()), logger, counter);
-        if (factory.getTarget() == ClassVersion.VERSION_14) {
+        boolean before15 = factory.getTarget().isBefore(ClassVersion.VERSION_15.getVersion());
+        if (before15) {
             visitor = new ArrayCloningVisitor(new ClassLiteralVisitor(visitor));
             if (!factory.isRetainapi()) {
-                visitor = new SpecificReplacementVisitor(visitor, factory.getMode());
+                visitor = new SpecificReplacementVisitor(visitor, locator, factory.getMode());
             }
         }
         visitor = new GeneralReplacementVisitor(visitor, locator);
@@ -98,7 +99,7 @@ class ClassTransformer implements BytecodeTransformer {
             classWriter = new ClassWriter(true);
             new ClassReader(bytecode).accept(new PrefixingVisitor(classWriter, converter), false);
         }
-        return classWriter.toByteArray(factory.getTarget() == ClassVersion.VERSION_14 && !retainflags);
+        return classWriter.toByteArray(before15 && !retainflags);
     }
 
 }

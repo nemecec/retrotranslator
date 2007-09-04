@@ -39,48 +39,47 @@ import java.util.*;
 import net.sf.retrotranslator.runtime.asm.*;
 import static net.sf.retrotranslator.runtime.asm.Opcodes.*;
 import net.sf.retrotranslator.runtime.impl.RuntimeTools;
-import net.sf.retrotranslator.runtime.java.lang._Thread;
 
 /**
  * @author Taras Puchko
  */
 class SpecificReplacementVisitor extends ClassAdapter {
 
-    private static final String ILLEGAL_STATE_EXCEPTION = Type.getInternalName(IllegalStateException.class);
-    private static final String ILLEGAL_ARGUMENT_EXCEPTION = Type.getInternalName(IllegalArgumentException.class);
-    private static final String SOFT_REFERENCE = Type.getInternalName(SoftReference.class);
-    private static final String WEAK_REFERENCE = Type.getInternalName(WeakReference.class);
-
+    private static final String UTILS_NAME = Type.getInternalName(Utils.class);
     private static final String THREAD_NAME = Type.getInternalName(Thread.class);
     private static final String SYSTEM_NAME = Type.getInternalName(System.class);
     private static final String CONDITION_NAME = Type.getInternalName(Condition.class);
     private static final String DELAY_QUEUE_NAME = Type.getInternalName(DelayQueue.class);
+    private static final String SOFT_REFERENCE_NAME = Type.getInternalName(SoftReference.class);
+    private static final String WEAK_REFERENCE_NAME = Type.getInternalName(WeakReference.class);
+    private static final String ORIGINAL_ARRAYS_NAME = Type.getInternalName(java.util.Arrays.class);
+    private static final String ORIGINAL_COLLECTIONS_NAME = Type.getInternalName(java.util.Collections.class);
     private static final String REENTRANT_READ_WRITE_LOCK_NAME = Type.getInternalName(ReentrantReadWriteLock.class);
 
-    private static final String ORIGINAL_COLLECTIONS_NAME = Type.getInternalName(java.util.Collections.class);
-    private static final String BACKPORTED_COLLECTIONS_NAME =
-            Type.getInternalName(edu.emory.mathcs.backport.java.util.Collections.class);
-    private static final String ORIGINAL_ARRAYS_NAME = Type.getInternalName(java.util.Arrays.class);
     private static final String BACKPORTED_ARRAYS_NAME =
             Type.getInternalName(edu.emory.mathcs.backport.java.util.Arrays.class);
+    private static final String BACKPORTED_COLLECTIONS_NAME =
+            Type.getInternalName(edu.emory.mathcs.backport.java.util.Collections.class);
+    private static final String UNCAUGHT_EXCEPTION_HANDLER_KEY = "handleUncaughtException" +
+            TransformerTools.descriptor(void.class, Throwable.class);
 
     private static final Set<String> ARRAYS_METHODS = getArrayMethods();
     private static final Set<String> COLLECTIONS_METHODS = getCollectionMethods();
     private static final Map<String, String> COLLECTIONS_FIELDS = getCollectionFields();
 
+    private final ReplacementLocator locator;
     private final OperationMode mode;
-    private boolean customThread;
+    private MemberReplacement uncaughtExceptionHandler;
 
-    public SpecificReplacementVisitor(ClassVisitor visitor, OperationMode mode) {
+    public SpecificReplacementVisitor(ClassVisitor visitor, ReplacementLocator locator, OperationMode mode) {
         super(visitor);
+        this.locator = locator;
         this.mode = mode;
     }
 
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
         super.visit(version, access, name, signature, superName, interfaces);
-        customThread = THREAD_NAME.equals(superName) &&
-                (mode.isSupportedFeature("Thread.setDefaultUncaughtExceptionHandler") ||
-                        mode.isSupportedFeature("Thread.setUncaughtExceptionHandler"));
+        uncaughtExceptionHandler = getUncaughtExceptionHandler(superName);
     }
 
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
@@ -89,7 +88,8 @@ class SpecificReplacementVisitor extends ClassAdapter {
             return null;
         }
         visitor = new SpecificReplacementMethodVisitor(visitor);
-        if (customThread && name.equals("run") && desc.equals(TransformerTools.descriptor(void.class))) {
+        if (uncaughtExceptionHandler != null &&
+                name.equals("run") && desc.equals(TransformerTools.descriptor(void.class))) {
             visitor = new RunMethodVisitor(visitor);
         }
         return visitor;
@@ -113,8 +113,8 @@ class SpecificReplacementVisitor extends ClassAdapter {
 
         public void visitMaxs(final int maxStack, final int maxLocals) {
             mv.visitLabel(end);
-            mv.visitMethodInsn(INVOKESTATIC, Type.getInternalName(_Thread.class),
-                    "handleUncaughtException", TransformerTools.descriptor(void.class, Throwable.class));
+            mv.visitMethodInsn(INVOKESTATIC, uncaughtExceptionHandler.getOwner(),
+                    uncaughtExceptionHandler.getName(), uncaughtExceptionHandler.getDesc());
             mv.visitInsn(RETURN);
             super.visitMaxs(maxStack, maxLocals);
         }
@@ -127,21 +127,10 @@ class SpecificReplacementVisitor extends ClassAdapter {
         }
 
         public void visitMethodInsn(int opcode, String owner, String name, String desc) {
-            if (opcode == INVOKESPECIAL && name.equals(RuntimeTools.CONSTRUCTOR_NAME)) {
-                if (fixException(owner, desc)) {
-                    return;
-                }
-                if (fixReference(owner, desc)) {
-                    return;
-                }
-            }
-            if (owner.equals(SYSTEM_NAME) & name.equals("nanoTime")) {
-                mv.visitMethodInsn(opcode, Type.getInternalName(Utils.class), name, desc);
+            if (fixReference(opcode, owner, name, desc)) {
                 return;
             }
-            if (owner.equals(CONDITION_NAME) & name.equals("awaitNanos")) {
-                mv.visitMethodInsn(INVOKESTATIC, Type.getInternalName(Utils.class), name,
-                        TransformerTools.descriptor(long.class, Condition.class, long.class));
+            if (fixNanos(opcode, owner, name, desc)) {
                 return;
             }
             if (fixDelayQueue(opcode, owner, name, desc)) {
@@ -157,6 +146,51 @@ class SpecificReplacementVisitor extends ClassAdapter {
                 return;
             }
             super.visitMethodInsn(opcode, owner, name, desc);
+        }
+
+        private boolean fixReference(int opcode, String owner, String name, String desc) {
+            if (opcode != INVOKESPECIAL || !name.equals(RuntimeTools.CONSTRUCTOR_NAME)) {
+                return false;
+            }
+            if (owner.equals(SOFT_REFERENCE_NAME)) {
+                if (!mode.isSupportedFeature("SoftReference.NullReferenceQueue")) {
+                    return false;
+                }
+            } else if (owner.equals(WEAK_REFERENCE_NAME)) {
+                if (!mode.isSupportedFeature("WeakReference.NullReferenceQueue")) {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+            if (!desc.equals(TransformerTools.descriptor(void.class, Object.class, ReferenceQueue.class))) {
+                return false;
+            }
+            Label notNullLabel = new Label();
+            Label continueLabel = new Label();
+            mv.visitInsn(DUP);
+            mv.visitJumpInsn(IFNONNULL, notNullLabel);
+            mv.visitInsn(POP);
+            mv.visitMethodInsn(INVOKESPECIAL, owner,
+                    RuntimeTools.CONSTRUCTOR_NAME, TransformerTools.descriptor(void.class, Object.class));
+            mv.visitJumpInsn(GOTO, continueLabel);
+            mv.visitLabel(notNullLabel);
+            mv.visitMethodInsn(INVOKESPECIAL, owner, RuntimeTools.CONSTRUCTOR_NAME, desc);
+            mv.visitLabel(continueLabel);
+            return true;
+        }
+
+        private boolean fixNanos(int opcode, String owner, String name, String desc) {
+            if (owner.equals(SYSTEM_NAME) & name.equals("nanoTime")) {
+                mv.visitMethodInsn(opcode, UTILS_NAME, name, desc);
+                return true;
+            }
+            if (owner.equals(CONDITION_NAME) & name.equals("awaitNanos")) {
+                mv.visitMethodInsn(INVOKESTATIC, UTILS_NAME, name,
+                        TransformerTools.descriptor(long.class, Condition.class, long.class));
+                return true;
+            }
+            return false;
         }
 
         private boolean fixDelayQueue(int opcode, String owner, String name, String desc) {
@@ -210,75 +244,30 @@ class SpecificReplacementVisitor extends ClassAdapter {
         }
 
         private boolean fixArrays(int opcode, String owner, String name, String desc) {
-            if (owner.equals(ORIGINAL_ARRAYS_NAME) && ARRAYS_METHODS.contains(name + desc)) {
+            if (!owner.equals(ORIGINAL_ARRAYS_NAME)) {
+                return false;
+            }
+            if (ARRAYS_METHODS.contains(name + desc)) {
                 mv.visitMethodInsn(opcode, BACKPORTED_ARRAYS_NAME, name, desc);
                 return true;
             }
             return false;
         }
+    }
 
-        private boolean fixException(String owner, String desc) {
-            if (!owner.equals(ILLEGAL_STATE_EXCEPTION) && !owner.equals(ILLEGAL_ARGUMENT_EXCEPTION)) {
-                return false;
-            }
-            if (desc.equals(TransformerTools.descriptor(void.class, Throwable.class))) {
-                Label toStringLabel = new Label();
-                Label continueLabel = new Label();
-                mv.visitInsn(DUP2);
-                mv.visitInsn(DUP);
-                mv.visitJumpInsn(IFNONNULL, toStringLabel);
-                mv.visitInsn(POP);
-                mv.visitInsn(ACONST_NULL);
-                mv.visitJumpInsn(GOTO, continueLabel);
-                mv.visitLabel(toStringLabel);
-                mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(Throwable.class),
-                        "toString", TransformerTools.descriptor(String.class));
-                mv.visitLabel(continueLabel);
-            } else if (desc.equals(TransformerTools.descriptor(void.class, String.class, Throwable.class))) {
-                mv.visitInsn(DUP_X2);
-                mv.visitInsn(POP);
-                mv.visitInsn(SWAP);
-                mv.visitInsn(DUP_X2);
-                mv.visitInsn(SWAP);
-            } else {
-                return false;
-            }
-            mv.visitMethodInsn(INVOKESPECIAL, owner,
-                    RuntimeTools.CONSTRUCTOR_NAME, TransformerTools.descriptor(void.class, String.class));
-            mv.visitMethodInsn(INVOKEVIRTUAL, owner,
-                    "initCause", TransformerTools.descriptor(Throwable.class, Throwable.class));
-            mv.visitInsn(POP);
-            return true;
+    private MemberReplacement getUncaughtExceptionHandler(String superName) {
+        if (!THREAD_NAME.equals(superName)) {
+            return null;
         }
-
-        private boolean fixReference(String owner, String desc) {
-            if (owner.equals(SOFT_REFERENCE)) {
-                if (!mode.isSupportedFeature("SoftReference.NullReferenceQueue")) {
-                    return false;
-                }
-            } else if (owner.equals(WEAK_REFERENCE)) {
-                if (!mode.isSupportedFeature("WeakReference.NullReferenceQueue")) {
-                    return false;
-                }
-            } else {
-                return false;
-            }
-            if (!desc.equals(TransformerTools.descriptor(void.class, Object.class, ReferenceQueue.class))) {
-                return false;
-            }
-            Label notNullLabel = new Label();
-            Label continueLabel = new Label();
-            mv.visitInsn(DUP);
-            mv.visitJumpInsn(IFNONNULL, notNullLabel);
-            mv.visitInsn(POP);
-            mv.visitMethodInsn(INVOKESPECIAL, owner,
-                    RuntimeTools.CONSTRUCTOR_NAME, TransformerTools.descriptor(void.class, Object.class));
-            mv.visitJumpInsn(GOTO, continueLabel);
-            mv.visitLabel(notNullLabel);
-            mv.visitMethodInsn(INVOKESPECIAL, owner, RuntimeTools.CONSTRUCTOR_NAME, desc);
-            mv.visitLabel(continueLabel);
-            return true;
+        if (!mode.isSupportedFeature("Thread.setDefaultUncaughtExceptionHandler") &&
+                !mode.isSupportedFeature("Thread.setUncaughtExceptionHandler")) {
+            return null;
         }
+        ClassReplacement threadReplacement = locator.getReplacement(THREAD_NAME);
+        if (threadReplacement == null) {
+            return null;
+        }
+        return threadReplacement.getMethodReplacements().get(UNCAUGHT_EXCEPTION_HANDLER_KEY);
     }
 
     private static Set<String> getArrayMethods() {

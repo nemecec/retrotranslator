@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
+ *
  * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
@@ -29,42 +29,39 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.transformer;
+package net.sf.retrotranslator.runtime.java.lang;
 
 /**
  * @author Taras Puchko
  */
-class ClassVersion {
+public class _IllegalStateException {
 
-    public static final ClassVersion VERSION_13 = new ClassVersion("1.3", 47);
-    public static final ClassVersion VERSION_14 = new ClassVersion("1.4", 48);
-    public static final ClassVersion VERSION_15 = new ClassVersion("1.5", 49);
+    public static class IllegalStateExceptionBuilder {
 
-    private String name;
-    private int version;
+        private final String message;
+        private final Throwable cause;
 
-    private ClassVersion(String name, int version) {
-        this.name = name;
-        this.version = version;
+        protected IllegalStateExceptionBuilder(String message, Throwable cause) {
+            this.message = message;
+            this.cause = cause;
+        }
+
+        public String argument1() {
+            return message;
+        }
+
+        public void initialize(IllegalStateException e) {
+            e.initCause(cause);
+        }
+
     }
 
-    public String getName() {
-        return name;
+    public static IllegalStateExceptionBuilder createInstanceBuilder(String message, Throwable cause) {
+        return new IllegalStateExceptionBuilder(message, cause);
     }
 
-    public int getVersion() {
-        return version;
+    public static IllegalStateExceptionBuilder createInstanceBuilder(Throwable cause) {
+        return new IllegalStateExceptionBuilder(cause == null ? null : cause.toString(), cause);
     }
-
-    public static ClassVersion valueOf(String name) {
-        if (VERSION_13.name.equals(name)) return VERSION_13;
-        if (VERSION_14.name.equals(name)) return VERSION_14;
-        if (VERSION_15.name.equals(name)) return VERSION_15;
-        throw new IllegalArgumentException("Unsupported target: " + name);
-    }
-
-    public boolean isBefore(int other) {
-        return version < (other & 0xFFFF);
-    }
-
+    
 }
