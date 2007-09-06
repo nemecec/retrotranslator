@@ -60,12 +60,12 @@ class ReplacementLocatorFactory {
     }
 
     private void addDefault(List<Backport> backports) {
-        backports.add(new Backport("", RUNTIME_PREFIX, null, null));
+        backports.add(new Backport("", RUNTIME_PREFIX + "/", null, null));
         backports.add(new Backport(null, null, "java/lang/StringBuilder", "java/lang/StringBuffer"));
-        backports.add(new Backport(JAVA_UTIL_CONCURRENT, CONCURRENT_PREFIX + JAVA_UTIL_CONCURRENT, null, null));
+        backports.add(new Backport(JAVA_UTIL_CONCURRENT, CONCURRENT_PREFIX + "/" + JAVA_UTIL_CONCURRENT, null, null));
         for (String name : new String[]{"java/util/Deque", "java/util/ArrayDeque",
                 "java/util/Queue", "java/util/AbstractQueue", "java/util/PriorityQueue"}) {
-            backports.add(new Backport(null, null, name, CONCURRENT_PREFIX + name));
+            backports.add(new Backport(null, null, name, CONCURRENT_PREFIX + "/" + name));
         }
     }
 

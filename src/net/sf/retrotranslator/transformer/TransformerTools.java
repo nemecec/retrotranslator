@@ -38,8 +38,8 @@ import net.sf.retrotranslator.runtime.asm.Type;
  */
 class TransformerTools {
 
-    public static final String RUNTIME_PREFIX = "net/sf/retrotranslator/runtime/";
-    public static final String CONCURRENT_PREFIX = "edu/emory/mathcs/backport/";
+    public static final String RUNTIME_PREFIX = "net/sf/retrotranslator/runtime";
+    public static final String CONCURRENT_PREFIX = "edu/emory/mathcs/backport";
 
     public static String descriptor(Class returnType, Class... parameterTypes) {
         Type[] argumentTypes = new Type[parameterTypes.length];
