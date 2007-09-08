@@ -58,7 +58,8 @@ class ClassTransformer implements BytecodeTransformer {
     }
 
     public byte[] transform(byte[] bytes, int offset, int length) {
-        if (lazy && !factory.getTarget().isBefore(TransformerTools.getClassVersion(bytes, offset))) {
+        ClassVersion target = factory.getTarget();
+        if (lazy && !target.isBefore(TransformerTools.getClassVersion(bytes, offset))) {
             if (offset == 0 && length == bytes.length) return bytes;
             byte[] result = new byte[length];
             System.arraycopy(bytes, offset, result, 0, length);
@@ -69,9 +70,12 @@ class ClassTransformer implements BytecodeTransformer {
         Map<String, List<InstantiationPoint>> pointListMap = new HashMap<String, List<InstantiationPoint>>();
         ClassWriter classWriter = new ClassWriter(true);
         ClassVisitor visitor = new InstantiationAnalysisVisitor(classWriter, locator, pointListMap, logger);
-        visitor = new DuplicateInterfacesVisitor(new VersionVisitor(visitor, factory.getTarget()), logger, counter);
-        boolean before15 = factory.getTarget().isBefore(ClassVersion.VERSION_15.getVersion());
+        visitor = new DuplicateInterfacesVisitor(new VersionVisitor(visitor, target), logger, counter);
+        boolean before15 = target.isBefore(ClassVersion.VERSION_15.getVersion());
         if (before15) {
+            if (target.isBefore(ClassVersion.VERSION_14.getVersion())) {
+                visitor = new InnerClassVisitor(visitor);
+            }
             visitor = new ArrayCloningVisitor(new ClassLiteralVisitor(visitor));
             if (!factory.isRetainapi()) {
                 visitor = new SpecificReplacementVisitor(visitor, locator, factory.getMode());

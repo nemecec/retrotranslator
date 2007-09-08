@@ -11,12 +11,12 @@
     <description>Library classes for bytecode transformed by Retrotranslator</description>
     <licenses>
         <license>
-            <name>BSD-style license</name>
+            <name>BSD license</name>
             <url>http://retrotranslator.sourceforge.net/LICENSE.txt</url>
             <distribution>repo</distribution>
         </license>
         <license>
-            <name>BSD-style license</name>
+            <name>BSD license</name>
             <url>http://asm.objectweb.org/license.html</url>
             <distribution>repo</distribution>
         </license>
@@ -32,7 +32,7 @@
         <dependency>
             <groupId>backport-util-concurrent</groupId>
             <artifactId>backport-util-concurrent</artifactId>
-            <version>3.0</version>
+            <version>3.1</version>
             <scope>compile</scope>
             <optional/>
         </dependency>

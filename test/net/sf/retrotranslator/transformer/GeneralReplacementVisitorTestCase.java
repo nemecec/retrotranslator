@@ -50,6 +50,11 @@ public class GeneralReplacementVisitorTestCase extends TestCase {
         assertEquals("Hello, World!", builder.append(hello).append(" ").append(world).toString());
     }
 
+    public void testQueue() throws Exception {
+        assertTrue(Queue.class.isInterface());
+        assertTrue(Collection.class.isAssignableFrom(Queue.class));
+    }
+
     public void testCallable() throws Exception {
         final String hello = "Hello, World";
         Callable callable = new Callable() {
