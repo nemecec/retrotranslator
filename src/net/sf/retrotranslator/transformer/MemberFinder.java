@@ -32,7 +32,7 @@
 package net.sf.retrotranslator.transformer;
 
 import net.sf.retrotranslator.runtime.asm.*;
-import net.sf.retrotranslator.runtime.impl.EmptyVisitor;
+import net.sf.retrotranslator.runtime.impl.*;
 
 /**
  * @author Taras Puchko
@@ -65,7 +65,9 @@ class MemberFinder extends EmptyVisitor {
             if (location == null) throw e;
             throw new ClassNotFoundException(e.getMessage() + ", location: " + location, e);
         }
-        if (found > 0) return found;
+        if (found > 0 || name.equals(RuntimeTools.CONSTRUCTOR_NAME)) {
+            return found;
+        }
         String superClassName = superName;
         for (String interfaceName : interfaces) {
             if (findIn(interfaceName, className) > 0) return found;

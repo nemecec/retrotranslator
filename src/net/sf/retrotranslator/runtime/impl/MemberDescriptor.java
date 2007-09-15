@@ -29,55 +29,15 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.transformer;
-
-import net.sf.retrotranslator.runtime.asm.Type;
+package net.sf.retrotranslator.runtime.impl;
 
 /**
  * @author Taras Puchko
  */
-class TransformerTools {
+public interface MemberDescriptor {
 
-    public static String descriptor(Class returnType, Class... parameterTypes) {
-        Type[] argumentTypes = new Type[parameterTypes.length];
-        for (int i = 0; i < argumentTypes.length; i++) {
-            argumentTypes[i] = Type.getType(parameterTypes[i]);
-        }
-        return Type.getMethodDescriptor(Type.getType(returnType), argumentTypes);
-    }
+    String getName();
 
-    public static Type getTypeByInternalName(String name) {
-        return Type.getType('L' + name + ';');
-    }
-
-    public static Type getArrayTypeByInternalName(String name, int dimensions) {
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < dimensions; i++) {
-            builder.append('[');
-        }
-        return Type.getType(builder.append('L').append(name).append(';').toString());
-    }
-
-    public static boolean isClassFile(byte[] bytes) {
-        return bytes.length >= 4 &&
-                bytes[0] == ((byte) 0xCA) &&
-                bytes[1] == ((byte) 0xFE) &&
-                bytes[2] == ((byte) 0xBA) &&
-                bytes[3] == ((byte) 0xBE);
-    }
-
-    public static int getClassVersion(byte[] bytes, int offset) {
-        return get(bytes, offset, 4, 24) | get(bytes, offset, 5, 16) |
-                get(bytes, offset, 6, 8) | get(bytes, offset, 7, 0);
-    }
-
-    private static int get(byte[] bytes, int offset, int index, int shift) {
-        return (bytes[offset + index] & 0xFF) << shift;
-    }
-
-    public static ClassLoader getDefaultClassLoader() {
-        ClassLoader classLoader = TransformerTools.class.getClassLoader();
-        return classLoader != null ? classLoader : ClassLoader.getSystemClassLoader();
-    }
+    String getDesc();
 
 }

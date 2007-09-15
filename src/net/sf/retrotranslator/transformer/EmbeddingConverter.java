@@ -39,6 +39,9 @@ import net.sf.retrotranslator.runtime.impl.RuntimeTools;
  */
 class EmbeddingConverter {
 
+    private static final String RUNTIME_PREFIX = "net/sf/retrotranslator/runtime";
+    private static final String CONCURRENT_PREFIX = "edu/emory/mathcs/backport";
+
     private String embeddingPrefix;
     private Map<String, Boolean> runtimeFileNames = new HashMap<String, Boolean>();
     private Map<String, Boolean> concurrentFileNames = new HashMap<String, Boolean>();
@@ -72,10 +75,10 @@ class EmbeddingConverter {
     }
 
     private Map<String, Boolean> getMap(String name) {
-        if (name.startsWith(TransformerTools.RUNTIME_PREFIX)) {
+        if (name.startsWith(RUNTIME_PREFIX)) {
             return runtimeFileNames;
         }
-        if (name.startsWith(TransformerTools.CONCURRENT_PREFIX)) {
+        if (name.startsWith(CONCURRENT_PREFIX)) {
             return concurrentFileNames;
         }
         return null;

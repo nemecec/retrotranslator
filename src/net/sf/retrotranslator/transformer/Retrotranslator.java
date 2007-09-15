@@ -49,6 +49,7 @@ public class Retrotranslator {
     private boolean advanced;
     private boolean verify;
     private boolean uptodatecheck;
+    private boolean smart;
     private List<File> classpath = new ArrayList<File>();
     private MessageLogger logger;
     private SourceMask sourceMask = new SourceMask(null);
@@ -120,6 +121,10 @@ public class Retrotranslator {
         this.uptodatecheck = uptodatecheck;
     }
 
+    public void setSmart(boolean smart) {
+        this.smart = smart;
+    }
+
     public void addClasspathElement(File classpathElement) {
         this.classpath.add(classpathElement);
     }
@@ -167,9 +172,10 @@ public class Retrotranslator {
             if (lazy) throw new IllegalArgumentException("Embedding cannot be lazy!");
             converter = new EmbeddingConverter(embed);
         }
-        OperationMode mode = new OperationMode(advanced, support);
+        OperationMode mode = new OperationMode(advanced, support, smart);
         SystemLogger systemLogger = new SystemLogger(getMessageLogger(), verbose);
-        ReplacementLocatorFactory locatorFactory = new ReplacementLocatorFactory(target, mode, retainapi, backports);
+        ReplacementLocatorFactory locatorFactory = new ReplacementLocatorFactory(
+                target, mode, retainapi, backports, createClassReaderFactory(null, systemLogger));
         ClassTransformer classTransformer = new ClassTransformer(
                 lazy, stripsign, retainflags, systemLogger, converter, locatorFactory);
         TextFileTransformer fileTransformer = new TextFileTransformer(locatorFactory);
@@ -188,16 +194,31 @@ public class Retrotranslator {
             logger.log(new Message(Level.INFO, "Skipped verification of up-to-date file(s)."));
             return true;
         }
-        ClassLoader loader = classLoader;
-        if (loader == null && classpath.isEmpty()) {
-            loader = this.getClass().getClassLoader();
-        }
-        ClassReaderFactory factory = new ClassReaderFactory(loader);
+        ClassReaderFactory factory = createClassReaderFactory(dest, systemLogger);
         try {
             return verify(factory, systemLogger);
         } finally {
             factory.close();
         }
+    }
+
+    private ClassReaderFactory createClassReaderFactory(FileContainer destination, SystemLogger logger) {
+        ClassLoader loader = classLoader;
+        if (loader == null && classpath.isEmpty()) {
+            loader = TransformerTools.getDefaultClassLoader();
+        }
+        ClassReaderFactory factory = new ClassReaderFactory(loader, logger);
+        if (destination != null) {
+            factory.appendPath(destination.getLocation());
+        } else {
+            for (FileContainer container : src) {
+                factory.appendPath(container.getLocation());
+            }
+        }
+        for (File file : classpath) {
+            factory.appendPath(file);
+        }
+        return factory;
     }
 
     private MessageLogger getMessageLogger() {
@@ -212,16 +233,6 @@ public class Retrotranslator {
     }
 
     private boolean verify(ClassReaderFactory factory, SystemLogger systemLogger) {
-        if (dest != null) {
-            factory.appendPath(dest.getLocation());
-        } else {
-            for (FileContainer container : src) {
-                factory.appendPath(container.getLocation());
-            }
-        }
-        for (File file : classpath) {
-            factory.appendPath(file);
-        }
         if (dest != null) {
             verify(factory, dest, systemLogger);
         } else {
@@ -278,6 +289,8 @@ public class Retrotranslator {
                 setVerify(true);
             } else if (string.equals("-uptodatecheck")) {
                 setUptodatecheck(true);
+            } else if (string.equals("-smart")) {
+                setSmart(true);
             } else if (string.equals("-classpath") && i < args.length) {
                 addClasspath(args[i++]);
             } else if (string.equals("-srcmask") && i < args.length) {
@@ -303,7 +316,7 @@ public class Retrotranslator {
         System.out.println("Usage: java -jar retrotranslator-transformer" + suffix + ".jar" +
                 " [-srcdir <path> | -srcjar <file>] [-destdir <path> | -destjar <file>] [-support <features>] [-lazy]" +
                 " [-stripsign] [-advanced] [-retainapi] [-retainflags] [-verify] [-uptodatecheck] [-target <version>]" +
-                " [-classpath <path>] [-srcmask <mask>] [-embed <package>] [-backport <packages>] [-verbose]");
+                " [-classpath <path>] [-srcmask <mask>] [-embed <package>] [-backport <packages>] [-verbose] [-smart]");
     }
 
     public static void main(String[] args) {

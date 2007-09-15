@@ -107,9 +107,13 @@ public class RemoteObjectInvocationHandler_ extends RemoteObject implements Invo
             }
             return result;
         } catch (NoSuchAlgorithmException e) {
-            throw new SecurityException(e);
+            SecurityException exception = new SecurityException(e.toString());
+            exception.initCause(e);
+            throw exception;
         } catch (IOException e) {
-            throw new SecurityException(e);
+            SecurityException exception = new SecurityException(e.toString());
+            exception.initCause(e);
+            throw exception;
         }
     }
 

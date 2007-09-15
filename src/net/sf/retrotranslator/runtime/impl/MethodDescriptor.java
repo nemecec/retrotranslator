@@ -40,7 +40,7 @@ import net.sf.retrotranslator.runtime.java.lang.annotation.Annotation_;
 /**
  * @author Taras Puchko
  */
-public class MethodDescriptor extends GenericDeclarationDescriptor {
+public class MethodDescriptor extends GenericDeclarationDescriptor implements MemberDescriptor {
 
     private String name;
     private String desc;

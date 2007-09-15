@@ -3,13 +3,15 @@ Retrotranslator Changelog
 
 1.2.3
 ---------------------------------
-  - Basic support for Java 1.3.
+  - Basic support for Java 1.2 and 1.3.
+  - New option -smart to make backports inheritable.
   - Support for Java 5 methods of java.util.Properties.
   - Support for Java 5 methods of javax.net.ssl.HttpsURLConnection.
   - Limited support for java.lang.Thread.getState() and java.lang.Thread.getAllStackTraces().
   - Limited support for Java 5 methods of java.net.URLConnection and java.net.HttpURLConnection.
   - Limited support for java.util.Timer(String), java.util.Timer(String, boolean), java.util.Timer.purge().
   - Improved the -uptodatecheck functionality, especially when translating jars.
+  - Fixed a bug: in certain cases constructor calls were not verified.
   - Upgraded to backport-util-concurrent 3.1.
 
 1.2.2 (2007-06-25)

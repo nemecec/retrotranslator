@@ -54,8 +54,7 @@ class GeneralReplacementVisitor extends GenericClassVisitor {
         translator = new NameTranslator() {
             protected String typeName(String s) {
                 if (isExcluded(s)) return s;
-                ClassReplacement replacement = locator.getReplacement(s);
-                return replacement == null ? s : replacement.getUniqueTypeName();
+                return locator.getUniqueTypeName(s);
             }
         };
     }
@@ -66,8 +65,7 @@ class GeneralReplacementVisitor extends GenericClassVisitor {
 
     protected String typeName(String s) {
         if (isExcluded(s)) return s;
-        ClassReplacement replacement = locator.getReplacement(s);
-        return replacement == null ? s : replacement.getReferenceTypeName();
+        return locator.getReferenceTypeName(s);
     }
 
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
@@ -106,8 +104,9 @@ class GeneralReplacementVisitor extends GenericClassVisitor {
         if (opcode == GETSTATIC || opcode == PUTSTATIC) {
             ClassReplacement replacement = locator.getReplacement(owner);
             if (replacement != null) {
-                MemberReplacement field = replacement.getFieldReplacements().get(name + typeDescriptor(desc));
-                if (field != null) {
+                MemberKey key = new MemberKey(true, name, typeDescriptor(desc));
+                MemberReplacement field = replacement.getFieldReplacements().get(key);
+                if (field != null && !owner.equals(currentClassName)) {
                     visitor.visitFieldInsn(opcode, field.getOwner(), field.getName(), field.getDesc());
                     return;
                 }
@@ -130,13 +129,13 @@ class GeneralReplacementVisitor extends GenericClassVisitor {
                     return;
                 }
             } else {
-                String methodKey = name + (opcode == INVOKESTATIC ? desc : prepend(owner, desc));
-                MemberReplacement method = replacement.getMethodReplacements().get(methodKey);
+                MemberKey key = new MemberKey(opcode == INVOKESTATIC, name, desc);
+                MemberReplacement method = replacement.getMethodReplacements().get(key);
                 if (method == null) {
                     replacement = locator.getReplacement(owner);
-                    method = replacement == null ? null : replacement.getMethodReplacements().get(methodKey);
+                    method = replacement == null ? null : replacement.getMethodReplacements().get(key);
                 }
-                if (method != null && !method.getOwner().equals(currentClassName)) {
+                if (method != null && !owner.equals(currentClassName) && !method.getOwner().equals(currentClassName)) {
                     visitor.visitMethodInsn(INVOKESTATIC, method.getOwner(), method.getName(), method.getDesc());
                     return;
                 }
@@ -148,7 +147,7 @@ class GeneralReplacementVisitor extends GenericClassVisitor {
     private boolean visitConstructor(ClassReplacement replacement, MethodVisitor visitor, String owner, String desc) {
         ConstructorReplacement constructorReplacement = replacement.getConstructorReplacements().get(desc);
         if (constructorReplacement != null) {
-            buildInstance(visitor, constructorReplacement);
+            buildInstance(visitor, owner, constructorReplacement);
             return true;
         }
         MemberReplacement converter = replacement.getConverterReplacements().get(desc);
@@ -161,15 +160,7 @@ class GeneralReplacementVisitor extends GenericClassVisitor {
         return false;
     }
 
-    private static String prepend(String typeName, String methodDesc) {
-        Type[] source = Type.getArgumentTypes(methodDesc);
-        Type[] target = new Type[source.length + 1];
-        System.arraycopy(source, 0, target, 1, source.length);
-        target[0] = TransformerTools.getTypeByInternalName(typeName);
-        return Type.getMethodDescriptor(Type.getReturnType(methodDesc), target);
-    }
-
-    private void buildInstance(MethodVisitor visitor, ConstructorReplacement replacement) {
+    private void buildInstance(MethodVisitor visitor, String owner, ConstructorReplacement replacement) {
         MemberReplacement creator = replacement.getCreator();
         MemberReplacement[] arguments = replacement.getArguments();
         MemberReplacement constructor = replacement.getConstructor();
@@ -183,10 +174,11 @@ class GeneralReplacementVisitor extends GenericClassVisitor {
         } else {
             pushArguments(visitor, arguments);
         }
-        visitor.visitMethodInsn(INVOKESPECIAL, constructor.getOwner(), CONSTRUCTOR_NAME, constructor.getDesc());
+        visitor.visitMethodInsn(INVOKESPECIAL, owner, CONSTRUCTOR_NAME, constructor.getDesc());
         if (initializer != null) {
             visitor.visitInsn(SWAP);
-            visitor.visitMethodInsn(INVOKEVIRTUAL, initializer.getOwner(), initializer.getName(), initializer.getDesc());
+            visitor.visitMethodInsn(INVOKEVIRTUAL,
+                    initializer.getOwner(), initializer.getName(), initializer.getDesc());
         }
     }
 

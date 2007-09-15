@@ -29,39 +29,10 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.transformer;
-
-import java.util.*;
+package net.sf.retrotranslator.transformer.smart;
 
 /**
  * @author Taras Puchko
  */
-class OperationMode {
-
-    private final boolean advanced;
-    private final boolean smart;
-    private final Set<String> features = Collections.synchronizedSet(new HashSet<String>());
-
-    public OperationMode(boolean advanced, String support, boolean smart) {
-        this.smart = smart;
-        if (support != null) {
-            if (advanced) {
-                throw new IllegalArgumentException("The -support option is unnecessary when -advanced is specified.");
-            }
-            StringTokenizer tokenizer = new StringTokenizer(support, ";");
-            while (tokenizer.hasMoreTokens()) {
-                features.add(tokenizer.nextToken());
-            }
-        }
-        this.advanced = advanced;
-    }
-
-    public boolean isSupportedFeature(String feature) {
-        return advanced || features.contains(feature);
-    }
-
-    public boolean isSmart() {
-        return smart;
-    }
-    
+public class EmptyDerivedClass extends BackportedClass {
 }

@@ -31,53 +31,51 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import net.sf.retrotranslator.runtime.asm.Type;
+import junit.framework.*;
 
 /**
  * @author Taras Puchko
  */
-class TransformerTools {
+public class InheritedConstantVisitorTestCase extends TestCase {
 
-    public static String descriptor(Class returnType, Class... parameterTypes) {
-        Type[] argumentTypes = new Type[parameterTypes.length];
-        for (int i = 0; i < argumentTypes.length; i++) {
-            argumentTypes[i] = Type.getType(parameterTypes[i]);
-        }
-        return Type.getMethodDescriptor(Type.getType(returnType), argumentTypes);
+    private interface BaseInterface {
+        String[] MY_STRINGS = {"Hello", "H", "ello"};
     }
 
-    public static Type getTypeByInternalName(String name) {
-        return Type.getType('L' + name + ';');
+    private interface DerivedInterface extends BaseInterface {
     }
 
-    public static Type getArrayTypeByInternalName(String name, int dimensions) {
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < dimensions; i++) {
-            builder.append('[');
-        }
-        return Type.getType(builder.append('L').append(name).append(';').toString());
+    private class DirectClass implements BaseInterface {
     }
 
-    public static boolean isClassFile(byte[] bytes) {
-        return bytes.length >= 4 &&
-                bytes[0] == ((byte) 0xCA) &&
-                bytes[1] == ((byte) 0xFE) &&
-                bytes[2] == ((byte) 0xBA) &&
-                bytes[3] == ((byte) 0xBE);
+    private class DerivedClass implements DerivedInterface {
     }
 
-    public static int getClassVersion(byte[] bytes, int offset) {
-        return get(bytes, offset, 4, 24) | get(bytes, offset, 5, 16) |
-                get(bytes, offset, 6, 8) | get(bytes, offset, 7, 0);
+    private class IndirectDerivedClass implements DerivedInterface {
     }
 
-    private static int get(byte[] bytes, int offset, int index, int shift) {
-        return (bytes[offset + index] & 0xFF) << shift;
+    public void test_BaseInterface() {
+        assertEquals(getMessage(), BaseInterface.MY_STRINGS[0]);
     }
 
-    public static ClassLoader getDefaultClassLoader() {
-        ClassLoader classLoader = TransformerTools.class.getClassLoader();
-        return classLoader != null ? classLoader : ClassLoader.getSystemClassLoader();
+    public void test_DerivedInterface() {
+        assertEquals(getMessage(), DerivedInterface.MY_STRINGS[0]);
+    }
+
+    public void test_DirectClass() {
+        assertEquals(getMessage(), DirectClass.MY_STRINGS[0]);
+    }
+
+    public void test_DerivedClass() {
+        assertEquals(getMessage(), DerivedClass.MY_STRINGS[0]);
+    }
+
+    public void test_IndirectDerivedClass() {
+        assertEquals(getMessage(), IndirectDerivedClass.MY_STRINGS[0]);
+    }
+
+    private static String getMessage() {
+        return BaseInterface.MY_STRINGS[1] + BaseInterface.MY_STRINGS[2];
     }
 
 }

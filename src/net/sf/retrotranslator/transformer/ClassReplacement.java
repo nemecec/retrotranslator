@@ -42,16 +42,11 @@ class ClassReplacement {
     private String referenceTypeName;
     private MemberReplacement checkCastReplacement;
     private MemberReplacement instanceOfReplacement;
-    private final Map<String, MemberReplacement> fieldReplacements =
-            new Hashtable<String, MemberReplacement>();
-    private final Map<String, ConstructorReplacement> constructorReplacements =
-            new Hashtable<String, ConstructorReplacement>();
-    private final Map<String, MemberReplacement> converterReplacements =
-            new Hashtable<String, MemberReplacement>();
-    private final Map<String, MemberReplacement> methodReplacements =
-            new Hashtable<String, MemberReplacement>();
-    private final Map<String, MemberReplacement> instantiationReplacements =
-            new Hashtable<String, MemberReplacement>();
+    private final Map<MemberKey, MemberReplacement> fieldReplacements = createMap();
+    private final Map<String, ConstructorReplacement> constructorReplacements = createMap();
+    private final Map<String, MemberReplacement> converterReplacements = createMap();
+    private final Map<MemberKey, MemberReplacement> methodReplacements = createMap();
+    private final Map<String, MemberReplacement> instantiationReplacements = createMap();
 
     public ClassReplacement() {
     }
@@ -88,7 +83,7 @@ class ClassReplacement {
         this.instanceOfReplacement = instanceOfReplacement;
     }
 
-    public Map<String, MemberReplacement> getFieldReplacements() {
+    public Map<MemberKey, MemberReplacement> getFieldReplacements() {
         return fieldReplacements;
     }
 
@@ -100,7 +95,7 @@ class ClassReplacement {
         return converterReplacements;
     }
 
-    public Map<String, MemberReplacement> getMethodReplacements() {
+    public Map<MemberKey, MemberReplacement> getMethodReplacements() {
         return methodReplacements;
     }
 
@@ -108,9 +103,9 @@ class ClassReplacement {
         return instantiationReplacements;
     }
 
-    public boolean isEmpty() {
-        return uniqueTypeName == null &&
-                referenceTypeName == null &&
+    public boolean isEmpty(String className) {
+        return uniqueTypeName.equals(className) &&
+                referenceTypeName.equals(className) &&
                 checkCastReplacement == null &&
                 instanceOfReplacement == null &&
                 fieldReplacements.isEmpty() &&
@@ -118,6 +113,10 @@ class ClassReplacement {
                 converterReplacements.isEmpty() &&
                 methodReplacements.isEmpty() &&
                 instantiationReplacements.isEmpty();
+    }
+
+    private static <K, V> Map<K, V> createMap() {
+        return Collections.synchronizedMap(new LinkedHashMap<K, V>());
     }
 
 }

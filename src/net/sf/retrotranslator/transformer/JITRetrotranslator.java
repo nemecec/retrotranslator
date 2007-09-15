@@ -40,6 +40,7 @@ import net.sf.retrotranslator.runtime.impl.*;
 public class JITRetrotranslator {
 
     private boolean advanced;
+    private boolean smart;
     private String support;
     private String backport;
 
@@ -48,6 +49,10 @@ public class JITRetrotranslator {
 
     public void setAdvanced(boolean advanced) {
         this.advanced = advanced;
+    }
+
+    public void setSmart(boolean smart) {
+        this.smart = smart;
     }
 
     public void setSupport(String support) {
@@ -59,10 +64,10 @@ public class JITRetrotranslator {
     }
 
     public boolean run() {
-        OperationMode mode = new OperationMode(advanced, support);
+        OperationMode mode = new OperationMode(advanced, support, smart);
         if (isJava5Supported()) return true;
-        ReplacementLocatorFactory factory = new ReplacementLocatorFactory(
-                ClassVersion.VERSION_14, mode, false, Backport.asList(backport));
+        ReplacementLocatorFactory factory = new ReplacementLocatorFactory(ClassVersion.VERSION_14, mode, false,
+                Backport.asList(backport), new ClassReaderFactory(TransformerTools.getDefaultClassLoader(), null));
         ClassTransformer transformer = new ClassTransformer(true, false, false, null, null, factory);
         ClassDescriptor.setBytecodeTransformer(transformer);
         SunJITRetrotranslator.install(transformer);
@@ -95,6 +100,8 @@ public class JITRetrotranslator {
             String option = args[i];
             if (option.equals("-advanced")) {
                 jit.setAdvanced(true);
+            } else if (option.equals("-smart")) {
+                jit.setSmart(true);
             } else if (option.equals("-support") && i + 1 < args.length) {
                 jit.setSupport(args[++i]);
             } else if (option.equals("-backport") && i + 1 < args.length) {
@@ -116,19 +123,14 @@ public class JITRetrotranslator {
         if (jar) {
             File file = new File(args[i]);
             if (!file.isFile()) printErrorAndExit("Unable to access jarfile " + file);
-            JarClassLoader classLoader = new JarClassLoader(file, getClassLoader());
+            JarClassLoader classLoader = new JarClassLoader(file, TransformerTools.getDefaultClassLoader());
             String mainClass = classLoader.getMainClass();
             if (mainClass == null) printErrorAndExit("Failed to load Main-Class manifest attribute from " + file);
             Thread.currentThread().setContextClassLoader(classLoader);
             execute(classLoader, mainClass, remove(args, i + 1));
         } else {
-            execute(getClassLoader(), args[i], remove(args, i + 1));
+            execute(TransformerTools.getDefaultClassLoader(), args[i], remove(args, i + 1));
         }
-    }
-
-    private static ClassLoader getClassLoader() {
-        ClassLoader classLoader = JITRetrotranslator.class.getClassLoader();
-        return classLoader != null ? classLoader : ClassLoader.getSystemClassLoader();
     }
 
     private static String[] remove(String[] original, int count) {

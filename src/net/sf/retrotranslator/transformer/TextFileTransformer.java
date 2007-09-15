@@ -53,8 +53,7 @@ class TextFileTransformer {
         StringBuffer buffer = new StringBuffer();
         while (matcher.find()) {
             String originalName = matcher.group().replace('.', '/');
-            ClassReplacement replacement = factory.getLocator().getReplacement(originalName);
-            String backportName = replacement == null ? originalName : replacement.getReferenceTypeName();
+            String backportName = factory.getLocator().getReferenceTypeName(originalName);
             String name = converter == null ? backportName : converter.convertClassName(backportName);
             if (originalName.equals(name)) {
                 matcher.appendReplacement(buffer, "$0");

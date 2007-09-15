@@ -44,11 +44,13 @@ import net.sf.retrotranslator.runtime.impl.RuntimeTools;
 class ClassReaderFactory {
 
     private ClassLoader classLoader;
+    private final SystemLogger logger;
     private List<Entry> entries = new ArrayList<Entry>();
-    private Map<String, SoftReference<ClassReader>> cache = new HashMap<String, SoftReference<ClassReader>>();
+    private SoftReference<Map<String, ClassReader>> cacheReference;
 
-    public ClassReaderFactory(ClassLoader classLoader) {
+    public ClassReaderFactory(ClassLoader classLoader, SystemLogger logger) {
         this.classLoader = classLoader;
+        this.logger = logger;
     }
 
     public void appendPath(File element) {
@@ -56,12 +58,29 @@ class ClassReaderFactory {
         entries.add(element.isDirectory() ? new DirectoryEntry(element) : new ZipFileEntry(element));
     }
 
+    public ClassReader findClassReader(String className) {
+        try {
+            return getClassReader(className);
+        } catch (ClassNotFoundException e) {
+            if (logger != null) {
+                logger.logForFile(Level.INFO, "Cannot find " + className.replace('/', '.'));
+            }
+            return null;
+        }
+    }
+
     public ClassReader getClassReader(String name) throws ClassNotFoundException {
+        Map<String, ClassReader> cache = cacheReference == null ? null : cacheReference.get();
+        if (cache == null) {
+            cache = new HashMap<String, ClassReader>();
+            cacheReference = new SoftReference<Map<String, ClassReader>>(cache);
+        }
         if (cache.containsKey(name)) {
-            SoftReference<ClassReader> reference = cache.get(name);
-            if (reference == null) throw new ClassNotFoundException(name);
-            ClassReader classReader = reference.get();
-            if (classReader != null) return classReader;
+            ClassReader classReader = cache.get(name);
+            if (classReader == null) {
+                throw new ClassNotFoundException(name);
+            }
+            return classReader;
         }
         InputStream stream = getStream(name + RuntimeTools.CLASS_EXTENSION);
         if (stream == null) {
@@ -71,7 +90,7 @@ class ClassReaderFactory {
         try {
             try {
                 ClassReader classReader = new ClassReader(stream);
-                cache.put(name, new SoftReference<ClassReader>(classReader));
+                cache.put(name, classReader);
                 return classReader;
             } finally {
                 stream.close();
@@ -126,19 +145,19 @@ class ClassReaderFactory {
 
     private static class ZipFileEntry implements Entry {
 
+        private final File file;
         private ZipFile zipFile;
 
         public ZipFileEntry(File file) {
-            try {
-                this.zipFile = new ZipFile(file);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            this.file = file;
         }
 
         public InputStream getResourceAsStream(String name) {
-            ZipEntry entry = zipFile.getEntry(name);
             try {
+                if (zipFile == null) {
+                    zipFile = new ZipFile(file);
+                }
+                ZipEntry entry = zipFile.getEntry(name);
                 return entry == null ? null : zipFile.getInputStream(entry);
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -147,7 +166,9 @@ class ClassReaderFactory {
 
         public void close() {
             try {
-                zipFile.close();
+                if (zipFile != null) {
+                    zipFile.close();
+                }
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

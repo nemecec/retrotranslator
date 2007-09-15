@@ -56,6 +56,7 @@ public class RetrotranslatorTask extends Task {
     private boolean advanced;
     private boolean verify;
     private boolean uptodatecheck;
+    private boolean smart;
     private boolean failonwarning = true;
     private String srcmask;
     private String embed;
@@ -127,6 +128,10 @@ public class RetrotranslatorTask extends Task {
         this.uptodatecheck = uptodatecheck;
     }
 
+    public void setSmart(boolean smart) {
+        this.smart = smart;
+    }
+
     public void setFailonwarning(boolean failonwarning) {
         this.failonwarning = failonwarning;
     }
@@ -168,54 +173,60 @@ public class RetrotranslatorTask extends Task {
     }
 
     public void execute() throws BuildException {
-        Retrotranslator retrotranslator = new Retrotranslator();
-        if (srcdir != null) retrotranslator.addSrcdir(srcdir);
-        if (srcjar != null) retrotranslator.addSrcjar(srcjar);
-        if (destdir != null) retrotranslator.setDestdir(destdir);
-        if (destjar != null) retrotranslator.setDestjar(destjar);
-        for (FileSet fileSet : fileSets) {
-            DirectoryScanner scanner = fileSet.getDirectoryScanner(getProject());
-            retrotranslator.addSourceFiles(scanner.getBasedir(), Arrays.asList(scanner.getIncludedFiles()));
-        }
-        for (FileSet jarFileSet : jarFileSets) {
-            DirectoryScanner scanner = jarFileSet.getDirectoryScanner(getProject());
-            File basedir = scanner.getBasedir();
-            for (String jarFile : scanner.getIncludedFiles()) {
-                retrotranslator.addSrcjar(new File(basedir, jarFile));
+        try {
+            Retrotranslator retrotranslator = new Retrotranslator();
+            if (srcdir != null) retrotranslator.addSrcdir(srcdir);
+            if (srcjar != null) retrotranslator.addSrcjar(srcjar);
+            if (destdir != null) retrotranslator.setDestdir(destdir);
+            if (destjar != null) retrotranslator.setDestjar(destjar);
+            for (FileSet fileSet : fileSets) {
+                DirectoryScanner scanner = fileSet.getDirectoryScanner(getProject());
+                retrotranslator.addSourceFiles(scanner.getBasedir(), Arrays.asList(scanner.getIncludedFiles()));
             }
-        }
-        for (DirSet dirSet : dirSets) {
-            DirectoryScanner scanner = dirSet.getDirectoryScanner(getProject());
-            File basedir = scanner.getBasedir();
-            for (String subdirectory : scanner.getIncludedDirectories()) {
-                retrotranslator.addSrcdir(new File(basedir, subdirectory));
+            for (FileSet jarFileSet : jarFileSets) {
+                DirectoryScanner scanner = jarFileSet.getDirectoryScanner(getProject());
+                File basedir = scanner.getBasedir();
+                for (String jarFile : scanner.getIncludedFiles()) {
+                    retrotranslator.addSrcjar(new File(basedir, jarFile));
+                }
             }
-        }
-        retrotranslator.setVerbose(verbose);
-        retrotranslator.setStripsign(stripsign);
-        retrotranslator.setRetainapi(retainapi);
-        retrotranslator.setRetainflags(retainflags);
-        retrotranslator.setLazy(lazy);
-        retrotranslator.setAdvanced(advanced);
-        retrotranslator.setVerify(verify);
-        retrotranslator.setUptodatecheck(uptodatecheck);
-        retrotranslator.setSrcmask(srcmask);
-        retrotranslator.setEmbed(embed);
-        retrotranslator.setSupport(support);
-        retrotranslator.setBackport(backport);
-        if (target != null) retrotranslator.setTarget(target);
-        for (String fileName : getClasspath().list()) {
-            retrotranslator.addClasspathElement(getProject().resolveFile(fileName));
-        }
-        retrotranslator.setLogger(new AbstractLogger() {
-            protected void log(String text, Level level) {
-                RetrotranslatorTask.this.log(text,
-                        level.isCritical() ? Project.MSG_WARN : Project.MSG_INFO);
+            for (DirSet dirSet : dirSets) {
+                DirectoryScanner scanner = dirSet.getDirectoryScanner(getProject());
+                File basedir = scanner.getBasedir();
+                for (String subdirectory : scanner.getIncludedDirectories()) {
+                    retrotranslator.addSrcdir(new File(basedir, subdirectory));
+                }
             }
-        });
-        boolean success = retrotranslator.run();
-        if (!success && failonwarning) {
-            throw new BuildException("Translation failed.", getLocation());
+            retrotranslator.setVerbose(verbose);
+            retrotranslator.setStripsign(stripsign);
+            retrotranslator.setRetainapi(retainapi);
+            retrotranslator.setRetainflags(retainflags);
+            retrotranslator.setLazy(lazy);
+            retrotranslator.setAdvanced(advanced);
+            retrotranslator.setVerify(verify);
+            retrotranslator.setUptodatecheck(uptodatecheck);
+            retrotranslator.setSmart(smart);
+            retrotranslator.setSrcmask(srcmask);
+            retrotranslator.setEmbed(embed);
+            retrotranslator.setSupport(support);
+            retrotranslator.setBackport(backport);
+            if (target != null) retrotranslator.setTarget(target);
+            for (String fileName : getClasspath().list()) {
+                retrotranslator.addClasspathElement(getProject().resolveFile(fileName));
+            }
+            retrotranslator.setLogger(new AbstractLogger() {
+                protected void log(String text, Level level) {
+                    RetrotranslatorTask.this.log(text,
+                            level.isCritical() ? Project.MSG_WARN : Project.MSG_INFO);
+                }
+            });
+            boolean success = retrotranslator.run();
+            if (!success && failonwarning) {
+                throw new BuildException("Translation failed.", getLocation());
+            }
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            throw e; 
         }
     }
 

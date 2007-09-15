@@ -31,41 +31,43 @@
  */
 package net.sf.retrotranslator.transformer;
 
+import java.io.*;
 import java.lang.ref.SoftReference;
-import java.util.List;
-import static net.sf.retrotranslator.transformer.TransformerTools.*;
+import java.util.*;
+import java.net.URL;
 
 /**
  * @author Taras Puchko
  */
 class ReplacementLocatorFactory {
 
-    private static final String JAVA_UTIL_CONCURRENT = "java/util/concurrent/";
-
     private final ClassVersion target;
     private final OperationMode mode;
     private final boolean retainapi;
     private List<Backport> backports;
+    private final ClassReaderFactory classReaderFactory;
 
     private SoftReference<ReplacementLocator> softReference = new SoftReference<ReplacementLocator>(null);
 
-    public ReplacementLocatorFactory(ClassVersion target, OperationMode mode, boolean retainapi, List<Backport> backports) {
+    public ReplacementLocatorFactory(ClassVersion target, OperationMode mode, boolean retainapi,
+                                     List<Backport> backports, ClassReaderFactory classReaderFactory) {
         this.target = target;
         this.mode = mode;
         this.retainapi = retainapi;
         this.backports = backports;
-        if (target == ClassVersion.VERSION_14 && !retainapi) {
-            addDefault(backports);
+        this.classReaderFactory = classReaderFactory;
+        if (retainapi) {
+            return;
         }
-    }
-
-    private void addDefault(List<Backport> backports) {
-        backports.add(new Backport("", RUNTIME_PREFIX + "/", null, null));
-        backports.add(new Backport(null, null, "java/lang/StringBuilder", "java/lang/StringBuffer"));
-        backports.add(new Backport(JAVA_UTIL_CONCURRENT, CONCURRENT_PREFIX + "/" + JAVA_UTIL_CONCURRENT, null, null));
-        for (String name : new String[]{"java/util/Deque", "java/util/ArrayDeque",
-                "java/util/Queue", "java/util/AbstractQueue", "java/util/PriorityQueue"}) {
-            backports.add(new Backport(null, null, name, CONCURRENT_PREFIX + "/" + name));
+        String fileName = getClass().getPackage().getName().replace('.', '/') +
+                "/backport" + target.getName().replace(".", "") + ".properties";
+        try {
+            Enumeration<URL> resources = TransformerTools.getDefaultClassLoader().getResources(fileName);
+            while (resources.hasMoreElements()) {
+                backports.addAll(Backport.loadFromURL(resources.nextElement()));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -81,13 +83,16 @@ class ReplacementLocatorFactory {
         return retainapi;
     }
 
+    public ClassReaderFactory getClassReaderFactory() {
+        return classReaderFactory;
+    }
+
     public synchronized ReplacementLocator getLocator() {
         ReplacementLocator locator = softReference.get();
         if (locator == null) {
-            locator = new ReplacementLocator(mode, backports);
+            locator = new ReplacementLocator(mode, backports, classReaderFactory);
             softReference = new SoftReference<ReplacementLocator>(locator);
         }
         return locator;
     }
-
 }

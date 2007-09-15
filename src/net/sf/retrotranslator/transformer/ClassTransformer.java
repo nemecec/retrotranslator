@@ -71,15 +71,17 @@ class ClassTransformer implements BytecodeTransformer {
         ClassWriter classWriter = new ClassWriter(true);
         ClassVisitor visitor = new InstantiationAnalysisVisitor(classWriter, locator, pointListMap, logger);
         visitor = new DuplicateInterfacesVisitor(new VersionVisitor(visitor, target), logger, counter);
-        boolean before15 = target.isBefore(ClassVersion.VERSION_15.getVersion());
-        if (before15) {
-            if (target.isBefore(ClassVersion.VERSION_14.getVersion())) {
-                visitor = new InnerClassVisitor(visitor);
-            }
+        if (target.isBefore(ClassVersion.VERSION_13)) {
+            visitor = new InheritedConstantVisitor(visitor, factory.getClassReaderFactory());
+        }
+        if (target.isBefore(ClassVersion.VERSION_14)) {
+            visitor = new InnerClassVisitor(visitor);
+        }
+        if (target.isBefore(ClassVersion.VERSION_15)) {
             visitor = new ArrayCloningVisitor(new ClassLiteralVisitor(visitor));
-            if (!factory.isRetainapi()) {
-                visitor = new SpecificReplacementVisitor(visitor, locator, factory.getMode());
-            }
+        }
+        if (!factory.isRetainapi()) {
+            visitor = new SpecificReplacementVisitor(visitor, target, locator, factory.getMode());
         }
         visitor = new GeneralReplacementVisitor(visitor, locator);
         if (stripsign) {
@@ -103,7 +105,7 @@ class ClassTransformer implements BytecodeTransformer {
             classWriter = new ClassWriter(true);
             new ClassReader(bytecode).accept(new PrefixingVisitor(classWriter, converter), false);
         }
-        return classWriter.toByteArray(before15 && !retainflags);
+        return classWriter.toByteArray(target.isBefore(ClassVersion.VERSION_15) && !retainflags);
     }
 
 }

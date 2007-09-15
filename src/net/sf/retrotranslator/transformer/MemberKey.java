@@ -31,53 +31,43 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import net.sf.retrotranslator.runtime.asm.Type;
-
 /**
  * @author Taras Puchko
  */
-class TransformerTools {
+public final class MemberKey {
 
-    public static String descriptor(Class returnType, Class... parameterTypes) {
-        Type[] argumentTypes = new Type[parameterTypes.length];
-        for (int i = 0; i < argumentTypes.length; i++) {
-            argumentTypes[i] = Type.getType(parameterTypes[i]);
+    private final boolean statical;
+    private final String name;
+    private final String desc;
+
+    public MemberKey(boolean statical, String name, String desc) {
+        this.statical = statical;
+        this.name = name;
+        this.desc = desc;
+    }
+
+    public boolean isStatical() {
+        return statical;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDesc() {
+        return desc;
+    }
+
+    public boolean equals(Object o) {
+        if (o instanceof MemberKey) {
+            MemberKey key = (MemberKey) o;
+            return statical == key.statical && name.equals(key.name) && desc.equals(key.desc);
         }
-        return Type.getMethodDescriptor(Type.getType(returnType), argumentTypes);
+        return false;
     }
 
-    public static Type getTypeByInternalName(String name) {
-        return Type.getType('L' + name + ';');
-    }
-
-    public static Type getArrayTypeByInternalName(String name, int dimensions) {
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < dimensions; i++) {
-            builder.append('[');
-        }
-        return Type.getType(builder.append('L').append(name).append(';').toString());
-    }
-
-    public static boolean isClassFile(byte[] bytes) {
-        return bytes.length >= 4 &&
-                bytes[0] == ((byte) 0xCA) &&
-                bytes[1] == ((byte) 0xFE) &&
-                bytes[2] == ((byte) 0xBA) &&
-                bytes[3] == ((byte) 0xBE);
-    }
-
-    public static int getClassVersion(byte[] bytes, int offset) {
-        return get(bytes, offset, 4, 24) | get(bytes, offset, 5, 16) |
-                get(bytes, offset, 6, 8) | get(bytes, offset, 7, 0);
-    }
-
-    private static int get(byte[] bytes, int offset, int index, int shift) {
-        return (bytes[offset + index] & 0xFF) << shift;
-    }
-
-    public static ClassLoader getDefaultClassLoader() {
-        ClassLoader classLoader = TransformerTools.class.getClassLoader();
-        return classLoader != null ? classLoader : ClassLoader.getSystemClassLoader();
+    public int hashCode() {
+        return 31 * name.hashCode() + desc.hashCode();
     }
 
 }

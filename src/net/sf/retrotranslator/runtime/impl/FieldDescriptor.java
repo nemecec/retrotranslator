@@ -38,7 +38,7 @@ import net.sf.retrotranslator.runtime.java.lang.annotation.Annotation_;
 /**
  * @author Taras Puchko
  */
-public class FieldDescriptor extends AnnotatedElementDescriptor {
+public class FieldDescriptor extends AnnotatedElementDescriptor implements MemberDescriptor {
 
     private String name;
     private String desc;

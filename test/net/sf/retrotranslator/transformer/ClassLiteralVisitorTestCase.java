@@ -31,7 +31,6 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import java.util.Queue;
 import junit.framework.TestCase;
 
 public class ClassLiteralVisitorTestCase extends TestCase {
@@ -40,6 +39,9 @@ public class ClassLiteralVisitorTestCase extends TestCase {
 
     public static interface InterfaceInClass {
         public Class CONST = Integer.class;
+    }
+
+    public static interface DerivedInterface extends MyConstants {
     }
 
     public static class StaticClassInClass {
@@ -55,6 +57,16 @@ public class ClassLiteralVisitorTestCase extends TestCase {
     public static class MyConstantsImpl implements MyConstants {
     }
 
+    public class DerivedTestClass extends ClassLiteralVisitorTestCase {
+    }
+
+    public class DerivedClass extends StaticClassInClass {
+    }
+
+    public static Class getConst() {
+        return Float.class;
+    }
+
     public void testClasses() {
         assertEquals(ClassLiteralVisitorTestCase.class, ClassLiteralVisitorTestCase[].class.getComponentType());
         assertEquals(InterfaceInClass.class, InterfaceInClass[].class.getComponentType());
@@ -63,15 +75,22 @@ public class ClassLiteralVisitorTestCase extends TestCase {
         assertEquals(MyConstantsImpl.class, MyConstantsImpl[].class.getComponentType());
     }
 
-    public void testConst() {
+    public void testConstField() {
         assertNotNull(CONST);
         assertNotNull(InterfaceInClass.CONST);
         assertNotNull(StaticClassInClass.CONST);
-        assertNotNull(new ClassInClass().getConst());
+        assertNotNull(DerivedClass.CONST);
+        assertSame(DerivedInterface.CONST[1], Integer.class);
         assertSame(MyConstantsImpl.CONST[1], Integer.class);
         assertSame(MyConstants.CONST[2], String.class);
         assertNotNull(MyConstants.InterfaceInInterface.CONST);
         assertNotNull(MyConstants.ClassInInterface.CONST);
+    }
+
+    public void testConstMethod() {
+        assertNotNull(ClassLiteralVisitorTestCase.getConst());
+        assertNotNull(DerivedTestClass.getConst());
+        assertNotNull(new ClassInClass().getConst());
     }
 
     public void testArrays() {

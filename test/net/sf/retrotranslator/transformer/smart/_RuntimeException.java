@@ -29,55 +29,40 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.transformer;
-
-import net.sf.retrotranslator.runtime.asm.Type;
+package net.sf.retrotranslator.transformer.smart;
 
 /**
  * @author Taras Puchko
  */
-class TransformerTools {
+public class _RuntimeException {
 
-    public static String descriptor(Class returnType, Class... parameterTypes) {
-        Type[] argumentTypes = new Type[parameterTypes.length];
-        for (int i = 0; i < argumentTypes.length; i++) {
-            argumentTypes[i] = Type.getType(parameterTypes[i]);
+    public static class ExceptionBuilder {
+
+        private final String message;
+
+        protected ExceptionBuilder(String message) {
+            this.message = message;
         }
-        return Type.getMethodDescriptor(Type.getType(returnType), argumentTypes);
-    }
 
-    public static Type getTypeByInternalName(String name) {
-        return Type.getType('L' + name + ';');
-    }
-
-    public static Type getArrayTypeByInternalName(String name, int dimensions) {
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < dimensions; i++) {
-            builder.append('[');
+        public String argument1() {
+            return message;
         }
-        return Type.getType(builder.append('L').append(name).append(';').toString());
     }
 
-    public static boolean isClassFile(byte[] bytes) {
-        return bytes.length >= 4 &&
-                bytes[0] == ((byte) 0xCA) &&
-                bytes[1] == ((byte) 0xFE) &&
-                bytes[2] == ((byte) 0xBA) &&
-                bytes[3] == ((byte) 0xBE);
+    public static String convertConstructorArguments() {
+        return "empty";
     }
 
-    public static int getClassVersion(byte[] bytes, int offset) {
-        return get(bytes, offset, 4, 24) | get(bytes, offset, 5, 16) |
-                get(bytes, offset, 6, 8) | get(bytes, offset, 7, 0);
+    public static String convertConstructorArguments(Throwable cause) {
+        return "cause";
     }
 
-    private static int get(byte[] bytes, int offset, int index, int shift) {
-        return (bytes[offset + index] & 0xFF) << shift;
+    public static ExceptionBuilder createInstanceBuilder(String message) {
+        return new ExceptionBuilder("message");
     }
 
-    public static ClassLoader getDefaultClassLoader() {
-        ClassLoader classLoader = TransformerTools.class.getClassLoader();
-        return classLoader != null ? classLoader : ClassLoader.getSystemClassLoader();
+    public static ExceptionBuilder createInstanceBuilder(String message, Throwable cause) {
+        return new ExceptionBuilder("message and cause");
     }
 
 }

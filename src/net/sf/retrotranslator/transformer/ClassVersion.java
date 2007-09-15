@@ -31,21 +31,27 @@
  */
 package net.sf.retrotranslator.transformer;
 
+import java.util.*;
+
 /**
  * @author Taras Puchko
  */
 class ClassVersion {
 
+    private static Map<String, ClassVersion> VALUES = new Hashtable<String, ClassVersion>();
+
+    public static final ClassVersion VERSION_12 = new ClassVersion("1.2", 46);
     public static final ClassVersion VERSION_13 = new ClassVersion("1.3", 47);
     public static final ClassVersion VERSION_14 = new ClassVersion("1.4", 48);
     public static final ClassVersion VERSION_15 = new ClassVersion("1.5", 49);
-
+    
     private String name;
     private int version;
 
     private ClassVersion(String name, int version) {
         this.name = name;
         this.version = version;
+        VALUES.put(name, this);
     }
 
     public String getName() {
@@ -57,10 +63,15 @@ class ClassVersion {
     }
 
     public static ClassVersion valueOf(String name) {
-        if (VERSION_13.name.equals(name)) return VERSION_13;
-        if (VERSION_14.name.equals(name)) return VERSION_14;
-        if (VERSION_15.name.equals(name)) return VERSION_15;
-        throw new IllegalArgumentException("Unsupported target: " + name);
+        ClassVersion result = VALUES.get(name);
+        if (result == null) {
+            throw new IllegalArgumentException("Unsupported target: " + name);
+        }
+        return result;
+    }
+
+    public boolean isBefore(ClassVersion classVersion) {
+        return isBefore(classVersion.getVersion());
     }
 
     public boolean isBefore(int other) {

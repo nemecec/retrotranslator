@@ -32,39 +32,23 @@
 package net.sf.retrotranslator.transformer;
 
 import java.util.*;
+import java.util.regex.*;
+import java.io.*;
+import java.net.URL;
 
 /**
  * @author Taras Puchko
  */
-class Backport {
+abstract class Backport {
 
-    private String originalPrefix;
-    private String replacementPrefix;
-    private String originalName;
-    private String replacementName;
-
-    public Backport(String originalPrefix, String replacementPrefix, String originalName, String replacementName) {
-        this.originalPrefix = originalPrefix;
-        this.replacementPrefix = replacementPrefix;
-        this.originalName = originalName;
-        this.replacementName = replacementName;
-    }
-
-    public String getOriginalPrefix() {
-        return originalPrefix;
-    }
-
-    public String getReplacementPrefix() {
-        return replacementPrefix;
-    }
-
-    public String getOriginalName() {
-        return originalName;
-    }
-
-    public String getReplacementName() {
-        return replacementName;
-    }
+    private static final Pattern RUNTIME_PATTERN = Pattern.compile(
+            "\\s*((?:\\w+\\.)*\\w+)\\s*");
+    private static final Pattern PACKAGE_PATTERN = Pattern.compile(
+            "\\s*((?:\\w+\\.)*\\w+)\\s*:\\s*((?:\\w+\\.)*\\w+)\\s*");
+    private static final Pattern CLASS_PATTERN = Pattern.compile(
+            "\\s*((?:\\w+\\.)*\\p{Upper}\\w*)\\s*:\\s*((?:\\w+\\.)*\\p{Upper}\\w*)\\s*");
+    private static final Pattern MEMBER_PATTERN = Pattern.compile(
+            "\\s*((?:\\w+\\.)*\\p{Upper}\\w*)\\.(\\w+)\\s*:\\s*((?:\\w+\\.)*\\p{Upper}\\w*)\\.(\\w+)\\s*");
 
     public static List<Backport> asList(String s) {
         List<Backport> result = new Vector<Backport>();
@@ -76,30 +60,59 @@ class Backport {
         return result;
     }
 
-    private static Backport valueOf(String s) {
-        String original;
-        String replacement;
-        int index = s.indexOf(':');
-        if (index < 0) {
-            original = "";
-            replacement = toInternalName(s);
-        } else {
-            original = toInternalName(s.substring(0, index));
-            replacement = toInternalName(s.substring(index + 1));
+    public static List<Backport> loadFromURL(URL url) throws IOException {
+        InputStream stream = url.openStream();
+        try {
+            List<Backport> result = new Vector<Backport>();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
+            String s;
+            while((s = reader.readLine()) != null) {
+                if (s.trim().length() > 0) {
+                    result.add(valueOf(s));
+                }
+            }
+            return result;
+        } finally {
+            stream.close();
         }
-        return new Backport(toPrefix(original), toPrefix(replacement), original, replacement);
+    }
+
+    private static Backport valueOf(String s) {
+        Matcher memberMatcher = MEMBER_PATTERN.matcher(s);
+        if (memberMatcher.matches()) {
+            return new MemberBackport(
+                    toInternalName(memberMatcher.group(1)),
+                    memberMatcher.group(2),
+                    toInternalName(memberMatcher.group(3)),
+                    memberMatcher.group(4));
+        }
+        Matcher classMatcher = CLASS_PATTERN.matcher(s);
+        if (classMatcher.matches()) {
+            return new ClassBackport(
+                    toInternalName(classMatcher.group(1)),
+                    toInternalName(classMatcher.group(2)));
+        }
+        Matcher packageMatcher = PACKAGE_PATTERN.matcher(s);
+        if (packageMatcher.matches()) {
+            return new PackageBackport(
+                    toPrefixName(packageMatcher.group(1)),
+                    toPrefixName(packageMatcher.group(2)));
+        }
+        Matcher runtimeMatcher = RUNTIME_PATTERN.matcher(s);
+        if (runtimeMatcher.matches()) {
+            return new PackageBackport(
+                    "",
+                    toPrefixName(runtimeMatcher.group(1)));
+        }
+        throw new IllegalArgumentException("Illegal backport name: " + s);
     }
 
     private static String toInternalName(String name) {
-        String result = name.replace('.', '/').trim();
-        if (result.startsWith("/") || result.endsWith("/")) {
-            throw new IllegalArgumentException("Illegal name: " + name);
-        }
-        return result;
+        return name.replace('.', '/');
     }
 
-    private static String toPrefix(String name) {
-        return name.length() == 0 ? "" : name + '/';
+    private static String toPrefixName(String name) {
+        return toInternalName(name) + '/';
     }
 
 }

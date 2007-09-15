@@ -32,10 +32,9 @@
 package net.sf.retrotranslator.transformer;
 
 import edu.emory.mathcs.backport.java.util.concurrent.*;
-import edu.emory.mathcs.backport.java.util.concurrent.helpers.Utils;
 import edu.emory.mathcs.backport.java.util.concurrent.locks.*;
 import java.lang.ref.*;
-import java.util.*;
+import java.util.Collections;
 import net.sf.retrotranslator.runtime.asm.*;
 import static net.sf.retrotranslator.runtime.asm.Opcodes.*;
 import net.sf.retrotranslator.runtime.impl.RuntimeTools;
@@ -45,34 +44,24 @@ import net.sf.retrotranslator.runtime.impl.RuntimeTools;
  */
 class SpecificReplacementVisitor extends ClassAdapter {
 
-    private static final String UTILS_NAME = Type.getInternalName(Utils.class);
     private static final String THREAD_NAME = Type.getInternalName(Thread.class);
-    private static final String SYSTEM_NAME = Type.getInternalName(System.class);
-    private static final String CONDITION_NAME = Type.getInternalName(Condition.class);
     private static final String DELAY_QUEUE_NAME = Type.getInternalName(DelayQueue.class);
     private static final String SOFT_REFERENCE_NAME = Type.getInternalName(SoftReference.class);
     private static final String WEAK_REFERENCE_NAME = Type.getInternalName(WeakReference.class);
-    private static final String ORIGINAL_ARRAYS_NAME = Type.getInternalName(java.util.Arrays.class);
-    private static final String ORIGINAL_COLLECTIONS_NAME = Type.getInternalName(java.util.Collections.class);
+    private static final String COLLECTIONS_NAME = Type.getInternalName(Collections.class);
     private static final String REENTRANT_READ_WRITE_LOCK_NAME = Type.getInternalName(ReentrantReadWriteLock.class);
+    private static final MemberKey UNCAUGHT_EXCEPTION_HANDLER_KEY =
+            new MemberKey(true, "handleUncaughtException", TransformerTools.descriptor(void.class, Throwable.class));
 
-    private static final String BACKPORTED_ARRAYS_NAME =
-            Type.getInternalName(edu.emory.mathcs.backport.java.util.Arrays.class);
-    private static final String BACKPORTED_COLLECTIONS_NAME =
-            Type.getInternalName(edu.emory.mathcs.backport.java.util.Collections.class);
-    private static final String UNCAUGHT_EXCEPTION_HANDLER_KEY = "handleUncaughtException" +
-            TransformerTools.descriptor(void.class, Throwable.class);
-
-    private static final Set<String> ARRAYS_METHODS = getArrayMethods();
-    private static final Set<String> COLLECTIONS_METHODS = getCollectionMethods();
-    private static final Map<String, String> COLLECTIONS_FIELDS = getCollectionFields();
-
+    private final ClassVersion target;
     private final ReplacementLocator locator;
     private final OperationMode mode;
     private MemberReplacement uncaughtExceptionHandler;
 
-    public SpecificReplacementVisitor(ClassVisitor visitor, ReplacementLocator locator, OperationMode mode) {
+    public SpecificReplacementVisitor(ClassVisitor visitor, ClassVersion target,
+                                      ReplacementLocator locator, OperationMode mode) {
         super(visitor);
+        this.target = target;
         this.locator = locator;
         this.mode = mode;
     }
@@ -130,9 +119,6 @@ class SpecificReplacementVisitor extends ClassAdapter {
             if (fixReference(opcode, owner, name, desc)) {
                 return;
             }
-            if (fixNanos(opcode, owner, name, desc)) {
-                return;
-            }
             if (fixDelayQueue(opcode, owner, name, desc)) {
                 return;
             }
@@ -140,9 +126,6 @@ class SpecificReplacementVisitor extends ClassAdapter {
                 return;
             }
             if (fixCollections(opcode, owner, name, desc)) {
-                return;
-            }
-            if (fixArrays(opcode, owner, name, desc)) {
                 return;
             }
             super.visitMethodInsn(opcode, owner, name, desc);
@@ -163,6 +146,9 @@ class SpecificReplacementVisitor extends ClassAdapter {
             } else {
                 return false;
             }
+            if (!target.isBefore(ClassVersion.VERSION_15)) {
+                return false;
+            }
             if (!desc.equals(TransformerTools.descriptor(void.class, Object.class, ReferenceQueue.class))) {
                 return false;
             }
@@ -178,19 +164,6 @@ class SpecificReplacementVisitor extends ClassAdapter {
             mv.visitMethodInsn(INVOKESPECIAL, owner, RuntimeTools.CONSTRUCTOR_NAME, desc);
             mv.visitLabel(continueLabel);
             return true;
-        }
-
-        private boolean fixNanos(int opcode, String owner, String name, String desc) {
-            if (owner.equals(SYSTEM_NAME) & name.equals("nanoTime")) {
-                mv.visitMethodInsn(opcode, UTILS_NAME, name, desc);
-                return true;
-            }
-            if (owner.equals(CONDITION_NAME) & name.equals("awaitNanos")) {
-                mv.visitMethodInsn(INVOKESTATIC, UTILS_NAME, name,
-                        TransformerTools.descriptor(long.class, Condition.class, long.class));
-                return true;
-            }
-            return false;
         }
 
         private boolean fixDelayQueue(int opcode, String owner, String name, String desc) {
@@ -227,32 +200,35 @@ class SpecificReplacementVisitor extends ClassAdapter {
         }
 
         private boolean fixCollections(int opcode, String owner, String name, String desc) {
-            if (!owner.equals(ORIGINAL_COLLECTIONS_NAME)) {
+            if (opcode != INVOKESTATIC || !owner.equals(COLLECTIONS_NAME)) {
                 return false;
             }
-            String field = COLLECTIONS_FIELDS.get(name);
-            if (field != null) {
-                mv.visitFieldInsn(Opcodes.GETSTATIC, ORIGINAL_COLLECTIONS_NAME,
-                        field, Type.getReturnType(desc).toString());
-                return true;
+            String field = getReplacementField(name);
+            if (field == null) {
+                return false;
             }
-            if (COLLECTIONS_METHODS.contains(name + desc)) {
-                mv.visitMethodInsn(opcode, BACKPORTED_COLLECTIONS_NAME, name, desc);
-                return true;
-            }
-            return false;
+            mv.visitFieldInsn(GETSTATIC, COLLECTIONS_NAME, field, Type.getReturnType(desc).toString());
+            return true;
         }
+    }
 
-        private boolean fixArrays(int opcode, String owner, String name, String desc) {
-            if (!owner.equals(ORIGINAL_ARRAYS_NAME)) {
-                return false;
-            }
-            if (ARRAYS_METHODS.contains(name + desc)) {
-                mv.visitMethodInsn(opcode, BACKPORTED_ARRAYS_NAME, name, desc);
-                return true;
-            }
-            return false;
+    private String getReplacementField(String methodName) {
+        if (!target.isBefore(ClassVersion.VERSION_15)) {
+            return null;
         }
+        if (methodName.equals("emptyList")) {
+            return "EMPTY_LIST";
+        }
+        if (methodName.equals("emptySet")) {
+            return "EMPTY_SET";
+        }
+        if (target.isBefore(ClassVersion.VERSION_13)) {
+            return null;
+        }
+        if (methodName.equals("emptyMap")) {
+            return "EMPTY_MAP";
+        }
+        return null;
     }
 
     private MemberReplacement getUncaughtExceptionHandler(String superName) {
@@ -268,53 +244,6 @@ class SpecificReplacementVisitor extends ClassAdapter {
             return null;
         }
         return threadReplacement.getMethodReplacements().get(UNCAUGHT_EXCEPTION_HANDLER_KEY);
-    }
-
-    private static Set<String> getArrayMethods() {
-        Set<String> result = new HashSet<String>();
-        for (Class arrayType : new Class[]{boolean[].class, byte[].class, char[].class,
-                double[].class, float[].class, int[].class, long[].class, short[].class, Object[].class}) {
-            result.add("copyOf" +
-                    TransformerTools.descriptor(arrayType, arrayType, int.class));
-            result.add("copyOfRange" +
-                    TransformerTools.descriptor(arrayType, arrayType, int.class, int.class));
-        }
-        result.add("copyOf" +
-                TransformerTools.descriptor(Object[].class, Object[].class, int.class, Class.class));
-        result.add("copyOfRange" +
-                TransformerTools.descriptor(Object[].class, Object[].class, int.class, int.class, Class.class));
-        return result;
-    }
-
-    private static Set<String> getCollectionMethods() {
-        Set<String> result = new HashSet<String>();
-        for (String method : new String[]{
-                getMethod(boolean.class, "addAll", Collection.class, Object[].class),
-                getMethod(Collection.class, "checkedCollection", Collection.class, Class.class),
-                getMethod(List.class, "checkedList", List.class, Class.class),
-                getMethod(Map.class, "checkedMap", Map.class, Class.class, Class.class),
-                getMethod(Set.class, "checkedSet", Set.class, Class.class),
-                getMethod(SortedMap.class, "checkedSortedMap", SortedMap.class, Class.class, Class.class),
-                getMethod(SortedSet.class, "checkedSortedSet", SortedSet.class, Class.class),
-                getMethod(boolean.class, "disjoint", Collection.class, Collection.class),
-                getMethod(int.class, "frequency", Collection.class, Object.class),
-                getMethod(Comparator.class, "reverseOrder", Comparator.class),
-                getMethod(Set.class, "newSetFromMap", Map.class)}) {
-            result.add(method);
-        }
-        return result;
-    }
-
-    private static String getMethod(Class returnType, String name, Class... parameterTypes) {
-        return name + TransformerTools.descriptor(returnType, parameterTypes);
-    }
-
-    private static Map<String, String> getCollectionFields() {
-        Map<String, String> result = new HashMap<String, String>();
-        result.put("emptyList", "EMPTY_LIST");
-        result.put("emptyMap", "EMPTY_MAP");
-        result.put("emptySet", "EMPTY_SET");
-        return result;
     }
 
 }
