@@ -31,9 +31,8 @@
  */
 package net.sf.retrotranslator.runtime.java.io;
 
-import junit.framework.*;
-import net.sf.retrotranslator.runtime.java.io._CharArrayWriter;
-import java.io.*;
+import java.io.CharArrayWriter;
+import junit.framework.TestCase;
 
 /**
  * @author Taras Puchko
