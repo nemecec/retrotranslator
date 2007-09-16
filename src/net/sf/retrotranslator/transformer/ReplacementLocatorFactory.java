@@ -31,10 +31,8 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import java.io.*;
 import java.lang.ref.SoftReference;
 import java.util.*;
-import java.net.URL;
 
 /**
  * @author Taras Puchko
@@ -59,16 +57,7 @@ class ReplacementLocatorFactory {
         if (retainapi) {
             return;
         }
-        String fileName = getClass().getPackage().getName().replace('.', '/') +
-                "/backport" + target.getName().replace(".", "") + ".properties";
-        try {
-            Enumeration<URL> resources = TransformerTools.getDefaultClassLoader().getResources(fileName);
-            while (resources.hasMoreElements()) {
-                backports.addAll(Backport.loadFromURL(resources.nextElement()));
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        backports.addAll(Backport.asList(TransformerTools.readFile("backport", target)));
     }
 
     public ClassVersion getTarget() {

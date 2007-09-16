@@ -31,19 +31,12 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import edu.emory.mathcs.backport.java.util.Queue;
-import java.io.*;
-import java.net.URL;
 import java.util.*;
-import net.sf.retrotranslator.runtime.impl.*;
 
 /**
  * @author Taras Puchko
  */
 class FileTranslator {
-
-    private static final String CLASS_DESCRIPTOR_PATH = getFileName(ClassDescriptor.class);
-    private static final String SIGNATURES_PATH = getFileName(ClassDescriptor.class, ClassDescriptor.SIGNATURES_NAME);
 
     private final ClassTransformer classTransformer;
     private final TextFileTransformer fileTransformer;
@@ -87,11 +80,7 @@ class FileTranslator {
             logger.logForFile(Level.VERBOSE, "Up to date");
             return;
         }
-        if (converter != null && name.equals(SIGNATURES_PATH)) {
-            logger.logForFile(Level.VERBOSE, "Transformation");
-            destination.putEntry(fixedName, transformSignatures(entry.getContent()));
-            countTransformed++;
-        } else if (mask.matches(name) || !name.equals(fixedName)) {
+        if (mask.matches(name) || !name.equals(fixedName)) {
             logger.logForFile(Level.VERBOSE, "Transformation");
             byte[] sourceData = entry.getContent();
             byte[] resultData = TransformerTools.isClassFile(sourceData)
@@ -113,20 +102,19 @@ class FileTranslator {
     }
 
     public void embed(FileContainer destination) {
-        Map<String, Boolean> runtimeNames = converter.getRuntimeFileNames();
-        Map<String, Boolean> concurrentNames = converter.getConcurrentFileNames();
-        if (runtimeNames.isEmpty() && concurrentNames.isEmpty()) {
+        Map<String, Boolean> fileNames = converter.getFileNames();
+        if (fileNames.isEmpty()) {
             logger.log(new Message(Level.INFO, "Embedding skipped."));
             return;
         }
         logger.log(new Message(Level.INFO, "Embedding backported classes."));
-        FileContainer runtimeContainer = findContainer(ClassDescriptor.class);
-        FileContainer concurrentContainer = findContainer(Queue.class);
+        Collection<FileContainer> containers = converter.getContainers();
         while (true) {
-            if (embed(runtimeContainer, destination, runtimeNames) &&
-                    embed(concurrentContainer, destination, concurrentNames)) {
-                break;
+            boolean finished = true;
+            for (FileContainer container : containers) {
+                finished &= embed(container, destination, fileNames);
             }
+            if (finished) break;
         }
         logger.log(new Message(Level.INFO, "Embedded required files."));
     }
@@ -139,63 +127,10 @@ class FileTranslator {
                 transform(entry, source, destination);
                 String name = entry.getName();
                 fileNames.put(name, Boolean.TRUE);
-                if (name.equals(CLASS_DESCRIPTOR_PATH)) {
-                    fileNames.put(SIGNATURES_PATH, Boolean.FALSE);
-                }
                 finished = false;
             }
         }
         return finished;
-    }
-
-    private byte[] transformSignatures(byte[] content) {
-        try {
-            NameTranslator transformer = new NameTranslator() {
-                protected String typeName(String s) {
-                    return converter.convertClassName(s);
-                }
-            };
-            Properties source = new Properties();
-            source.load(new ByteArrayInputStream(content));
-            Properties target = new Properties();
-            for (Map.Entry entry : source.entrySet()) {
-                String key = converter.convertClassName((String) entry.getKey());
-                String value = transformer.declarationSignature((String) entry.getValue());
-                target.put(key, value);
-            }
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            target.store(stream, null);
-            return stream.toByteArray();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static FileContainer findContainer(Class aClass) {
-        String path = "/" + getFileName(aClass);
-        URL resource = aClass.getResource(path);
-        if (resource == null) {
-            throw new IllegalArgumentException("Location not found: " + aClass);
-        }
-        String url = resource.toExternalForm();
-        String prefix = "jar:file:";
-        String suffix = "!" + path;
-        if (!url.startsWith(prefix) || !url.endsWith(suffix)) {
-            throw new IllegalArgumentException("Not in a jar file: " + aClass);
-        }
-        File file = new File(url.substring(prefix.length(), url.length() - suffix.length()));
-        if (!file.isFile()) {
-            throw new IllegalArgumentException("File not found: " + file);
-        }
-        return new JarFileContainer(file);
-    }
-
-    private static String getFileName(Class aClass) {
-        return aClass.getName().replace('.', '/') + RuntimeTools.CLASS_EXTENSION;
-    }
-
-    private static String getFileName(Class aClass, String fileName) {
-        return aClass.getPackage().getName().replace('.', '/') + "/" + fileName;
     }
 
 }

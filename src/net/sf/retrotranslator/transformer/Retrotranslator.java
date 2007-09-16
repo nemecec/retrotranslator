@@ -165,15 +165,15 @@ public class Retrotranslator {
     }
 
     public boolean run() {
+        SystemLogger systemLogger = new SystemLogger(getMessageLogger(), verbose);
         if (src.isEmpty()) throw new IllegalArgumentException("Source not set.");
         EmbeddingConverter converter = null;
         if (embed != null) {
             if (dest == null) throw new IllegalArgumentException("Destination required for embedding!");
             if (lazy) throw new IllegalArgumentException("Embedding cannot be lazy!");
-            converter = new EmbeddingConverter(embed);
+            converter = new EmbeddingConverter(target, embed, systemLogger);
         }
         OperationMode mode = new OperationMode(advanced, support, smart);
-        SystemLogger systemLogger = new SystemLogger(getMessageLogger(), verbose);
         ReplacementLocatorFactory locatorFactory = new ReplacementLocatorFactory(
                 target, mode, retainapi, backports, createClassReaderFactory(null, systemLogger));
         ClassTransformer classTransformer = new ClassTransformer(

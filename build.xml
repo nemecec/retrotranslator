@@ -51,14 +51,6 @@
             <arg value="-srcmask"/>
             <arg value="*.class"/>
         </java>
-        <copy todir="build/classes" overwrite="true">
-            <fileset dir="build/classes15" includes="**/SignatureListGenerator.class"/>
-        </copy>
-        <java classname="net.sf.retrotranslator.transformer.SignatureListGenerator"
-              classpathref="classpath" classpath="build/classes" failonerror="true"
-              jvm="${java15_home}/bin/java" fork="true">
-            <arg value="build/classes/net/sf/retrotranslator/runtime/impl/signatures.properties"/>
-        </java>
         <jar destfile="build/retrotranslator-runtime-${version}.jar">
             <fileset dir="build/classes" includes="net/sf/retrotranslator/runtime/**"/>
             <zipfileset file="doc/LICENSE.txt" fullpath="RETROTRANSLATOR-LICENSE.txt"/>
@@ -69,8 +61,7 @@
             </manifest>
         </jar>
         <jar destfile="build/retrotranslator-transformer-${version}.jar">
-            <fileset dir="build/classes" includes="net/sf/retrotranslator/transformer/**"
-                     excludes="net/sf/retrotranslator/transformer/SignatureListGenerator.class"/>
+            <fileset dir="build/classes" includes="net/sf/retrotranslator/transformer/**" />
             <zipfileset file="doc/LICENSE.txt" fullpath="RETROTRANSLATOR-LICENSE.txt"/>
             <manifest>
                 <attribute name="Implementation-Title" value="Retrotranslator Transformer"/>

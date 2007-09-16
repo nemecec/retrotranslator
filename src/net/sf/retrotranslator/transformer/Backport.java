@@ -33,8 +33,6 @@ package net.sf.retrotranslator.transformer;
 
 import java.util.*;
 import java.util.regex.*;
-import java.io.*;
-import java.net.URL;
 
 /**
  * @author Taras Puchko
@@ -51,30 +49,18 @@ abstract class Backport {
             "\\s*((?:\\w+\\.)*\\p{Upper}\\w*)\\.(\\w+)\\s*:\\s*((?:\\w+\\.)*\\p{Upper}\\w*)\\.(\\w+)\\s*");
 
     public static List<Backport> asList(String s) {
-        List<Backport> result = new Vector<Backport>();
-        if (s != null) {
-            for (String token : s.split(";")) {
-                result.add(Backport.valueOf(token));
-            }
+        if (s == null) {
+            return new Vector<Backport>();
         }
-        return result;
+        return asList(Arrays.asList(s.split(";")));
     }
 
-    public static List<Backport> loadFromURL(URL url) throws IOException {
-        InputStream stream = url.openStream();
-        try {
-            List<Backport> result = new Vector<Backport>();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
-            String s;
-            while((s = reader.readLine()) != null) {
-                if (s.trim().length() > 0) {
-                    result.add(valueOf(s));
-                }
-            }
-            return result;
-        } finally {
-            stream.close();
+    public static List<Backport> asList(List<String> list) {
+        List<Backport> result = new Vector<Backport>();
+        for (String s : list) {
+            result.add(valueOf(s));
         }
+        return result;
     }
 
     private static Backport valueOf(String s) {

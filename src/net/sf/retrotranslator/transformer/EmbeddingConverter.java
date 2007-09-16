@@ -31,57 +31,94 @@
  */
 package net.sf.retrotranslator.transformer;
 
+import java.io.*;
+import java.net.URL;
 import java.util.*;
-import net.sf.retrotranslator.runtime.impl.RuntimeTools;
+import net.sf.retrotranslator.runtime.impl.*;
 
 /**
  * @author Taras Puchko
  */
 class EmbeddingConverter {
 
-    private static final String RUNTIME_PREFIX = "net/sf/retrotranslator/runtime";
-    private static final String CONCURRENT_PREFIX = "edu/emory/mathcs/backport";
+    private static final String JAR_FILE = "jar:file:";
 
-    private String embeddingPrefix;
-    private Map<String, Boolean> runtimeFileNames = new HashMap<String, Boolean>();
-    private Map<String, Boolean> concurrentFileNames = new HashMap<String, Boolean>();
+    private final String embeddingPrefix;
+    private final SystemLogger logger;
+    private final List<String> prefixes = new ArrayList<String>();
+    private final Map<String, Boolean> fileNames = new HashMap<String, Boolean>();
 
-    public EmbeddingConverter(String embed) {
-        this.embeddingPrefix = embed.replace('.', '/') + '/';
+    public EmbeddingConverter(ClassVersion target, String embed, SystemLogger systemLogger) {
+        embeddingPrefix = makePrefix(embed);
+        logger = systemLogger;
+        for (String packageName : TransformerTools.readFile("embed", target)) {
+            prefixes.add(makePrefix(packageName));
+        }
     }
 
-    public Map<String, Boolean> getRuntimeFileNames() {
-        return runtimeFileNames;
+    private static String makePrefix(String packageName) {
+        return packageName.replace('.', '/') + '/';
     }
 
-    public Map<String, Boolean> getConcurrentFileNames() {
-        return concurrentFileNames;
+    public Map<String, Boolean> getFileNames() {
+        return fileNames;
     }
 
     public String convertFileName(String fileName) {
-        return getMap(fileName) == null ? fileName : embeddingPrefix + fileName;
+        return isEmbedded(fileName) ? embeddingPrefix + fileName : fileName;
     }
 
     public String convertClassName(String className) {
-        Map<String, Boolean> map = getMap(className);
-        if (map == null) {
+        if (isEmbedded(className)) {
+            String key = className + RuntimeTools.CLASS_EXTENSION;
+            if (!fileNames.containsKey(key)) {
+                fileNames.put(key, Boolean.FALSE);
+            }
+            return embeddingPrefix + className;
+        } else {
             return className;
         }
-        String key = className + RuntimeTools.CLASS_EXTENSION;
-        if (!map.containsKey(key)) {
-            map.put(key, Boolean.FALSE);
-        }
-        return embeddingPrefix + className;
     }
 
-    private Map<String, Boolean> getMap(String name) {
-        if (name.startsWith(RUNTIME_PREFIX)) {
-            return runtimeFileNames;
+    private boolean isEmbedded(String name) {
+        for (String prefix : prefixes) {
+            if (name.startsWith(prefix)) {
+                return true;
+            }
         }
-        if (name.startsWith(CONCURRENT_PREFIX)) {
-            return concurrentFileNames;
+        return false;
+    }
+
+    public Collection<FileContainer> getContainers() {
+        List<FileContainer> result = new ArrayList<FileContainer>();
+        for (String prefix : prefixes) {
+            try {
+                Enumeration<URL> resources = TransformerTools.getDefaultClassLoader().getResources(prefix);
+                while (resources.hasMoreElements()) {
+                    String url = resources.nextElement().toExternalForm();
+                    FileContainer container = getContainer(url, "!/" + prefix);
+                    if (container != null) {
+                        result.add(container);
+                    }
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
-        return null;
+        return result;
+    }
+
+    private FileContainer getContainer(String url, String tail) {
+        if (!url.startsWith(JAR_FILE) || !url.endsWith(tail)) {
+            logger.log(new Message(Level.INFO, "Not in a jar file: " + url));
+            return null;
+        }
+        File file = new File(url.substring(JAR_FILE.length(), url.length() - tail.length()));
+        if (!file.isFile()) {
+            logger.log(new Message(Level.INFO, "File not found: " + file));
+            return null;
+        }
+        return new JarFileContainer(file);
     }
 
 }
