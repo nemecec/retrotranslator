@@ -33,7 +33,6 @@ package net.sf.retrotranslator.runtime.impl;
 
 import java.util.*;
 import edu.emory.mathcs.backport.java.util.Queue;
-import net.sf.retrotranslator.runtime.java.lang.Iterable_;
 
 
 /**
@@ -41,9 +40,7 @@ import net.sf.retrotranslator.runtime.java.lang.Iterable_;
  */
 public class SignatureList {
 
-    private static final Map<String, String> map = getMap(
-            getPrefix(Iterable_.class, "java/lang/Iterable_"),
-            getPrefix(Queue.class, "java/util/Queue"));
+    private static final Map<String, String> map = getMap();
 
     private SignatureList() {
     }
@@ -52,23 +49,21 @@ public class SignatureList {
         return map.get(className);
     }
 
-    private static String getPrefix(Class clazz, String suffix) {
-        String name = clazz.getName().replace('.', '/');
-        return name.endsWith(suffix) ? name.substring(0, name.length() - suffix.length()) : null;
-    }
-
-    private static Map<String, String> getMap(String runtime, String backport) {
+    private static Map<String, String> getMap() {
+        final String queueClassName = "java/util/Queue";
         Map<String, String> map = new Hashtable<String, String>();
-        if (runtime == null || backport == null) {
+        String name = Queue.class.getName().replace('.', '/');
+        if (!name.endsWith(queueClassName)) {
             return map;
         }
+        String prefix = name.substring(0, name.length() - queueClassName.length());
         map.put("java/util/Collection",
                 "<E:Ljava/lang/Object;>Ljava/lang/Object;");
         map.put("java/util/Set",
                 "<E:Ljava/lang/Object;>Ljava/lang/Object;Ljava/util/Collection<TE;>;");
         map.put("java/util/List",
                 "<E:Ljava/lang/Object;>Ljava/lang/Object;Ljava/util/Collection<TE;>;");
-        map.put(backport + "java/util/Queue",
+        map.put(prefix + "java/util/Queue",
                 "<E:Ljava/lang/Object;>Ljava/lang/Object;Ljava/util/Collection<TE;>;");
         map.put("java/util/Map",
                 "<K:Ljava/lang/Object;V:Ljava/lang/Object;>Ljava/lang/Object;");
@@ -76,9 +71,9 @@ public class SignatureList {
                 "<E:Ljava/lang/Object;>Ljava/lang/Object;Ljava/util/Set<TE;>;");
         map.put("java/util/SortedMap",
                 "<K:Ljava/lang/Object;V:Ljava/lang/Object;>Ljava/lang/Object;Ljava/util/Map<TK;TV;>;");
-        map.put(backport + "java/util/concurrent/BlockingQueue",
-                "<E:Ljava/lang/Object;>Ljava/lang/Object;L" + backport + "java/util/Queue<TE;>;");
-        map.put(backport + "java/util/concurrent/ConcurrentMap",
+        map.put(prefix + "java/util/concurrent/BlockingQueue",
+                "<E:Ljava/lang/Object;>Ljava/lang/Object;L" + prefix + "java/util/Queue<TE;>;");
+        map.put(prefix + "java/util/concurrent/ConcurrentMap",
                 "<K:Ljava/lang/Object;V:Ljava/lang/Object;>Ljava/lang/Object;Ljava/util/Map<TK;TV;>;");
         map.put("java/util/HashSet",
                 "<E:Ljava/lang/Object;>Ljava/util/AbstractSet<TE;>;" +
@@ -95,8 +90,8 @@ public class SignatureList {
         map.put("java/util/LinkedList",
                 "<E:Ljava/lang/Object;>Ljava/util/AbstractSequentialList<TE;>;" +
                         "Ljava/util/List<TE;>;Ljava/lang/Cloneable;Ljava/io/Serializable;");
-        map.put(backport + "java/util/PriorityQueue",
-                "<E:Ljava/lang/Object;>L" + backport + "java/util/AbstractQueue<TE;>;Ljava/io/Serializable;");
+        map.put(prefix + "java/util/PriorityQueue",
+                "<E:Ljava/lang/Object;>L" + prefix + "java/util/AbstractQueue<TE;>;Ljava/io/Serializable;");
         map.put("java/util/HashMap",
                 "<K:Ljava/lang/Object;V:Ljava/lang/Object;>Ljava/util/AbstractMap<TK;TV;>;" +
                         "Ljava/util/Map<TK;TV;>;Ljava/lang/Cloneable;Ljava/io/Serializable;");
@@ -116,36 +111,32 @@ public class SignatureList {
         map.put("java/util/IdentityHashMap",
                 "<K:Ljava/lang/Object;V:Ljava/lang/Object;>Ljava/util/AbstractMap<TK;TV;>;" +
                         "Ljava/util/Map<TK;TV;>;Ljava/io/Serializable;Ljava/lang/Cloneable;");
-        map.put(backport + "java/util/concurrent/CopyOnWriteArrayList",
+        map.put(prefix + "java/util/concurrent/CopyOnWriteArrayList",
                 "<E:Ljava/lang/Object;>Ljava/lang/Object;Ljava/util/List<TE;>;" +
                         "Ljava/util/RandomAccess;Ljava/lang/Cloneable;Ljava/io/Serializable;");
-        map.put(backport + "java/util/concurrent/CopyOnWriteArraySet",
+        map.put(prefix + "java/util/concurrent/CopyOnWriteArraySet",
                 "<E:Ljava/lang/Object;>Ljava/util/AbstractSet<TE;>;Ljava/io/Serializable;");
-        map.put(runtime + "java/util/EnumSet_",
-                "<E:L" + runtime + "java/lang/Enum_<TE;>;>Ljava/util/HashSet<TE;>;");
-        map.put(runtime + "java/util/EnumMap_",
-                "<K:L" + runtime + "java/lang/Enum_<TK;>;V:Ljava/lang/Object;>Ljava/util/TreeMap<TK;TV;>;");
-        map.put(backport + "java/util/concurrent/ConcurrentLinkedQueue",
-                "<E:Ljava/lang/Object;>L" + backport + "java/util/AbstractQueue<TE;>;L" +
-                        backport + "java/util/Queue<TE;>;Ljava/io/Serializable;");
-        map.put(backport + "java/util/concurrent/LinkedBlockingQueue",
-                "<E:Ljava/lang/Object;>L" + backport + "java/util/AbstractQueue<TE;>;L" +
-                        backport + "java/util/concurrent/BlockingQueue<TE;>;Ljava/io/Serializable;");
-        map.put(backport + "java/util/concurrent/ArrayBlockingQueue",
-                "<E:Ljava/lang/Object;>L" + backport + "java/util/AbstractQueue<TE;>;L" +
-                        backport + "java/util/concurrent/BlockingQueue<TE;>;Ljava/io/Serializable;");
-        map.put(backport + "java/util/concurrent/PriorityBlockingQueue",
-                "<E:Ljava/lang/Object;>L" + backport + "java/util/AbstractQueue<TE;>;L" +
-                        backport + "java/util/concurrent/BlockingQueue<TE;>;Ljava/io/Serializable;");
-        map.put(backport + "java/util/concurrent/DelayQueue",
-                "<E::L" + backport + "java/util/concurrent/Delayed;>L" + backport +
-                        "java/util/AbstractQueue<TE;>;L" + backport + "java/util/concurrent/BlockingQueue<TE;>;");
-        map.put(backport + "java/util/concurrent/SynchronousQueue",
-                "<E:Ljava/lang/Object;>L" + backport + "java/util/AbstractQueue<TE;>;L" +
-                        backport + "java/util/concurrent/BlockingQueue<TE;>;Ljava/io/Serializable;");
-        map.put(backport + "java/util/concurrent/ConcurrentHashMap",
-                "<K:Ljava/lang/Object;V:Ljava/lang/Object;>L" + backport + "java/util/AbstractMap<TK;TV;>;L" +
-                        backport + "java/util/concurrent/ConcurrentMap<TK;TV;>;Ljava/io/Serializable;");
+        map.put(prefix + "java/util/concurrent/ConcurrentLinkedQueue",
+                "<E:Ljava/lang/Object;>L" + prefix + "java/util/AbstractQueue<TE;>;L" +
+                        prefix + "java/util/Queue<TE;>;Ljava/io/Serializable;");
+        map.put(prefix + "java/util/concurrent/LinkedBlockingQueue",
+                "<E:Ljava/lang/Object;>L" + prefix + "java/util/AbstractQueue<TE;>;L" +
+                        prefix + "java/util/concurrent/BlockingQueue<TE;>;Ljava/io/Serializable;");
+        map.put(prefix + "java/util/concurrent/ArrayBlockingQueue",
+                "<E:Ljava/lang/Object;>L" + prefix + "java/util/AbstractQueue<TE;>;L" +
+                        prefix + "java/util/concurrent/BlockingQueue<TE;>;Ljava/io/Serializable;");
+        map.put(prefix + "java/util/concurrent/PriorityBlockingQueue",
+                "<E:Ljava/lang/Object;>L" + prefix + "java/util/AbstractQueue<TE;>;L" +
+                        prefix + "java/util/concurrent/BlockingQueue<TE;>;Ljava/io/Serializable;");
+        map.put(prefix + "java/util/concurrent/DelayQueue",
+                "<E::L" + prefix + "java/util/concurrent/Delayed;>L" + prefix +
+                        "java/util/AbstractQueue<TE;>;L" + prefix + "java/util/concurrent/BlockingQueue<TE;>;");
+        map.put(prefix + "java/util/concurrent/SynchronousQueue",
+                "<E:Ljava/lang/Object;>L" + prefix + "java/util/AbstractQueue<TE;>;L" +
+                        prefix + "java/util/concurrent/BlockingQueue<TE;>;Ljava/io/Serializable;");
+        map.put(prefix + "java/util/concurrent/ConcurrentHashMap",
+                "<K:Ljava/lang/Object;V:Ljava/lang/Object;>L" + prefix + "java/util/AbstractMap<TK;TV;>;L" +
+                        prefix + "java/util/concurrent/ConcurrentMap<TK;TV;>;Ljava/io/Serializable;");
         map.put("java/util/AbstractCollection",
                 "<E:Ljava/lang/Object;>Ljava/lang/Object;Ljava/util/Collection<TE;>;");
         map.put("java/util/AbstractSet",
@@ -154,15 +145,13 @@ public class SignatureList {
                 "<E:Ljava/lang/Object;>Ljava/util/AbstractCollection<TE;>;Ljava/util/List<TE;>;");
         map.put("java/util/AbstractSequentialList",
                 "<E:Ljava/lang/Object;>Ljava/util/AbstractList<TE;>;");
-        map.put(backport + "java/util/AbstractQueue",
-                "<E:Ljava/lang/Object;>L" + backport + "java/util/AbstractCollection<TE;>;L" +
-                        backport + "java/util/Queue<TE;>;");
+        map.put(prefix + "java/util/AbstractQueue",
+                "<E:Ljava/lang/Object;>L" + prefix + "java/util/AbstractCollection<TE;>;L" +
+                        prefix + "java/util/Queue<TE;>;");
         map.put("java/util/AbstractMap",
                 "<K:Ljava/lang/Object;V:Ljava/lang/Object;>Ljava/lang/Object;Ljava/util/Map<TK;TV;>;");
         map.put("java/util/Enumeration",
                 "<E:Ljava/lang/Object;>Ljava/lang/Object;");
-        map.put(runtime + "java/lang/Iterable_",
-                "<T:Ljava/lang/Object;>Ljava/lang/Object;");
         map.put("java/util/Iterator",
                 "<E:Ljava/lang/Object;>Ljava/lang/Object;");
         map.put("java/util/ListIterator",

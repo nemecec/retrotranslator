@@ -36,7 +36,6 @@
             <arg value="build/classes15"/>
             <arg value="-destdir"/>
             <arg value="build/classes14"/>
-            <arg value="-stripsign"/>
             <arg value="-backport"/>
             <arg value="net.sf.retrotranslator.transformer.ClassFileTransformer:sun.misc.ClassFileTransformer;
             net.sf.retrotranslator.transformer.ClassPreProcessor:com.bea.jvm.ClassPreProcessor"/>
