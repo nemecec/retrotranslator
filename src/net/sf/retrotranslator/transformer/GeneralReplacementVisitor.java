@@ -153,8 +153,8 @@ class GeneralReplacementVisitor extends GenericClassVisitor {
         MemberReplacement converter = replacement.getConverterReplacements().get(desc);
         if (converter != null) {
             visitor.visitMethodInsn(INVOKESTATIC, converter.getOwner(), converter.getName(), converter.getDesc());
-            desc = Type.getMethodDescriptor(Type.VOID_TYPE, new Type[]{Type.getReturnType(converter.getDesc())});
-            visitor.visitMethodInsn(INVOKESPECIAL, owner, CONSTRUCTOR_NAME, desc);
+            visitor.visitMethodInsn(INVOKESPECIAL, owner, CONSTRUCTOR_NAME,
+                    ClassReplacement.getConstructorDesc(converter));
             return true;
         }
         return false;
@@ -162,19 +162,18 @@ class GeneralReplacementVisitor extends GenericClassVisitor {
 
     private void buildInstance(MethodVisitor visitor, String owner, ConstructorReplacement replacement) {
         MemberReplacement creator = replacement.getCreator();
-        MemberReplacement[] arguments = replacement.getArguments();
-        MemberReplacement constructor = replacement.getConstructor();
-        MemberReplacement initializer = replacement.getInitializer();
         visitor.visitMethodInsn(INVOKESTATIC, creator.getOwner(), creator.getName(), creator.getDesc());
+        MemberReplacement initializer = replacement.getInitializer();
         if (initializer != null) {
             visitor.visitInsn(DUP2);
         }
+        MemberReplacement[] arguments = replacement.getArguments();
         if (arguments.length == 0) {
             visitor.visitInsn(POP);
         } else {
             pushArguments(visitor, arguments);
         }
-        visitor.visitMethodInsn(INVOKESPECIAL, owner, CONSTRUCTOR_NAME, constructor.getDesc());
+        visitor.visitMethodInsn(INVOKESPECIAL, owner, CONSTRUCTOR_NAME, replacement.getConstructorDesc());
         if (initializer != null) {
             visitor.visitInsn(SWAP);
             visitor.visitMethodInsn(INVOKEVIRTUAL,

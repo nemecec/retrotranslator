@@ -305,10 +305,9 @@ class ReplacementLocator {
         for (MemberReplacement argument : arguments) {
             types.add(Type.getReturnType(argument.getDesc()));
         }
-        MemberReplacement constructor = new MemberReplacement(classReplacement.getUniqueTypeName(),
-                RuntimeTools.CONSTRUCTOR_NAME, Type.getMethodDescriptor(Type.VOID_TYPE, types.toArray(new Type[0])));
+        String newConstructorDesc = Type.getMethodDescriptor(Type.VOID_TYPE, types.toArray(new Type[0]));
         replacements.put(constructorDesc, new ConstructorReplacement(replacement,
-                arguments.toArray(new MemberReplacement[0]), constructor, initializer));
+                arguments.toArray(new MemberReplacement[0]), newConstructorDesc, initializer));
     }
 
     private static boolean isArgument(MethodDescriptor descriptor) {

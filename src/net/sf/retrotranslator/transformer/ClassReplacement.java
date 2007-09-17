@@ -32,6 +32,7 @@
 package net.sf.retrotranslator.transformer;
 
 import java.util.*;
+import net.sf.retrotranslator.runtime.asm.Type;
 
 /**
  * @author Taras Puchko
@@ -119,4 +120,7 @@ class ClassReplacement {
         return Collections.synchronizedMap(new LinkedHashMap<K, V>());
     }
 
+    static String getConstructorDesc(MemberReplacement converter) {
+        return Type.getMethodDescriptor(Type.VOID_TYPE, new Type[]{Type.getReturnType(converter.getDesc())});
+    }
 }

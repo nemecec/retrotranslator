@@ -38,16 +38,16 @@ class ConstructorReplacement {
 
     private final MemberReplacement creator;
     private final MemberReplacement[] arguments;
-    private final MemberReplacement constructor;
+    private final String constructorDesc;
     private final MemberReplacement initializer;
 
     public ConstructorReplacement(MemberReplacement creator,
                                   MemberReplacement[] arguments,
-                                  MemberReplacement constructor,
+                                  String constructorDesc,
                                   MemberReplacement initializer) {
         this.creator = creator;
         this.arguments = arguments;
-        this.constructor = constructor;
+        this.constructorDesc = constructorDesc;
         this.initializer = initializer;
     }
 
@@ -59,8 +59,8 @@ class ConstructorReplacement {
         return arguments;
     }
 
-    public MemberReplacement getConstructor() {
-        return constructor;
+    public String getConstructorDesc() {
+        return constructorDesc;
     }
 
     public MemberReplacement getInitializer() {

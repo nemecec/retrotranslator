@@ -42,6 +42,7 @@ public class SmartReplacementVisitor extends EmptyVisitor {
 
     private final ReplacementLocator locator;
     private boolean enabled;
+    private Set<String> constructorDescriptors = new HashSet<String>();
     private Map<MemberKey, MemberReplacement> fieldReplacements;
     private Map<MemberKey, MemberReplacement> methodReplacements;
     private Map<String, MemberReplacement> converterReplacements;
@@ -64,10 +65,32 @@ public class SmartReplacementVisitor extends EmptyVisitor {
 
     public void addInheritedMembers(ClassReplacement replacement) {
         if (enabled) {
+            cleanConstructorReplacements();
+            cleanConverterReplacements();
             copyIfAbsent(fieldReplacements, replacement.getFieldReplacements());
             copyIfAbsent(methodReplacements, replacement.getMethodReplacements());
             copyIfAbsent(converterReplacements, replacement.getConverterReplacements());
             copyIfAbsent(constructorReplacements, replacement.getConstructorReplacements());
+        }
+    }
+
+    private void cleanConstructorReplacements() {
+        Iterator<ConstructorReplacement> iterator = constructorReplacements.values().iterator();
+        while (iterator.hasNext()) {
+            ConstructorReplacement replacement = iterator.next();
+            if (!constructorDescriptors.contains(replacement.getConstructorDesc())) {
+                iterator.remove();
+            }
+        }
+    }
+
+    private void cleanConverterReplacements() {
+        Iterator<MemberReplacement> iterator = converterReplacements.values().iterator();
+        while (iterator.hasNext()) {
+            MemberReplacement replacement = iterator.next();
+            if (!constructorDescriptors.contains(ClassReplacement.getConstructorDesc(replacement))) {
+                iterator.remove();
+            }
         }
     }
 
@@ -99,6 +122,7 @@ public class SmartReplacementVisitor extends EmptyVisitor {
         if (enabled) {
             String descriptor = translator.methodDescriptor(desc);
             if (name.equals(RuntimeTools.CONSTRUCTOR_NAME)) {
+                constructorDescriptors.add(descriptor);
                 converterReplacements.remove(descriptor);
                 constructorReplacements.remove(descriptor);
             } else {
