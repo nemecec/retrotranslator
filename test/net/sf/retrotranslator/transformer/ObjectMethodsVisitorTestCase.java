@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
+ *
  * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
@@ -31,29 +31,67 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import net.sf.retrotranslator.runtime.asm.*;
+import junit.framework.TestCase;
 
 /**
  * @author Taras Puchko
  */
-class ArrayCloningVisitor extends ClassAdapter {
+public class ObjectMethodsVisitorTestCase extends TestCase {
 
-    public ArrayCloningVisitor(ClassVisitor visitor) {
-        super(visitor);
+    public interface BaseInterface {
+
+        Object clone() throws CloneNotSupportedException;
+
+        boolean equals(Object obj);
+
+        void finalize() throws Throwable;
+
+        int hashCode();
+
+        void method();
+
+        String toString();
     }
 
-    public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-        MethodVisitor visitor = super.visitMethod(access, name, desc, signature, exceptions);
-        return visitor == null ? null : new MethodAdapter(visitor) {
-
-            public void visitMethodInsn(int opcode, String owner, String name, String desc) {
-                if (opcode == Opcodes.INVOKEVIRTUAL && owner.charAt(0) == '[' &&
-                        name.equals("clone") && desc.equals(TransformerTools.descriptor(Object.class))) {
-                    owner = Type.getInternalName(Object.class);
-                }
-                super.visitMethodInsn(opcode, owner, name, desc);
-            }
-
-        };
+    public interface DerivedInterface extends BaseInterface {
     }
+
+    public static class ClonableClass implements DerivedInterface, Cloneable {
+
+        public Object clone() throws CloneNotSupportedException {
+            return super.clone();
+        }
+
+        public void finalize() throws Throwable {
+            super.finalize();
+        }
+
+        public int hashCode() {
+            return super.hashCode();
+        }
+
+        public void method() {
+        }
+
+    }
+
+    public void testObjectMethods() throws Throwable {
+        DerivedInterface ref = new ClonableClass();
+        ref.method();
+        ref.hashCode();
+        ref.equals("");
+        ref.toString();
+        ref.clone();
+        ref.finalize();
+    }
+
+    public void testArrayClone() throws Throwable {
+        int[] a = {10, 20};
+        int[] b = a.clone();
+        assertNotSame(a, b);
+        assertEquals(2, b.length);
+        assertEquals(10, b[0]);
+        assertEquals(20, b[1]);
+    }
+
 }

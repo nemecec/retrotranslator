@@ -59,6 +59,10 @@ class ReplacementLocator {
         this.classReaderFactory = classReaderFactory;
     }
 
+    public ClassReaderFactory getClassReaderFactory() {
+        return classReaderFactory;
+    }
+
     public ClassReplacement getReplacement(String className) {
         if (className == null || className.length() == 0 || className.charAt(0) == '[') {
             return null;
@@ -365,6 +369,19 @@ class ReplacementLocator {
         if (!map.containsKey(key)) {
             map.put(key, value);
         }
+    }
+
+    public NameTranslator getTranslator() {
+        return new NameTranslator() {
+
+            protected String identifier(String s) {
+                return fixIdentifier(s);
+            }
+
+            protected String typeName(String s) {
+                return getReferenceTypeName(s);
+            }
+        };
     }
 
 }

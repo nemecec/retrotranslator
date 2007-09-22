@@ -34,7 +34,7 @@ package net.sf.retrotranslator.transformer;
 /**
  * @author Taras Puchko
  */
-public final class MemberKey {
+final class MemberKey {
 
     private final boolean statical;
     private final String name;

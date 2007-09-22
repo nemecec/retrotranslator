@@ -37,66 +37,66 @@ import net.sf.retrotranslator.runtime.impl.EmptyVisitor;
 /**
  * @author Taras Puchko
  */
-public class InheritedConstantVisitor extends ClassAdapter {
+class InheritedConstantVisitor extends ClassAdapter {
 
-    private final ClassReaderFactory factory;
+    private final ReplacementLocator locator;
 
-    public InheritedConstantVisitor(ClassVisitor visitor, ClassReaderFactory factory) {
+    public InheritedConstantVisitor(ClassVisitor visitor, ReplacementLocator locator) {
         super(visitor);
-        this.factory = factory;
+        this.locator = locator;
     }
 
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         MethodVisitor visitor = super.visitMethod(access, name, desc, signature, exceptions);
-        return visitor == null ? null : new InheritedConstantMethodVisitor(visitor);
+        return visitor == null ? null : new MethodAdapter(visitor) {
+            public void visitFieldInsn(int opcode, String owner, String name, String desc) {
+                super.visitFieldInsn(opcode, fixFieldOwner(opcode, owner, name), name, desc);
+            }
+        };
     }
 
-    private String getDeclaringInterface(String className, String constantName) {
-        ClassReader classReader = factory.findClassReader(className);
+    private String fixFieldOwner(int opcode, String owner, String name) {
+        if (opcode == Opcodes.GETSTATIC) {
+            String fieldOwner = findFieldOwner(owner, name);
+            if (fieldOwner != null) {
+                return fieldOwner;
+            }
+        }
+        return owner;
+    }
+
+    private String findFieldOwner(String className, String fieldName) {
+        String uniqueTypeName = locator.getUniqueTypeName(className);
+        ClassReader classReader = locator.getClassReaderFactory().findClassReader(uniqueTypeName);
         if (classReader == null) {
             return null;
         }
-        ConstantSearchingVisitor visitor = new ConstantSearchingVisitor(constantName);
+        FieldSearchingVisitor visitor = new FieldSearchingVisitor(fieldName);
         classReader.accept(visitor, true);
-        if (visitor.constantFound) {
-            return (visitor.access & Opcodes.ACC_INTERFACE) != 0 ? className : null;
+        if (visitor.fieldFound) {
+            return (visitor.access & Opcodes.ACC_INTERFACE) != 0 ? uniqueTypeName : null;
         }
-        for (String interfaceName : visitor.interfaces) {
-            String result = getDeclaringInterface(interfaceName, constantName);
-            if (result != null) {
-                return result;
-            }
-        }
-        return visitor.superName != null ? getDeclaringInterface(visitor.superName, constantName) : null;
-    }
-
-    private class InheritedConstantMethodVisitor extends MethodAdapter {
-
-        public InheritedConstantMethodVisitor(MethodVisitor visitor) {
-            super(visitor);
-        }
-
-        public void visitFieldInsn(int opcode, String owner, String name, String desc) {
-            if (opcode == Opcodes.GETSTATIC) {
-                String declaringInterface = getDeclaringInterface(owner, name);
-                if (declaringInterface != null) {
-                    owner = declaringInterface;
+        if (visitor.interfaces != null) {
+            for (String interfaceName : visitor.interfaces) {
+                String result = findFieldOwner(interfaceName, fieldName);
+                if (result != null) {
+                    return result;
                 }
             }
-            super.visitFieldInsn(opcode, owner, name, desc);
         }
+        return visitor.superName != null ? findFieldOwner(visitor.superName, fieldName) : null;
     }
 
-    private class ConstantSearchingVisitor extends EmptyVisitor {
+    private class FieldSearchingVisitor extends EmptyVisitor {
 
-        private final String constantName;
-        public boolean constantFound;
+        private final String fieldName;
+        public boolean fieldFound;
         public int access;
         public String superName;
         public String[] interfaces;
 
-        public ConstantSearchingVisitor(String fieldName) {
-            this.constantName = fieldName;
+        public FieldSearchingVisitor(String fieldName) {
+            this.fieldName = fieldName;
         }
 
         public void visit(int version, int access, String name,
@@ -107,8 +107,8 @@ public class InheritedConstantVisitor extends ClassAdapter {
         }
 
         public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
-            if (name.equals(constantName) && (access & Opcodes.ACC_STATIC) != 0) {
-                constantFound = true;
+            if (name.equals(fieldName) && (access & Opcodes.ACC_STATIC) != 0) {
+                fieldFound = true;
             }
             return null;
         }

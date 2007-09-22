@@ -60,7 +60,7 @@ class GeneralReplacementVisitor extends GenericClassVisitor {
     }
 
     protected String identifier(String s) {
-        return s == null ? null : s.replace('+', '$');
+        return fixIdentifier(s);
     }
 
     protected String typeName(String s) {

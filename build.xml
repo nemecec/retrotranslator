@@ -60,7 +60,7 @@
             </manifest>
         </jar>
         <jar destfile="build/retrotranslator-transformer-${version}.jar">
-            <fileset dir="build/classes" includes="net/sf/retrotranslator/transformer/**" />
+            <fileset dir="build/classes" includes="net/sf/retrotranslator/transformer/**"/>
             <zipfileset file="doc/LICENSE.txt" fullpath="RETROTRANSLATOR-LICENSE.txt"/>
             <manifest>
                 <attribute name="Implementation-Title" value="Retrotranslator Transformer"/>
@@ -103,8 +103,8 @@
                classpathref="classpath" classpath="build/classes15" includes="**/*Java6*"/>
     </target>
 
-    <target name="test" depends="test-java12, test-java13, test-translated, test-with-jit, test-embedded,
-    test-retainapi, test-support, test-custom-backport, test-duplicates"/>
+    <target name="test" depends="test-java13, test-java12, test-java11, test-translated, test-with-jit,
+            test-embedded, test-retainapi, test-support, test-custom-backport, test-duplicates"/>
 
     <target name="test-translated" depends="compile-tests">
         <mkdir dir="build/test-classes14"/>
@@ -136,6 +136,15 @@
         </antcall>
     </target>
 
+    <target name="test-java11" depends="compile-tests" if="java11_home">
+        <antcall target="test-lang">
+            <param name="target" value="1.1"/>
+            <param name="java_home" value="${java11_home}"/>
+            <param name="test_dir" value="build/test-classes11"/>
+            <param name="additional_classpath" value="${java11_rt_jar}"/>
+        </antcall>
+    </target>
+
     <target name="test-lang">
         <mkdir dir="${test_dir}"/>
         <copy todir="${test_dir}">
@@ -144,29 +153,44 @@
                 <include name="**/ClassLiteralVisitorTestCase*"/>
                 <include name="**/MyConstants*"/>
                 <include name="**/InheritedConstantVisitorTestCase*"/>
+                <include name="**/ObjectMethodsVisitorTestCase*"/>
+                <include name="**/Miranda*"/>
             </fileset>
         </copy>
-        <retrotranslator srcdir="${test_dir}" target="${target}" />
+        <retrotranslator srcdir="${test_dir}" target="${target}"/>
         <echo message="Running classes in ${test_dir} on ${java_home}"/>
-        <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
-               jvm="${java_home}/bin/java" failureproperty="test.failed">
-            <jvmarg value="-Xfuture"/>
+        <antcall target="test-class">
+            <param name="simple_name" value="InnerClassVisitorTestCase"/>
+        </antcall>
+        <antcall target="test-class">
+            <param name="simple_name" value="ClassLiteralVisitorTestCase"/>
+        </antcall>
+        <antcall target="test-class">
+            <param name="simple_name" value="InheritedConstantVisitorTestCase"/>
+        </antcall>
+        <antcall target="test-class">
+            <param name="simple_name" value="ObjectMethodsVisitorTestCase"/>
+        </antcall>
+        <antcall target="test-class">
+            <param name="simple_name" value="MirandaMethodsVisitorTestCase"/>
+        </antcall>
+    </target>
+
+    <target name="test-class">
+        <java classname="junit.textui.TestRunner" jvm="${java_home}/bin/java" fork="true" failonerror="true">
             <classpath>
+                <path path="${additional_classpath}"/>
                 <path refid="classpath"/>
                 <pathelement location="${test_dir}"/>
             </classpath>
-            <formatter type="brief" usefile="false"/>
-            <batchtest>
-                <fileset dir="${test_dir}" includes="**/*TestCase.class" />
-            </batchtest>
-        </junit>
-        <fail if="test.failed"/>
+            <arg value="net.sf.retrotranslator.transformer.${simple_name}"/>
+        </java>
     </target>
 
     <target name="test-embedded" depends="compile-tests">
         <mkdir dir="build/test-embedded"/>
         <jar destfile="build/test-embedded.jar">
-            <fileset dir="build/test-classes15" />
+            <fileset dir="build/test-classes15"/>
         </jar>
         <retrotranslator destdir="build/test-embedded" advanced="true"
                          embed="com.mycompany.internal" srcmask="*.class;*.properties">

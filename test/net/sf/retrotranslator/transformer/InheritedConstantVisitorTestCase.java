@@ -54,6 +54,9 @@ public class InheritedConstantVisitorTestCase extends TestCase {
     private class IndirectDerivedClass implements DerivedInterface {
     }
 
+    private class DirectSubClass extends DirectClass {
+    }
+
     public void test_BaseInterface() {
         assertEquals(getMessage(), BaseInterface.MY_STRINGS[0]);
     }
@@ -72,6 +75,10 @@ public class InheritedConstantVisitorTestCase extends TestCase {
 
     public void test_IndirectDerivedClass() {
         assertEquals(getMessage(), IndirectDerivedClass.MY_STRINGS[0]);
+    }
+
+    public void test_DirectSubClass() {
+        assertEquals(getMessage(), DirectSubClass.MY_STRINGS[0]);
     }
 
     private static String getMessage() {

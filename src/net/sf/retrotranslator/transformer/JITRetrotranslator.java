@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
+ *
  * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
@@ -66,9 +66,11 @@ public class JITRetrotranslator {
     public boolean run() {
         OperationMode mode = new OperationMode(advanced, support, smart);
         if (isJava5Supported()) return true;
-        ReplacementLocatorFactory factory = new ReplacementLocatorFactory(ClassVersion.VERSION_14, mode, false,
-                Backport.asList(backport), new ClassReaderFactory(TransformerTools.getDefaultClassLoader(), null));
-        ClassTransformer transformer = new ClassTransformer(true, false, false, null, null, factory);
+        ClassReaderFactory classReaderFactory = new ClassReaderFactory(
+                TransformerTools.getDefaultClassLoader(), null, true);
+        ReplacementLocatorFactory replacementLocatorFactory = new ReplacementLocatorFactory(
+                ClassVersion.VERSION_14, mode, false, Backport.asList(backport), classReaderFactory);
+        ClassTransformer transformer = new ClassTransformer(true, false, false, null, null, replacementLocatorFactory);
         ClassDescriptor.setBytecodeTransformer(transformer);
         SunJITRetrotranslator.install(transformer);
         if (isJava5Supported()) return true;

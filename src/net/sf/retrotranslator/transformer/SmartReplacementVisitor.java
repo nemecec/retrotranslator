@@ -38,9 +38,10 @@ import net.sf.retrotranslator.runtime.impl.*;
 /**
  * @author Taras Puchko
  */
-public class SmartReplacementVisitor extends EmptyVisitor {
+class SmartReplacementVisitor extends EmptyVisitor {
 
     private final ReplacementLocator locator;
+    private final NameTranslator translator;
     private boolean enabled;
     private Set<String> constructorDescriptors = new HashSet<String>();
     private Map<MemberKey, MemberReplacement> fieldReplacements;
@@ -48,19 +49,9 @@ public class SmartReplacementVisitor extends EmptyVisitor {
     private Map<String, MemberReplacement> converterReplacements;
     private Map<String, ConstructorReplacement> constructorReplacements;
 
-    private final NameTranslator translator = new NameTranslator() {
-
-        protected String identifier(String s) {
-            return s == null ? null : s.replace('+', '$');
-        }
-
-        protected String typeName(String s) {
-            return locator.getReferenceTypeName(s);
-        }
-    };
-
     public SmartReplacementVisitor(ReplacementLocator locator) {
         this.locator = locator;
+        this.translator = locator.getTranslator();
     }
 
     public void addInheritedMembers(ClassReplacement replacement) {

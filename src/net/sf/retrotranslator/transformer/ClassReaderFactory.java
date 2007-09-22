@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
+ *
  * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
@@ -45,12 +45,14 @@ class ClassReaderFactory {
 
     private ClassLoader classLoader;
     private final SystemLogger logger;
+    private final boolean contextual;
     private List<Entry> entries = new ArrayList<Entry>();
     private SoftReference<Map<String, ClassReader>> cacheReference;
 
-    public ClassReaderFactory(ClassLoader classLoader, SystemLogger logger) {
+    public ClassReaderFactory(ClassLoader classLoader, SystemLogger logger, boolean contextual) {
         this.classLoader = classLoader;
         this.logger = logger;
+        this.contextual = contextual;
     }
 
     public void appendPath(File element) {
@@ -105,7 +107,22 @@ class ClassReaderFactory {
             InputStream stream = entry.getResourceAsStream(name);
             if (stream != null) return stream;
         }
-        return classLoader == null ? null : classLoader.getResourceAsStream(name);
+        if (classLoader != null) {
+            InputStream stream = classLoader.getResourceAsStream(name);
+            if (stream != null) {
+                return stream;
+            }
+        }
+        if (contextual) {
+            ClassLoader loader = Thread.currentThread().getContextClassLoader();
+            if (loader != null) {
+                InputStream stream = loader.getResourceAsStream(name);
+                if (stream != null) {
+                    return stream;
+                }
+            }
+        }
+        return null;
     }
 
     public void close() {

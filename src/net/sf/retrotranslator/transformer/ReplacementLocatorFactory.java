@@ -72,10 +72,6 @@ class ReplacementLocatorFactory {
         return retainapi;
     }
 
-    public ClassReaderFactory getClassReaderFactory() {
-        return classReaderFactory;
-    }
-
     public synchronized ReplacementLocator getLocator() {
         ReplacementLocator locator = softReference.get();
         if (locator == null) {

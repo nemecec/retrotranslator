@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
+ *
  * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
@@ -31,52 +31,12 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import java.util.*;
-
 /**
  * @author Taras Puchko
  */
-class ClassVersion {
+public class MirandaTestClass {
 
-    private static Map<String, ClassVersion> VALUES = new Hashtable<String, ClassVersion>();
-
-    public static final ClassVersion VERSION_11 = new ClassVersion("1.1", 45, 3);
-    public static final ClassVersion VERSION_12 = new ClassVersion("1.2", 46, 0);
-    public static final ClassVersion VERSION_13 = new ClassVersion("1.3", 47, 0);
-    public static final ClassVersion VERSION_14 = new ClassVersion("1.4", 48, 0);
-    public static final ClassVersion VERSION_15 = new ClassVersion("1.5", 49, 0);
-    
-    private String name;
-    private int version;
-
-    private ClassVersion(String name, int majorVersion, int minorVersion) {
-        this.name = name;
-        this.version = majorVersion | minorVersion << 16;
-        VALUES.put(name, this);
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public int getVersion() {
-        return version;
-    }
-
-    public static ClassVersion valueOf(String name) {
-        ClassVersion result = VALUES.get(name);
-        if (result == null) {
-            throw new IllegalArgumentException("Unsupported target: " + name);
-        }
-        return result;
-    }
-
-    public boolean isBefore(ClassVersion classVersion) {
-        return isBefore(classVersion.getVersion());
-    }
-
-    public boolean isBefore(int other) {
-        return (version & 0xFFFF) < (other & 0xFFFF);
+    private void method(StringBuilder builder) throws Exception {
     }
 
 }

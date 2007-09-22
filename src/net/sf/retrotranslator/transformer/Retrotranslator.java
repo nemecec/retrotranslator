@@ -207,7 +207,7 @@ public class Retrotranslator {
         if (loader == null && classpath.isEmpty()) {
             loader = TransformerTools.getDefaultClassLoader();
         }
-        ClassReaderFactory factory = new ClassReaderFactory(loader, logger);
+        ClassReaderFactory factory = new ClassReaderFactory(loader, logger, false);
         if (destination != null) {
             factory.appendPath(destination.getLocation());
         } else {

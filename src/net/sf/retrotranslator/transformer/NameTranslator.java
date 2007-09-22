@@ -43,6 +43,10 @@ class NameTranslator {
         return s;
     }
 
+    protected static String fixIdentifier(String s) {
+        return s == null ? null : s.replace('+', '$');
+    }
+
     protected String typeName(String s) {
         return s;
     }

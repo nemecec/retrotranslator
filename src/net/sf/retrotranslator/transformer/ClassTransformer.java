@@ -71,14 +71,17 @@ class ClassTransformer implements BytecodeTransformer {
         ClassWriter classWriter = new ClassWriter(true);
         ClassVisitor visitor = new InstantiationAnalysisVisitor(classWriter, locator, pointListMap, logger);
         visitor = new DuplicateInterfacesVisitor(new VersionVisitor(visitor, target), logger, counter);
+        if (target.isBefore(ClassVersion.VERSION_12)) {
+            visitor = new MirandaMethodsVisitor(visitor, locator);
+        }
         if (target.isBefore(ClassVersion.VERSION_13)) {
-            visitor = new InheritedConstantVisitor(visitor, factory.getClassReaderFactory());
+            visitor = new InheritedConstantVisitor(visitor, locator);
         }
         if (target.isBefore(ClassVersion.VERSION_14)) {
             visitor = new InnerClassVisitor(visitor);
         }
         if (target.isBefore(ClassVersion.VERSION_15)) {
-            visitor = new ArrayCloningVisitor(new ClassLiteralVisitor(visitor));
+            visitor = new ObjectMethodsVisitor(new ClassLiteralVisitor(visitor), locator);
         }
         if (!factory.isRetainapi()) {
             visitor = new SpecificReplacementVisitor(visitor, target, locator, factory.getMode());
