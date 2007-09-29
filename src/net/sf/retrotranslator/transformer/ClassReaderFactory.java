@@ -64,9 +64,7 @@ class ClassReaderFactory {
         try {
             return getClassReader(className);
         } catch (ClassNotFoundException e) {
-            if (logger != null) {
-                logger.logForFile(Level.INFO, "Cannot find " + className.replace('/', '.'));
-            }
+            logger.logForFile(Level.INFO, "Cannot find " + className.replace('/', '.'));
             return null;
         }
     }

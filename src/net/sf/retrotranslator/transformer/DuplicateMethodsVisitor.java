@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
+ *
  * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
@@ -65,12 +65,10 @@ class DuplicateMethodsVisitor extends ClassAdapter {
     }
 
     private void log(int access, String name) {
-        if (logger != null) {
-            if (isBridge(access)) {
-                logger.logForFile(Level.VERBOSE, "Bridge method removed: " + name);
-            } else {
-                logger.logForFile(Level.WARNING, "Repetitive method removed: " + name);
-            }
+        if (isBridge(access)) {
+            logger.logForFile(Level.VERBOSE, "Bridge method removed: " + name);
+        } else {
+            logger.logForFile(Level.WARNING, "Repetitive method removed: " + name);
         }
     }
 

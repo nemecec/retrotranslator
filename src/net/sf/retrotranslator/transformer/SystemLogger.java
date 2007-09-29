@@ -55,9 +55,6 @@ class SystemLogger implements MessageLogger {
     }
 
     public void logForFile(Level level, String text) {
-        if (fileLocation == null || fileName == null) {
-            throw new NullPointerException();
-        }
         log(new Message(level, text, fileLocation, fileName));
     }
 

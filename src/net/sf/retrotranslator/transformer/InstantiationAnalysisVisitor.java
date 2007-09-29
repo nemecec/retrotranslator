@@ -174,10 +174,8 @@ class InstantiationAnalysisVisitor extends ClassAdapter {
                 return;
             }
             if (point == null || point.getDuplicationIndex() == 0) {
-                if (logger != null) {
-                    logger.logForFile(Level.WARNING, "Cannot translate " +
-                            owner.replace('/', '.') + " constructor call in " + methodName + " method.");
-                }
+                logger.logForFile(Level.WARNING, "Cannot translate " +
+                        owner.replace('/', '.') + " constructor call in " + methodName + " method.");
                 return;
             }
             point.setInitializationIndex(initializationIndex);
@@ -192,9 +190,7 @@ class InstantiationAnalysisVisitor extends ClassAdapter {
                     pointListMap.put(methodName + methodDesc, points);
                 }
             } else {
-                if (logger != null) {
-                    logger.logForFile(Level.INFO, "Cannot analyze " + methodName + " method.");
-                }
+                logger.logForFile(Level.INFO, "Cannot analyze " + methodName + " method.");
             }
         }
     }

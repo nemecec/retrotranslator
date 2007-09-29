@@ -64,7 +64,7 @@ class DuplicateInterfacesVisitor extends ClassAdapter {
         if (values == null) return null;
         Set<String> set = new LinkedHashSet<String>();
         for (String s : values) {
-            if (!set.add(s) && logger != null) {
+            if (!set.add(s)) {
                 logger.logForFile(Level.VERBOSE, "Repetitive interface name removed: " + s.replace('/', '.'));
             }
         }
