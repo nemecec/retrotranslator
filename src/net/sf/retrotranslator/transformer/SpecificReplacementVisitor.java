@@ -216,6 +216,9 @@ class SpecificReplacementVisitor extends ClassAdapter {
         if (!target.isBefore(ClassVersion.VERSION_15)) {
             return null;
         }
+        if (target.isBefore(ClassVersion.VERSION_12)) {
+            return null;
+        }
         if (methodName.equals("emptyList")) {
             return "EMPTY_LIST";
         }
