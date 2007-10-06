@@ -168,14 +168,22 @@ class ClassReaderFactory {
         }
 
         public InputStream getResourceAsStream(String name) {
+            if (zipFile == null) {
+                openZipFile();
+            }
             try {
-                if (zipFile == null) {
-                    zipFile = new ZipFile(file);
-                }
                 ZipEntry entry = zipFile.getEntry(name);
                 return entry == null ? null : zipFile.getInputStream(entry);
             } catch (IOException e) {
                 throw new RuntimeException(e);
+            }
+        }
+
+        private void openZipFile() {
+            try {
+                zipFile = new ZipFile(file);
+            } catch (IOException e) {
+                throw new RuntimeException("Cannot open zip file: " + file.getAbsolutePath(), e);
             }
         }
 

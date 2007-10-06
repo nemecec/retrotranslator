@@ -166,11 +166,11 @@ public class Retrotranslator {
 
     public boolean run() {
         SystemLogger systemLogger = new SystemLogger(getMessageLogger(), verbose);
-        if (src.isEmpty()) throw new IllegalArgumentException("Source not set.");
+        if (src.isEmpty()) throw new IllegalArgumentException("No files to translate.");
         EmbeddingConverter converter = null;
         if (embed != null) {
-            if (dest == null) throw new IllegalArgumentException("Destination required for embedding!");
-            if (lazy) throw new IllegalArgumentException("Embedding cannot be lazy!");
+            if (dest == null) throw new IllegalArgumentException("Destination required for embedding.");
+            if (lazy) throw new IllegalArgumentException("Embedding cannot be lazy.");
             converter = new EmbeddingConverter(target, embed, systemLogger);
         }
         OperationMode mode = new OperationMode(advanced, support, smart);
@@ -247,17 +247,19 @@ public class Retrotranslator {
         systemLogger.log(new Message(Level.INFO,
                 "Verifying " + container.getFileCount() + " file(s) in " + container + "."));
         int warningCount = 0;
+        int fileCount = 0;
         for (final FileEntry entry : container.getEntries()) {
-            if (sourceMask.matches(entry.getName())) {
+            if (sourceMask.matches(entry.getName()) && (!lazy || entry.isModified())) {
                 byte[] content = entry.getContent();
                 if (TransformerTools.isClassFile(content)) {
                     systemLogger.setFile(container.getLocation(), entry.getName());
                     systemLogger.logForFile(Level.VERBOSE, "Verification");
-                    warningCount += new ReferenceVerifyingVisitor(factory, systemLogger).verify(content);
+                    fileCount++;
+                    warningCount += new ReferenceVerifyingVisitor(target, factory, systemLogger).verify(content);
                 }
             }
         }
-        systemLogger.log(new Message(Level.INFO, "Verified " + container.getFileCount() + " file(s)" +
+        systemLogger.log(new Message(Level.INFO, "Verified " + fileCount + " file(s)" +
                 (warningCount == 0 ? "." : " with " + warningCount + " warning(s).")));
     }
 

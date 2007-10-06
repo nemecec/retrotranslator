@@ -91,13 +91,13 @@ class FileTranslator {
                 if (!fixedName.equals(name)) {
                     destination.removeEntry(name);
                 }
-                destination.putEntry(fixedName, resultData);
+                destination.putEntry(fixedName, resultData, transformed);
             }
             if (transformed) {
                 countTransformed++;
             }
         } else if (source != destination) {
-            destination.putEntry(name, entry.getContent());
+            destination.putEntry(name, entry.getContent(), false);
         }
     }
 

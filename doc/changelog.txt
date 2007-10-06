@@ -7,12 +7,15 @@ Retrotranslator Changelog
   - New option -smart to make backports inheritable.
   - Support for Java 5 methods of java.util.Properties.
   - Support for Java 5 methods of javax.net.ssl.HttpsURLConnection.
+  - Support for SecurityException(String, Throwable), SecurityException(Throwable).
   - Limited support for java.lang.Thread.getState() and java.lang.Thread.getAllStackTraces().
   - Limited support for Java 5 methods of java.net.URLConnection and java.net.HttpURLConnection.
   - Limited support for java.util.Timer(String), java.util.Timer(String, boolean), java.util.Timer.purge().
   - Improved the -uptodatecheck functionality, especially when translating jars.
   - Fixed a bug: Interface methods that override methods from java.lang.Object didn't work in certain cases.
   - Fixed a bug: Missing constructors passed verification if such constructors had been present in base classes.
+  - Added a warning for a case when wrong classes are used for the verification.
+  - With the -lazy option only translated classes are verified.
   - Upgraded to backport-util-concurrent 3.1.
 
 1.2.2 (2007-06-25)

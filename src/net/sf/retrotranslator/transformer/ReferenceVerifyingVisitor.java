@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
+ *
  * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
@@ -40,12 +40,14 @@ import net.sf.retrotranslator.runtime.impl.*;
  */
 class ReferenceVerifyingVisitor extends GenericClassVisitor {
 
+    private final ClassVersion target;
     private ClassReaderFactory factory;
     private SystemLogger logger;
     private Set<String> warnings;
 
-    public ReferenceVerifyingVisitor(ClassReaderFactory factory, SystemLogger logger) {
+    public ReferenceVerifyingVisitor(ClassVersion target, ClassReaderFactory factory, SystemLogger logger) {
         super(new EmptyVisitor());
+        this.target = target;
         this.factory = factory;
         this.logger = logger;
     }
@@ -56,7 +58,18 @@ class ReferenceVerifyingVisitor extends GenericClassVisitor {
         return warnings.size();
     }
 
-    protected  String typeName(String s) {
+    public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
+        checkVersion(version, name);
+        super.visit(version, access, name, signature, superName, interfaces);
+    }
+
+    private void checkVersion(int version, String name) {
+        if (target.isBefore(version)) {
+            println("Incompatible class: " + getClassInfo(name));
+        }
+    }
+
+    protected String typeName(String s) {
         if (s == null) return null;
         try {
             factory.getClassReader(s);
@@ -74,7 +87,7 @@ class ReferenceVerifyingVisitor extends GenericClassVisitor {
         super.visitFieldInstruction(visitor, opcode, owner, name, desc);
         boolean stat = (opcode == Opcodes.GETSTATIC || opcode == Opcodes.PUTSTATIC);
         try {
-            int found = new MemberFinder(factory, false, stat, name, desc).findIn(owner, null);
+            int found = findMember(false, stat, name, desc, owner);
             if (found == 0) {
                 println(getFieldInfo(owner, stat, name, desc, "not found"));
             } else if (found > 1) {
@@ -90,7 +103,7 @@ class ReferenceVerifyingVisitor extends GenericClassVisitor {
         if (owner.startsWith("[")) return;
         boolean stat = (opcode == Opcodes.INVOKESTATIC);
         try {
-            int found = new MemberFinder(factory, true, stat, name, desc).findIn(owner, null);
+            int found = findMember(true, stat, name, desc, owner);
             if (found == 0) {
                 println(getMethodInfo(owner, stat, name, desc, "not found"));
             } else if (found > 1) {
@@ -99,6 +112,17 @@ class ReferenceVerifyingVisitor extends GenericClassVisitor {
         } catch (ClassNotFoundException e) {
             cannotVerify(getMethodInfo(owner, stat, name, desc, "not verified"), e);
         }
+    }
+
+    private int findMember(boolean method, boolean stat, String name,
+                           String desc, String owner) throws ClassNotFoundException {
+        return new MemberFinder(factory, method, stat, name, desc) {
+            public void visit(int version, int access, String name, String signature,
+                              String superName, String[] interfaces) {
+                checkVersion(version, name);
+                super.visit(version, access, name, signature, superName, interfaces);
+            }
+        }.findIn(owner, null);
     }
 
     private void cannotVerify(String text, ClassNotFoundException e) {
@@ -144,4 +168,5 @@ class ReferenceVerifyingVisitor extends GenericClassVisitor {
         }
         return buffer.append(')').toString();
     }
+
 }

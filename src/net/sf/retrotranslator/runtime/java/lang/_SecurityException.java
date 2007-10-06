@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
+ *
  * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
@@ -29,31 +29,39 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.transformer;
+package net.sf.retrotranslator.runtime.java.lang;
 
 /**
  * @author Taras Puchko
  */
-abstract class FileEntry {
+public class _SecurityException {
 
-    private final String name;
-    private final boolean modified;
+    public static class SecurityExceptionBuilder {
 
-    protected FileEntry(String name, boolean modified) {
-        this.name = name;
-        this.modified = modified;
+        private final String message;
+        private final Throwable cause;
+
+        protected SecurityExceptionBuilder(String message, Throwable cause) {
+            this.message = message;
+            this.cause = cause;
+        }
+
+        public String argument1() {
+            return message;
+        }
+
+        public void initialize(SecurityException e) {
+            e.initCause(cause);
+        }
+
     }
 
-    public abstract byte[] getContent();
-
-    public abstract long lastModified();
-
-    public String getName() {
-        return name;
+    public static SecurityExceptionBuilder createInstanceBuilder(String message, Throwable cause) {
+        return new SecurityExceptionBuilder(message, cause);
     }
 
-    public boolean isModified() {
-        return modified;
+    public static SecurityExceptionBuilder createInstanceBuilder(Throwable cause) {
+        return new SecurityExceptionBuilder(cause == null ? null : cause.toString(), cause);
     }
 
 }

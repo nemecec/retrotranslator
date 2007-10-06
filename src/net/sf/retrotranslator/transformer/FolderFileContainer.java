@@ -50,7 +50,7 @@ class FolderFileContainer extends FileContainer {
         initEntries();
         for (String fileName : fileNames) {
             String name = fileName.replace(File.separatorChar, '/');
-            entries.put(name, new FolderFileEntry(name, new File(location, name)));
+            entries.put(name, new FolderFileEntry(name, new File(location, name), false));
         }
     }
 
@@ -77,15 +77,15 @@ class FolderFileContainer extends FileContainer {
             if (file.isDirectory()) {
                 scanFolder(file, prefixLength);
             } else {
-                entries.put(name, new FolderFileEntry(name, file));
+                entries.put(name, new FolderFileEntry(name, file, false));
             }
         }
     }
 
-    public void putEntry(String name, byte[] contents) {
+    public void putEntry(String name, byte[] contents, boolean modified) {
         initEntries();
         File file = new File(location, name);
-        entries.put(name, new FolderFileEntry(name, file));
+        entries.put(name, new FolderFileEntry(name, file, modified));
         file.getParentFile().mkdirs();
         try {
             FileOutputStream stream = new FileOutputStream(file);
@@ -127,8 +127,8 @@ class FolderFileContainer extends FileContainer {
 
         private File file;
 
-        public FolderFileEntry(String name, File file) {
-            super(name);
+        public FolderFileEntry(String name, File file, boolean modified) {
+            super(name, modified);
             this.file = file;
         }
 

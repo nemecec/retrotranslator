@@ -1,6 +1,6 @@
 <project name="retrotranslator" default="build" basedir=".">
 
-    <property name="version" value="1.2.2"/>
+    <property name="version" value="1.2.3"/>
 
     <property file="build.properties"/>
 
@@ -104,7 +104,7 @@
     </target>
 
     <target name="test" depends="test-java13, test-java12, test-java11, test-translated, test-with-jit,
-            test-embedded, test-retainapi, test-support, test-custom-backport, test-duplicates"/>
+            test-embedded, test-retainapi, test-support, test-custom-backport, test-duplicates, test-wrong-format"/>
 
     <target name="test-translated" depends="compile-tests">
         <mkdir dir="build/test-classes14"/>
@@ -329,6 +329,36 @@
         <antcall target="junit-on-translated">
             <param name="java_home" value="${java14_home}"/>
         </antcall>
+    </target>
+
+    <target name="test-wrong-format" depends="compile-tests">
+        <mkdir dir="build/test-wrong-format"/>
+        <copy todir="build/test-wrong-format">
+            <fileset dir="build/test-classes15">
+                <include name="**/ObjectMethodsVisitorTestCase*.class"/>
+            </fileset>
+        </copy>
+        <java classname="net.sf.retrotranslator.transformer.Retrotranslator"
+              classpath="build/retrotranslator-transformer-${version}.jar"
+              jvm="${java15_home}/bin/java" fork="true"
+              outputproperty="outputproperty"
+              resultproperty="resultproperty">
+            <classpath refid="classpath"/>
+            <arg value="-verify"/>
+            <arg value="-srcdir"/>
+            <arg value="build/test-wrong-format"/>
+        </java>
+        <echo message="${outputproperty}"/>
+        <fail>
+            <condition>
+                <or>
+                    <not><equals arg1="${resultproperty}"
+                                 arg2="2"/></not>
+                    <not><contains string="${outputproperty}"
+                                   substring="Incompatible class: java.lang.Object"/></not>
+                </or>
+            </condition>
+        </fail>
     </target>
 
     <target name="test-duplicates" depends="compile-tests">

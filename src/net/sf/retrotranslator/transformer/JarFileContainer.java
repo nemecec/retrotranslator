@@ -74,7 +74,7 @@ class JarFileContainer extends FileContainer {
                 while ((entry = stream.getNextEntry()) != null) {
                     if (!entry.isDirectory()) {
                         byte[] content = readFully(stream, (int) entry.getSize());
-                        entries.put(entry.getName(), new JarFileEntry(entry.getName(), content, lastModified));
+                        entries.put(entry.getName(), new JarFileEntry(entry.getName(), content, lastModified, false));
                     }
                 }
             } finally {
@@ -85,10 +85,10 @@ class JarFileContainer extends FileContainer {
         }
     }
 
-    public void putEntry(String name, byte[] contents) {
+    public void putEntry(String name, byte[] contents, boolean modified) {
         initEntries();
-        entries.put(name, new JarFileEntry(name, contents, 0));
-        modified = true;
+        entries.put(name, new JarFileEntry(name, contents, 0, modified));
+        this.modified = true;
     }
 
     private void initEntries() {
@@ -173,8 +173,8 @@ class JarFileContainer extends FileContainer {
         private byte[] content;
         private long lastModified;
 
-        public JarFileEntry(String name, byte[] content, long lastModified) {
-            super(name);
+        public JarFileEntry(String name, byte[] content, long lastModified, boolean modified) {
+            super(name, modified);
             this.lastModified = lastModified;
             this.content = content;
         }

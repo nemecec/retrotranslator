@@ -53,7 +53,7 @@ abstract class FileContainer {
 
     public abstract void removeEntry(String name);
 
-    public abstract void putEntry(String name, byte[] contents);
+    public abstract void putEntry(String name, byte[] contents, boolean modified);
 
     public abstract void flush(SystemLogger logger);
 
