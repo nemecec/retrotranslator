@@ -33,6 +33,7 @@ package net.sf.retrotranslator.transformer;
 
 import junit.framework.TestCase;
 import net.sf.retrotranslator.transformer.smart.*;
+import java.math.*;
 
 /**
  * @author Taras Puchko
@@ -103,5 +104,25 @@ public class SmartReplacementVisitorTestCase extends TestCase {
     private boolean isSmart() {
         return Boolean.getBoolean("net.sf.retrotranslator.tests.smart-test");
     }
+
+    private boolean isJava5() {
+        String version = System.getProperty("java.version");
+        return version.length() > 3 && version.substring(0, 3).compareTo("1.5") >= 0;
+    }
+
+    public void testBigDecimal() {
+        if (isSmart() || isJava5()) {
+            class MyDecimal extends BigDecimal {
+                public MyDecimal(int val) {
+                    super(val);
+                }
+            }
+            MyDecimal myDecimal = new MyDecimal(123);
+            assertEquals(0, myDecimal.scale());
+            BigDecimal decimal = myDecimal.setScale(-1, MyDecimal.ROUND_DOWN);
+            assertEquals(120, decimal.intValue());
+        }
+    }
+
 
 }
