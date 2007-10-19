@@ -45,7 +45,7 @@ public class EnumMap_<K extends Enum<K>, V> extends TreeMap<K, V> {
 
     public EnumMap_(Class<K> keyType) {
         super(new EnumComparator());
-        if (!keyType.isEnum()) {
+        if (!Enum.class.isAssignableFrom(keyType)) {
             throw new NullPointerException();
         }
         this.keyType = keyType;

@@ -36,28 +36,40 @@ import java.lang.ref.SoftReference;
 import java.util.*;
 import java.util.zip.*;
 import net.sf.retrotranslator.runtime.asm.ClassReader;
-import net.sf.retrotranslator.runtime.impl.RuntimeTools;
+import net.sf.retrotranslator.runtime.impl.*;
 
 /**
  * @author Taras Puchko
  */
-class ClassReaderFactory {
+class TargetEnvironment {
 
-    private ClassLoader classLoader;
+    private static byte[] NO_CONTENT = new byte[0];
+
+    private final ClassLoader classLoader;
     private final SystemLogger logger;
     private final boolean contextual;
-    private List<Entry> entries = new ArrayList<Entry>();
-    private SoftReference<Map<String, ClassReader>> cacheReference;
+    private final List<Entry> entries = new Vector<Entry>();
+    private SoftReference<Map<String, byte[]>> cacheReference;
 
-    public ClassReaderFactory(ClassLoader classLoader, SystemLogger logger, boolean contextual) {
+    public TargetEnvironment(ClassLoader classLoader, SystemLogger logger, boolean contextual) {
         this.classLoader = classLoader;
         this.logger = logger;
         this.contextual = contextual;
     }
 
     public void appendPath(File element) {
-        if (!element.exists()) throw new RuntimeException(element.getPath() + " not found.");
+        if (!element.exists()) {
+            throw new RuntimeException(element.getPath() + " not found.");
+        }
         entries.add(element.isDirectory() ? new DirectoryEntry(element) : new ZipFileEntry(element));
+    }
+
+    public ClassReader getClassReader(String name) throws ClassNotFoundException {
+        byte[] content = getClassContent(name);
+        if (content == null) {
+            throw new ClassNotFoundException(name);
+        }
+        return new ClassReader(content);
     }
 
     public ClassReader findClassReader(String className) {
@@ -69,35 +81,24 @@ class ClassReaderFactory {
         }
     }
 
-    public ClassReader getClassReader(String name) throws ClassNotFoundException {
-        Map<String, ClassReader> cache = cacheReference == null ? null : cacheReference.get();
+    public byte[] getClassContent(String name) {
+        Map<String, byte[]> cache = getCache();
+        byte[] content = cache.get(name);
+        if (content != null) {
+            return content != NO_CONTENT ? content : null;
+        }
+        content = RuntimeTools.readAndClose(getStream(name + RuntimeTools.CLASS_EXTENSION));
+        cache.put(name, content != null ? content : NO_CONTENT);
+        return content;
+    }
+
+    private synchronized Map<String, byte[]> getCache() {
+        Map<String, byte[]> cache = cacheReference == null ? null : cacheReference.get();
         if (cache == null) {
-            cache = new HashMap<String, ClassReader>();
-            cacheReference = new SoftReference<Map<String, ClassReader>>(cache);
+            cache = new Hashtable<String, byte[]>();
+            cacheReference = new SoftReference<Map<String, byte[]>>(cache);
         }
-        if (cache.containsKey(name)) {
-            ClassReader classReader = cache.get(name);
-            if (classReader == null) {
-                throw new ClassNotFoundException(name);
-            }
-            return classReader;
-        }
-        InputStream stream = getStream(name + RuntimeTools.CLASS_EXTENSION);
-        if (stream == null) {
-            cache.put(name, null);
-            throw new ClassNotFoundException(name);
-        }
-        try {
-            try {
-                ClassReader classReader = new ClassReader(stream);
-                cache.put(name, classReader);
-                return classReader;
-            } finally {
-                stream.close();
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        return cache;
     }
 
     private InputStream getStream(String name) {

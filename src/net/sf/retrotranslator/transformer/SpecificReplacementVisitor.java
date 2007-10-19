@@ -86,25 +86,24 @@ class SpecificReplacementVisitor extends ClassAdapter {
 
     private class RunMethodVisitor extends MethodAdapter {
 
-        private final Label end = new Label();
+        private final Label start = new Label();
 
         public RunMethodVisitor(MethodVisitor visitor) {
             super(visitor);
         }
 
         public void visitCode() {
-            Label start = new Label();
-            mv.visitTryCatchBlock(start, end, end, Type.getInternalName(Throwable.class));
             mv.visitLabel(start);
             super.visitCode();
-
         }
 
         public void visitMaxs(final int maxStack, final int maxLocals) {
+            Label end = new Label();
             mv.visitLabel(end);
             mv.visitMethodInsn(INVOKESTATIC, uncaughtExceptionHandler.getOwner(),
                     uncaughtExceptionHandler.getName(), uncaughtExceptionHandler.getDesc());
             mv.visitInsn(RETURN);
+            mv.visitTryCatchBlock(start, end, end, Type.getInternalName(Throwable.class));
             super.visitMaxs(maxStack, maxLocals);
         }
     }

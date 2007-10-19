@@ -67,7 +67,7 @@ class InheritedConstantVisitor extends ClassAdapter {
 
     private String findFieldOwner(String className, String fieldName) {
         String uniqueTypeName = locator.getUniqueTypeName(className);
-        ClassReader classReader = locator.getClassReaderFactory().findClassReader(uniqueTypeName);
+        ClassReader classReader = locator.getEnvironment().findClassReader(uniqueTypeName);
         if (classReader == null) {
             return null;
         }

@@ -39,7 +39,7 @@ import net.sf.retrotranslator.runtime.impl.*;
  */
 class MemberFinder extends EmptyVisitor {
 
-    private final ClassReaderFactory factory;
+    private final TargetEnvironment environment;
     private final boolean method;
     private final boolean stat;
     private final String name;
@@ -49,8 +49,8 @@ class MemberFinder extends EmptyVisitor {
     private String[] interfaces;
     private int found;
 
-    public MemberFinder(ClassReaderFactory factory, boolean method, boolean stat, String name, String desc) {
-        this.factory = factory;
+    public MemberFinder(TargetEnvironment environment, boolean method, boolean stat, String name, String desc) {
+        this.environment = environment;
         this.method = method;
         this.stat = stat;
         this.name = name;
@@ -60,7 +60,7 @@ class MemberFinder extends EmptyVisitor {
     public int findIn(String className, String location) throws ClassNotFoundException {
         if (className == null) return 0;
         try {
-            factory.getClassReader(className).accept(this, true);
+            environment.getClassReader(className).accept(this, true);
         } catch (ClassNotFoundException e) {
             if (location == null) throw e;
             throw new ClassNotFoundException(e.getMessage() + ", location: " + location, e);

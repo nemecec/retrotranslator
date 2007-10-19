@@ -92,7 +92,7 @@ class ObjectMethodsVisitor extends ClassAdapter {
 
     private String findMethodOwner(String className, ObjectMethod method) {
         String uniqueTypeName = locator.getUniqueTypeName(className);
-        ClassReader reader = locator.getClassReaderFactory().findClassReader(uniqueTypeName);
+        ClassReader reader = locator.getEnvironment().findClassReader(uniqueTypeName);
         if (reader == null) {
             return null;
         }

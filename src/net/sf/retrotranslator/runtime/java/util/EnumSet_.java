@@ -43,7 +43,7 @@ public class EnumSet_<E extends Enum<E>> extends HashSet<E> {
     private Class<E> elementType;
 
     private EnumSet_(Class<E> elementType) {
-        if (!elementType.isEnum()) {
+        if (!Enum.class.isAssignableFrom(elementType)) {
             throw new ClassCastException();
         }
         this.elementType = elementType;

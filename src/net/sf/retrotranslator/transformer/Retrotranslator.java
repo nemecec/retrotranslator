@@ -165,20 +165,25 @@ public class Retrotranslator {
     }
 
     public boolean run() {
-        SystemLogger systemLogger = new SystemLogger(getMessageLogger(), verbose);
         if (src.isEmpty()) throw new IllegalArgumentException("No files to translate.");
+        SystemLogger systemLogger = new SystemLogger(getMessageLogger(), verbose);
+        TargetEnvironment environment = createEnvironment(null, systemLogger);
         EmbeddingConverter converter = null;
         if (embed != null) {
-            if (dest == null) throw new IllegalArgumentException("Destination required for embedding.");
-            if (lazy) throw new IllegalArgumentException("Embedding cannot be lazy.");
-            converter = new EmbeddingConverter(target, embed, systemLogger);
+            if (dest == null) {
+                throw new IllegalArgumentException("Destination required for embedding.");
+            }
+            if (lazy) {
+                throw new IllegalArgumentException("Embedding cannot be lazy.");
+            }
+            converter = new EmbeddingConverter(target, embed, environment, systemLogger);
         }
         OperationMode mode = new OperationMode(advanced, support, smart);
         ReplacementLocatorFactory locatorFactory = new ReplacementLocatorFactory(
-                target, mode, retainapi, backports, createClassReaderFactory(null, systemLogger));
+                target, mode, retainapi, backports, environment);
         ClassTransformer classTransformer = new ClassTransformer(
                 lazy, stripsign, retainflags, systemLogger, converter, locatorFactory);
-        TextFileTransformer fileTransformer = new TextFileTransformer(locatorFactory);
+        TextFileTransformer fileTransformer = new TextFileTransformer(locatorFactory, converter);
         FileTranslator translator = new FileTranslator(
                 classTransformer, fileTransformer, converter, systemLogger, sourceMask, uptodatecheck);
         boolean modified = false;
@@ -186,39 +191,38 @@ public class Retrotranslator {
             modified |= translator.transform(container, dest != null ? dest : container);
         }
         if (converter != null && modified) {
-            translator.embed(dest);
+            converter.embed(dest, classTransformer);
         }
-        if (dest != null) dest.flush(systemLogger);
-        if (!verify) return true;
+        if (dest != null) {
+            dest.flush(systemLogger);
+        }
+        if (!verify) {
+            return true;
+        }
         if (!modified) {
             logger.log(new Message(Level.INFO, "Skipped verification of up-to-date file(s)."));
             return true;
         }
-        ClassReaderFactory factory = createClassReaderFactory(dest, systemLogger);
-        try {
-            return verify(factory, systemLogger);
-        } finally {
-            factory.close();
-        }
+        return verify(systemLogger);
     }
 
-    private ClassReaderFactory createClassReaderFactory(FileContainer destination, SystemLogger logger) {
+    private TargetEnvironment createEnvironment(FileContainer destination, SystemLogger logger) {
         ClassLoader loader = classLoader;
         if (loader == null && classpath.isEmpty()) {
             loader = TransformerTools.getDefaultClassLoader();
         }
-        ClassReaderFactory factory = new ClassReaderFactory(loader, logger, false);
+        TargetEnvironment environment = new TargetEnvironment(loader, logger, false);
         if (destination != null) {
-            factory.appendPath(destination.getLocation());
+            environment.appendPath(destination.getLocation());
         } else {
             for (FileContainer container : src) {
-                factory.appendPath(container.getLocation());
+                environment.appendPath(container.getLocation());
             }
         }
         for (File file : classpath) {
-            factory.appendPath(file);
+            environment.appendPath(file);
         }
-        return factory;
+        return environment;
     }
 
     private MessageLogger getMessageLogger() {
@@ -232,18 +236,23 @@ public class Retrotranslator {
         };
     }
 
-    private boolean verify(ClassReaderFactory factory, SystemLogger systemLogger) {
-        if (dest != null) {
-            verify(factory, dest, systemLogger);
-        } else {
-            for (FileContainer container : src) {
-                verify(factory, container, systemLogger);
+    private boolean verify(SystemLogger systemLogger) {
+        TargetEnvironment environment = createEnvironment(dest, systemLogger);
+        try {
+            if (dest != null) {
+                verify(environment, dest, systemLogger);
+            } else {
+                for (FileContainer container : src) {
+                    verify(environment, container, systemLogger);
+                }
             }
+            return systemLogger.isReliable();
+        } finally {
+            environment.close();
         }
-        return systemLogger.isReliable();
     }
 
-    private void verify(ClassReaderFactory factory, FileContainer container, SystemLogger systemLogger) {
+    private void verify(TargetEnvironment environment, FileContainer container, SystemLogger systemLogger) {
         systemLogger.log(new Message(Level.INFO,
                 "Verifying " + container.getFileCount() + " file(s) in " + container + "."));
         int warningCount = 0;
@@ -255,7 +264,8 @@ public class Retrotranslator {
                     systemLogger.setFile(container.getLocation(), entry.getName());
                     systemLogger.logForFile(Level.VERBOSE, "Verification");
                     fileCount++;
-                    warningCount += new ReferenceVerifyingVisitor(target, factory, systemLogger).verify(content);
+                    warningCount += new ReferenceVerifyingVisitor(target, environment, systemLogger).verify(content);
+                    systemLogger.setFile(null, null);
                 }
             }
         }

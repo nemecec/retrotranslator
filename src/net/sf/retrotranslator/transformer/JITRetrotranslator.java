@@ -66,10 +66,9 @@ public class JITRetrotranslator {
     public boolean run() {
         OperationMode mode = new OperationMode(advanced, support, smart);
         if (isJava5Supported()) return true;
-        ClassReaderFactory classReaderFactory = new ClassReaderFactory(
-                TransformerTools.getDefaultClassLoader(), null, true);
+        TargetEnvironment environment = new TargetEnvironment(TransformerTools.getDefaultClassLoader(), null, true);
         ReplacementLocatorFactory locatorFactory = new ReplacementLocatorFactory(
-                ClassVersion.VERSION_14, mode, false, Backport.asList(backport), classReaderFactory);
+                ClassVersion.VERSION_14, mode, false, Backport.asList(backport), environment);
         SystemLogger logger = new SystemLogger(new MessageLogger() {
             public void log(Message message) {
                 //do nothing

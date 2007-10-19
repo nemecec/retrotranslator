@@ -41,13 +41,15 @@ class TextFileTransformer {
 
     private static Pattern pattern = Pattern.compile("([A-Za-z0-9_$]+\\.)+[A-Za-z0-9_$]+");
 
-    private ReplacementLocatorFactory factory;
+    private final ReplacementLocatorFactory factory;
+    private final EmbeddingConverter converter;
 
-    public TextFileTransformer(ReplacementLocatorFactory factory) {
+    public TextFileTransformer(ReplacementLocatorFactory factory, EmbeddingConverter converter) {
         this.factory = factory;
+        this.converter = converter;
     }
 
-    public byte[] transform(byte[] bytes, EmbeddingConverter converter) {
+    public byte[] transform(byte[] bytes) {
         boolean modified = false;
         Matcher matcher = pattern.matcher(toString(bytes));
         StringBuffer buffer = new StringBuffer();

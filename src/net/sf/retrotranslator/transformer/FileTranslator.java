@@ -31,8 +31,6 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import java.util.*;
-
 /**
  * @author Taras Puchko
  */
@@ -75,17 +73,17 @@ class FileTranslator {
     private void transform(FileEntry entry, FileContainer source, FileContainer destination) {
         String name = entry.getName();
         String fixedName = converter == null ? name : converter.convertFileName(name);
-        logger.setFile(source.getLocation(), name);
         if (uptodatecheck && destination.containsUpToDate(fixedName, entry.lastModified())) {
             logger.logForFile(Level.VERBOSE, "Up to date");
             return;
         }
         if (mask.matches(name) || !name.equals(fixedName)) {
+            logger.setFile(source.getLocation(), name);
             logger.logForFile(Level.VERBOSE, "Transformation");
             byte[] sourceData = entry.getContent();
             byte[] resultData = TransformerTools.isClassFile(sourceData)
                     ? classTransformer.transform(sourceData, 0, sourceData.length)
-                    : fileTransformer.transform(sourceData, converter);
+                    : fileTransformer.transform(sourceData);
             boolean transformed = sourceData != resultData || !fixedName.equals(name);
             if (transformed || source != destination) {
                 if (!fixedName.equals(name)) {
@@ -96,41 +94,10 @@ class FileTranslator {
             if (transformed) {
                 countTransformed++;
             }
+            logger.setFile(null, null);
         } else if (source != destination) {
             destination.putEntry(name, entry.getContent(), false);
         }
-    }
-
-    public void embed(FileContainer destination) {
-        Map<String, Boolean> fileNames = converter.getFileNames();
-        if (fileNames.isEmpty()) {
-            logger.log(new Message(Level.INFO, "Embedding skipped."));
-            return;
-        }
-        logger.log(new Message(Level.INFO, "Embedding backported classes."));
-        Collection<FileContainer> containers = converter.getContainers();
-        while (true) {
-            boolean finished = true;
-            for (FileContainer container : containers) {
-                finished &= embed(container, destination, fileNames);
-            }
-            if (finished) break;
-        }
-        logger.log(new Message(Level.INFO, "Embedded required files."));
-    }
-
-    private boolean embed(FileContainer source, FileContainer destination, Map<String, Boolean> fileNames) {
-        boolean finished = true;
-        for (FileEntry entry : source.getEntries()) {
-            Boolean processed = fileNames.get(entry.getName());
-            if (Boolean.FALSE.equals(processed)) {
-                transform(entry, source, destination);
-                String name = entry.getName();
-                fileNames.put(name, Boolean.TRUE);
-                finished = false;
-            }
-        }
-        return finished;
     }
 
 }

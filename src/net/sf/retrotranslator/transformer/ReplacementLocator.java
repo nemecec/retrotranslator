@@ -46,21 +46,21 @@ class ReplacementLocator {
 
     private final OperationMode mode;
     private final List<Backport> backports;
-    private final ClassReaderFactory classReaderFactory;
+    private final TargetEnvironment environment;
     private final Map<String, ClassReplacement> replacements = new Hashtable<String, ClassReplacement>();
 
     interface KeyProvider {
         MemberKey getKey(String name, String desc);
     }
 
-    public ReplacementLocator(OperationMode mode, List<Backport> backports, ClassReaderFactory classReaderFactory) {
+    public ReplacementLocator(OperationMode mode, List<Backport> backports, TargetEnvironment environment) {
         this.mode = mode;
         this.backports = backports;
-        this.classReaderFactory = classReaderFactory;
+        this.environment = environment;
     }
 
-    public ClassReaderFactory getClassReaderFactory() {
-        return classReaderFactory;
+    public TargetEnvironment getEnvironment() {
+        return environment;
     }
 
     public ClassReplacement getReplacement(String className) {
@@ -84,7 +84,7 @@ class ReplacementLocator {
     }
 
     private void addInheritedMembers(ClassReplacement replacement) {
-        ClassReader classReader = classReaderFactory.findClassReader(replacement.getUniqueTypeName());
+        ClassReader classReader = environment.findClassReader(replacement.getUniqueTypeName());
         if (classReader != null) {
             SmartReplacementVisitor visitor = new SmartReplacementVisitor(this);
             classReader.accept(visitor, true);
@@ -335,10 +335,11 @@ class ReplacementLocator {
     }
 
     private ClassDescriptor getClassDescriptor(String internalName) {
-        byte[] bytecode = RuntimeTools.readResourceToByteArray(
-                ReplacementLocator.class, '/' + internalName + RuntimeTools.CLASS_EXTENSION);
-        if (bytecode == null) return null;
-        ClassDescriptor descriptor = new ClassDescriptor(ReplacementLocator.class, bytecode);
+        byte[] content = environment.getClassContent(internalName);
+        if (content == null) {
+            return null;
+        }
+        ClassDescriptor descriptor = new ClassDescriptor(ReplacementLocator.class, content);
         return isSupportedFeature(descriptor) ? descriptor : null;
     }
 

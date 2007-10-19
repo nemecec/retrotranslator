@@ -122,7 +122,10 @@ public class RuntimeTools {
     }
 
     public static byte[] readResourceToByteArray(Class loader, String resourceName) throws MissingResourceException {
-        InputStream inputStream = loader.getResourceAsStream(resourceName);
+        return readAndClose(loader.getResourceAsStream(resourceName));
+    }
+
+    public static byte[] readAndClose(InputStream inputStream) {
         if (inputStream == null) return null;
         try {
             try {

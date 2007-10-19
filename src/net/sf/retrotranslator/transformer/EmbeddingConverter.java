@@ -31,26 +31,25 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import java.io.*;
-import java.net.URL;
 import java.util.*;
-import net.sf.retrotranslator.runtime.impl.*;
+import net.sf.retrotranslator.runtime.impl.RuntimeTools;
 
 /**
  * @author Taras Puchko
  */
 class EmbeddingConverter {
 
-    private static final String JAR_FILE = "jar:file:";
-
     private final String embeddingPrefix;
     private final SystemLogger logger;
     private final List<String> prefixes = new ArrayList<String>();
-    private final Map<String, Boolean> fileNames = new HashMap<String, Boolean>();
+    private final Map<String, Boolean> classNames = new HashMap<String, Boolean>();
+    private final TargetEnvironment environment;
+    private int countEmbedded;
 
-    public EmbeddingConverter(ClassVersion target, String embed, SystemLogger systemLogger) {
+    public EmbeddingConverter(ClassVersion target, String embed, TargetEnvironment environment, SystemLogger logger) {
+        this.environment = environment;
         embeddingPrefix = makePrefix(embed);
-        logger = systemLogger;
+        this.logger = logger;
         for (String packageName : TransformerTools.readFile("embed", target)) {
             prefixes.add(makePrefix(packageName));
         }
@@ -60,19 +59,14 @@ class EmbeddingConverter {
         return packageName.replace('.', '/') + '/';
     }
 
-    public Map<String, Boolean> getFileNames() {
-        return fileNames;
-    }
-
     public String convertFileName(String fileName) {
         return isEmbedded(fileName) ? embeddingPrefix + fileName : fileName;
     }
 
     public String convertClassName(String className) {
         if (isEmbedded(className)) {
-            String key = className + RuntimeTools.CLASS_EXTENSION;
-            if (!fileNames.containsKey(key)) {
-                fileNames.put(key, Boolean.FALSE);
+            if (!classNames.containsKey(className)) {
+                classNames.put(className, Boolean.FALSE);
             }
             return embeddingPrefix + className;
         } else {
@@ -89,36 +83,40 @@ class EmbeddingConverter {
         return false;
     }
 
-    public Collection<FileContainer> getContainers() {
-        List<FileContainer> result = new ArrayList<FileContainer>();
-        for (String prefix : prefixes) {
-            try {
-                Enumeration<URL> resources = TransformerTools.getDefaultClassLoader().getResources(prefix);
-                while (resources.hasMoreElements()) {
-                    String url = resources.nextElement().toExternalForm();
-                    FileContainer container = getContainer(url, "!/" + prefix);
-                    if (container != null) {
-                        result.add(container);
-                    }
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+    public void embed(FileContainer destination, ClassTransformer transformer) {
+        if (classNames.isEmpty()) {
+            logger.log(new Message(Level.INFO, "Embedding skipped."));
+            return;
         }
-        return result;
+        logger.log(new Message(Level.INFO, "Embedding backported classes."));
+        countEmbedded = 0;
+        boolean modified;
+        do {
+            modified = false;
+            for (Map.Entry<String, Boolean> entry : new HashMap<String, Boolean>(classNames).entrySet()) {
+                modified |= embed(entry, destination, transformer);
+            }
+        } while (modified);
+        logger.log(new Message(Level.INFO, "Embedded " + countEmbedded + " class(es)."));
     }
 
-    private FileContainer getContainer(String url, String tail) {
-        if (!url.startsWith(JAR_FILE) || !url.endsWith(tail)) {
-            logger.log(new Message(Level.INFO, "Not in a jar file: " + url));
-            return null;
+    private boolean embed(Map.Entry<String, Boolean> entry, FileContainer destination, ClassTransformer transformer) {
+        if (entry.getValue()) {
+            return false;
         }
-        File file = new File(url.substring(JAR_FILE.length(), url.length() - tail.length()));
-        if (!file.isFile()) {
-            logger.log(new Message(Level.INFO, "File not found: " + file));
-            return null;
+        String name = entry.getKey();
+        String fileName = name + RuntimeTools.CLASS_EXTENSION;
+        logger.log(new Message(Level.VERBOSE, "Embedding", null, fileName));
+        classNames.put(name, Boolean.TRUE);
+        byte[] content = environment.getClassContent(name);
+        if (content != null) {
+            destination.putEntry(convertFileName(fileName), transformer.transform(content, 0, content.length), true);
+            countEmbedded++;
+            return true;
+        } else {
+            logger.log(new Message(Level.WARNING, "Cannot find to embed: " + name));
+            return false;
         }
-        return new JarFileContainer(file);
     }
 
 }

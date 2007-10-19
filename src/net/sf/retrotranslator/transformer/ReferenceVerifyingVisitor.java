@@ -41,14 +41,14 @@ import net.sf.retrotranslator.runtime.impl.*;
 class ReferenceVerifyingVisitor extends GenericClassVisitor {
 
     private final ClassVersion target;
-    private ClassReaderFactory factory;
-    private SystemLogger logger;
+    private final TargetEnvironment environment;
+    private final SystemLogger logger;
     private Set<String> warnings;
 
-    public ReferenceVerifyingVisitor(ClassVersion target, ClassReaderFactory factory, SystemLogger logger) {
+    public ReferenceVerifyingVisitor(ClassVersion target, TargetEnvironment environment, SystemLogger logger) {
         super(new EmptyVisitor());
         this.target = target;
-        this.factory = factory;
+        this.environment = environment;
         this.logger = logger;
     }
 
@@ -72,7 +72,7 @@ class ReferenceVerifyingVisitor extends GenericClassVisitor {
     protected String typeName(String s) {
         if (s == null) return null;
         try {
-            factory.getClassReader(s);
+            environment.getClassReader(s);
         } catch (ClassNotFoundException e) {
             printClassNotFound(e);
         }
@@ -116,7 +116,7 @@ class ReferenceVerifyingVisitor extends GenericClassVisitor {
 
     private int findMember(boolean method, boolean stat, String name,
                            String desc, String owner) throws ClassNotFoundException {
-        return new MemberFinder(factory, method, stat, name, desc) {
+        return new MemberFinder(environment, method, stat, name, desc) {
             public void visit(int version, int access, String name, String signature,
                               String superName, String[] interfaces) {
                 checkVersion(version, name);

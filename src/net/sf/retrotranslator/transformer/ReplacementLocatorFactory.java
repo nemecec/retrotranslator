@@ -42,18 +42,18 @@ class ReplacementLocatorFactory {
     private final ClassVersion target;
     private final OperationMode mode;
     private final boolean retainapi;
-    private List<Backport> backports;
-    private final ClassReaderFactory classReaderFactory;
+    private final List<Backport> backports;
+    private final TargetEnvironment environment;
 
     private SoftReference<ReplacementLocator> softReference = new SoftReference<ReplacementLocator>(null);
 
     public ReplacementLocatorFactory(ClassVersion target, OperationMode mode, boolean retainapi,
-                                     List<Backport> backports, ClassReaderFactory classReaderFactory) {
+                                     List<Backport> backports, TargetEnvironment environment) {
         this.target = target;
         this.mode = mode;
         this.retainapi = retainapi;
         this.backports = backports;
-        this.classReaderFactory = classReaderFactory;
+        this.environment = environment;
         if (retainapi) {
             return;
         }
@@ -75,7 +75,7 @@ class ReplacementLocatorFactory {
     public synchronized ReplacementLocator getLocator() {
         ReplacementLocator locator = softReference.get();
         if (locator == null) {
-            locator = new ReplacementLocator(mode, backports, classReaderFactory);
+            locator = new ReplacementLocator(mode, backports, environment);
             softReference = new SoftReference<ReplacementLocator>(locator);
         }
         return locator;

@@ -67,6 +67,11 @@ public class _ThreadTestCase extends TestCase {
         public boolean done;
 
         public void run() {
+            try {
+                throw new Exception();
+            } catch (Exception e) {
+                //ok
+            }
             done = true;
         }
     }
@@ -139,7 +144,11 @@ public class _ThreadTestCase extends TestCase {
                 },
                 new Thread(group, "name") {
                     public void run() {
-                        throw exception;
+                        try {
+                            throw new RuntimeException();
+                        } catch (RuntimeException e) {
+                            throw exception;
+                        }
                     }
                 },
                 new Thread(runnable, "name"),
@@ -168,6 +177,12 @@ public class _ThreadTestCase extends TestCase {
         assertTrue(myThread.done);
         assertNull(myHandler.thread);
         assertNull(myHandler.exception);
+        Thread thread = new Thread() {
+            public void run() {
+            }
+        };
+        thread.start();
+        thread.join();
     }
 
     public void testSetDefaultUncaughtExceptionHandler() throws Exception {
@@ -242,7 +257,7 @@ public class _ThreadTestCase extends TestCase {
     }
 
     public void testGetAllStackTraces() throws Exception {
-        Map<Thread,StackTraceElement[]> map = Thread.getAllStackTraces();
+        Map<Thread, StackTraceElement[]> map = Thread.getAllStackTraces();
         assertTrue(map.size() > 1);
         StackTraceElement[] elements = map.get(Thread.currentThread());
         assertNotNull(elements);

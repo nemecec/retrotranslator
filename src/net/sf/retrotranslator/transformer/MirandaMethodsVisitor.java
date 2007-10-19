@@ -78,7 +78,7 @@ class MirandaMethodsVisitor extends ClassAdapter {
     private Set<InheritedMethod> getMethods(String className, boolean recursive) {
         String uniqueTypeName = locator.getUniqueTypeName(className);
         Set<InheritedMethod> methods = new LinkedHashSet<InheritedMethod>();
-        ClassReader classReader = locator.getClassReaderFactory().findClassReader(uniqueTypeName);
+        ClassReader classReader = locator.getEnvironment().findClassReader(uniqueTypeName);
         if (classReader == null) {
             return methods;
         }
