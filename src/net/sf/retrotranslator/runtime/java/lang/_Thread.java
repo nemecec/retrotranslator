@@ -118,7 +118,7 @@ public class _Thread {
             try {
                 target.run();
             } catch (Throwable e) {
-                handleUncaughtException(e);
+                processException(e);
             }
         }
 
@@ -129,15 +129,31 @@ public class _Thread {
 
     // Referenced from translated bytecode
     public static void handleUncaughtException(Throwable throwable) {
-        Thread thread = Thread.currentThread();
-        UncaughtExceptionHandler handler = threads.obtain(thread).getHandler();
-        if (handler == null) {
-            handler = getDefaultUncaughtExceptionHandler();
+        processException(throwable);
+    }
+
+    protected static void processException(Throwable throwable) {
+        if (new Exception().getStackTrace().length <= 3) {
+            Thread thread = Thread.currentThread();
+            UncaughtExceptionHandler handler = threads.obtain(thread).getHandler();
+            if (handler == null) {
+                handler = getDefaultUncaughtExceptionHandler();
+            }
+            if (handler == null) {
+                handler = thread.getThreadGroup();
+            }
+            handler.uncaughtException(thread, throwable);
+        } else {
+            try {
+                throw throwable;
+            } catch (RuntimeException e) {
+                throw e;
+            } catch (Error e) {
+                throw e;
+            } catch (Throwable t) {
+                throw new Error(t);
+            }
         }
-        if (handler == null) {
-            handler = thread.getThreadGroup();
-        }
-        handler.uncaughtException(thread, throwable);
     }
 
     @Advanced({"Thread.setDefaultUncaughtExceptionHandler", "Thread.setUncaughtExceptionHandler"})

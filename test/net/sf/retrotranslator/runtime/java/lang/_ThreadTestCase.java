@@ -219,6 +219,18 @@ public class _ThreadTestCase extends TestCase {
             MyHandler handler = new MyHandler();
             Thread.setDefaultUncaughtExceptionHandler(handler);
             assertSame(handler, Thread.getDefaultUncaughtExceptionHandler());
+            try {
+                thread.run();
+            } catch (IllegalStateException e) {
+                assertSame(exception, e);
+            }
+            assertNull(handler.thread);
+            assertNull(handler.exception);
+        }
+        for (Thread thread : threads) {
+            MyHandler handler = new MyHandler();
+            Thread.setDefaultUncaughtExceptionHandler(handler);
+            assertSame(handler, Thread.getDefaultUncaughtExceptionHandler());
             thread.start();
             thread.join();
             assertSame(thread, handler.thread);
