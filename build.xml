@@ -106,20 +106,6 @@
     <target name="test" depends="test-java13, test-java12, test-java11, test-translated, test-with-jit,
             test-embedded, test-retainapi, test-support, test-custom-backport, test-duplicates, test-wrong-format"/>
 
-    <target name="test-translated" depends="compile-tests">
-        <mkdir dir="build/test-classes14"/>
-        <copy todir="build/test-classes14">
-            <fileset dir="build/test-classes15"/>
-        </copy>
-        <antcall target="retrotranslate-test-classes14"/>
-        <!-- twice translate and test on Java 1.4 -->
-        <antcall target="retrotranslate-test-classes14"/>
-        <!-- test on Java 5 -->
-        <antcall target="junit-on-translated">
-            <param name="java_home" value="${java15_home}"/>
-        </antcall>
-    </target>
-
     <target name="test-java13" depends="compile-tests" if="java13_home">
         <antcall target="test-lang">
             <param name="target" value="1.3"/>
@@ -187,6 +173,50 @@
         </java>
     </target>
 
+    <target name="test-translated" depends="compile-tests">
+        <mkdir dir="build/test-classes14"/>
+        <copy todir="build/test-classes14">
+            <fileset dir="build/test-classes15"/>
+        </copy>
+        <antcall target="test-translated-java14"/>
+        <!-- twice translate and test on Java 1.4 -->
+        <antcall target="test-translated-java14"/>
+        <antcall target="test-translated-junit">
+            <param name="java_home" value="${java15_home}"/>
+        </antcall>
+    </target>
+
+    <target name="test-translated-java14">
+        <retrotranslator srcdir="build/test-classes14" advanced="true" verify="true" srcmask="*.class;*.properties">
+            <classpath path="${java14_rt_jar}"/>
+            <classpath location="build/retrotranslator-runtime-${version}.jar"/>
+            <classpath refid="classpath"/>
+        </retrotranslator>
+        <antcall target="test-translated-junit">
+            <param name="java_home" value="${java14_home}"/>
+        </antcall>
+    </target>
+
+    <target name="test-translated-junit">
+        <echo message="Running classes in build/test-classes14 on ${java_home}"/>
+        <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
+               jvm="${java_home}/bin/java" failureproperty="test.failed">
+            <jvmarg value="-Xfuture"/>
+            <classpath>
+                <path refid="classpath"/>
+                <pathelement location="build/test-classes14"/>
+                <pathelement location="build/retrotranslator-runtime-${version}.jar"/>
+            </classpath>
+            <formatter type="brief" usefile="false"/>
+            <batchtest>
+                <fileset dir="build/test-classes14" includes="**/*TestCase.class">
+                    <exclude name="**/BaseTestCase.class"/>
+                </fileset>
+            </batchtest>
+        </junit>
+        <fail if="test.failed"/>
+    </target>
+
     <target name="test-embedded" depends="compile-tests">
         <mkdir dir="build/test-embedded"/>
         <jar destfile="build/test-embedded.jar">
@@ -196,9 +226,18 @@
                          embed="com.mycompany.internal" srcmask="*.class;*.properties">
             <jarfileset file="build/test-embedded.jar"/>
         </retrotranslator>
-        <echo message="Running classes in build/test-embedded on ${java14_home}"/>
+        <antcall target="test-embedded-junit">
+            <param name="java_home" value="${java14_home}"/>
+        </antcall>
+        <antcall target="test-embedded-junit">
+            <param name="java_home" value="${java15_home}"/>
+        </antcall>
+    </target>
+
+    <target name="test-embedded-junit">
+        <echo message="Running classes in build/test-embedded on ${java_home}"/>
         <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
-               jvm="${java14_home}/bin/java" failureproperty="test.failed">
+               jvm="${java_home}/bin/java" failureproperty="test.failed">
             <jvmarg value="-Xfuture"/>
             <classpath location="lib/junit.jar"/>
             <classpath location="lib/mx4j.jar"/>
@@ -226,9 +265,18 @@
             <arg value="-backport"/>
             <arg value="net.sf.retrotranslator.tests;net.sf.retrotranslator.tests:net.sf.retrotranslator.tests.custom"/>
         </java>
-        <echo message="Running classes in build/test-custom-backport on ${java14_home}"/>
+        <antcall target="test-custom-backport-junit">
+            <param name="java_home" value="${java14_home}"/>
+        </antcall>
+        <antcall target="test-custom-backport-junit">
+            <param name="java_home" value="${java15_home}"/>
+        </antcall>
+    </target>
+
+    <target name="test-custom-backport-junit">
+        <echo message="Running classes in build/test-custom-backport on ${java_home}"/>
         <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
-               jvm="${java14_home}/bin/java" failureproperty="test.failed">
+               jvm="${java_home}/bin/java" failureproperty="test.failed">
             <jvmarg value="-Xfuture"/>
             <sysproperty key="net.sf.retrotranslator.tests.custom-backport" value="true"/>
             <classpath>
@@ -268,9 +316,18 @@
             <arg value="-classpath"/>
             <arg value="lib/junit.jar"/>
         </java>
-        <echo message="Running classes in build/test-smart on ${java14_home}"/>
+        <antcall target="test-smart-junit">
+            <param name="java_home" value="${java14_home}"/>
+        </antcall>
+        <antcall target="test-smart-junit">
+            <param name="java_home" value="${java15_home}"/>
+        </antcall>
+    </target>
+
+    <target name="test-smart-junit">
+        <echo message="Running classes in build/test-smart on ${java_home}"/>
         <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
-               jvm="${java14_home}/bin/java" failureproperty="test.failed">
+               jvm="${java_home}/bin/java" failureproperty="test.failed">
             <jvmarg value="-Xfuture"/>
             <sysproperty key="net.sf.retrotranslator.tests.smart-test" value="true"/>
             <classpath>
@@ -288,9 +345,18 @@
         <retrotranslator destdir="build/test-retainapi" retainapi="true">
             <dirset dir="build" includes="test-classes15"/>
         </retrotranslator>
-        <echo message="Running classes in build/test-retainapi on ${java14_home}"/>
+        <antcall target="test-retainapi-junit">
+            <param name="java_home" value="${java14_home}"/>
+        </antcall>
+        <antcall target="test-retainapi-junit">
+            <param name="java_home" value="${java15_home}"/>
+        </antcall>
+    </target>
+
+    <target name="test-retainapi-junit">
+        <echo message="Running classes in build/test-retainapi on ${java_home}"/>
         <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
-               jvm="${java14_home}/bin/java" failureproperty="test.failed">
+               jvm="${java_home}/bin/java" failureproperty="test.failed">
             <jvmarg value="-Xfuture"/>
             <sysproperty key="net.sf.retrotranslator.tests.retain-api" value="true"/>
             <classpath location="lib/junit.jar"/>
@@ -306,9 +372,18 @@
         <retrotranslator destdir="build/test-support" support="StringBuffer.trimToSize;ThreadLocal.remove">
             <fileset dir="build/test-classes15" includes="**/SupportAPITestCase.class"/>
         </retrotranslator>
-        <echo message="Running classes in build/test-support on ${java14_home}"/>
+        <antcall target="test-support-junit">
+            <param name="java_home" value="${java14_home}"/>
+        </antcall>
+        <antcall target="test-support-junit">
+            <param name="java_home" value="${java15_home}"/>
+        </antcall>
+    </target>
+
+    <target name="test-support-junit">
+        <echo message="Running classes in build/test-support on ${java_home}"/>
         <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
-               jvm="${java14_home}/bin/java" failureproperty="test.failed">
+               jvm="${java_home}/bin/java" failureproperty="test.failed">
             <jvmarg value="-Xfuture"/>
             <sysproperty key="net.sf.retrotranslator.tests.support" value="true"/>
             <classpath location="lib/junit.jar"/>
@@ -318,17 +393,6 @@
             <test name="net.sf.retrotranslator.tests.SupportAPITestCase"/>
         </junit>
         <fail if="test.failed"/>
-    </target>
-
-    <target name="retrotranslate-test-classes14">
-        <retrotranslator srcdir="build/test-classes14" advanced="true" verify="true" srcmask="*.class;*.properties">
-            <classpath path="${java14_rt_jar}"/>
-            <classpath location="build/retrotranslator-runtime-${version}.jar"/>
-            <classpath refid="classpath"/>
-        </retrotranslator>
-        <antcall target="junit-on-translated">
-            <param name="java_home" value="${java14_home}"/>
-        </antcall>
     </target>
 
     <target name="test-wrong-format" depends="compile-tests">
@@ -367,8 +431,18 @@
             <classpath location="build/retrotranslator-runtime-${version}.jar"/>
             <classpath refid="classpath"/>
         </retrotranslator>
+        <antcall target="test-duplicates-junit">
+            <param name="java_home" value="${java14_home}"/>
+        </antcall>
+        <antcall target="test-duplicates-junit">
+            <param name="java_home" value="${java15_home}"/>
+        </antcall>
+    </target>
+
+    <target name="test-duplicates-junit">
+        <echo message="Running classes in build/test-classes-duplicates on ${java_home}"/>
         <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
-               jvm="${java14_home}/bin/java" failureproperty="test.failed">
+               jvm="${java_home}/bin/java" failureproperty="test.failed">
             <jvmarg value="-Xfuture"/>
             <classpath>
                 <path refid="classpath"/>
@@ -403,26 +477,6 @@
                 <fileset dir="build/test-classes15" includes="**/*TestCase.class">
                     <exclude name="**/BaseTestCase.class"/>
                     <exclude name="**/TextFileTransformerTestCase.class"/>
-                </fileset>
-            </batchtest>
-        </junit>
-        <fail if="test.failed"/>
-    </target>
-
-    <target name="junit-on-translated">
-        <echo message="Running classes in build/test-classes14 on ${java_home}"/>
-        <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
-               jvm="${java_home}/bin/java" failureproperty="test.failed">
-            <jvmarg value="-Xfuture"/>
-            <classpath>
-                <path refid="classpath"/>
-                <pathelement location="build/test-classes14"/>
-                <pathelement location="build/retrotranslator-runtime-${version}.jar"/>
-            </classpath>
-            <formatter type="brief" usefile="false"/>
-            <batchtest>
-                <fileset dir="build/test-classes14" includes="**/*TestCase.class">
-                    <exclude name="**/BaseTestCase.class"/>
                 </fileset>
             </batchtest>
         </junit>

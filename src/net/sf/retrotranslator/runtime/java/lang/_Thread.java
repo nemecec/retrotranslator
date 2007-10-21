@@ -133,26 +133,25 @@ public class _Thread {
     }
 
     protected static void processException(Throwable throwable) {
-        if (new Exception().getStackTrace().length <= 3) {
+        if (new Exception().getStackTrace().length <= 4) {
             Thread thread = Thread.currentThread();
             UncaughtExceptionHandler handler = threads.obtain(thread).getHandler();
             if (handler == null) {
                 handler = getDefaultUncaughtExceptionHandler();
             }
-            if (handler == null) {
-                handler = thread.getThreadGroup();
+            if (handler != null) {
+                handler.uncaughtException(thread, throwable);
+                return;
             }
-            handler.uncaughtException(thread, throwable);
-        } else {
-            try {
-                throw throwable;
-            } catch (RuntimeException e) {
-                throw e;
-            } catch (Error e) {
-                throw e;
-            } catch (Throwable t) {
-                throw new Error(t);
-            }
+        }
+        try {
+            throw throwable;
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Error e) {
+            throw e;
+        } catch (Throwable t) {
+            throw new Error(t);
         }
     }
 
