@@ -124,8 +124,11 @@ public class MirandaMethodsVisitorTestCase extends TestCase {
         first.method(null);
         MirandaTestInterface second = new SecondConcreteClass();
         second.method(null);
-        MirandaTestInterface third = new ThirdConcreteClass();
-        third.method(null);
+        String vmName = System.getProperty("java.vm.name");
+        if (vmName != null && !vmName.startsWith("IBM J9")) {
+            MirandaTestInterface third = new ThirdConcreteClass();
+            third.method(null);
+        }
         GenericInterface<String> fourth = new FourthConcreteClass();
         fourth.getT();
         fourth.setT(null);

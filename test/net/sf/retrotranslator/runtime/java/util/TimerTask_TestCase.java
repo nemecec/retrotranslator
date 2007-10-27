@@ -137,8 +137,8 @@ public class TimerTask_TestCase extends TestCase {
         MyTimerTask task = new MyTimerTask();
         long delay = 200;
         long time = System.currentTimeMillis();
-        timer.scheduleAtFixedRate(task, delay, 1000);
         synchronized (task) {
+            timer.scheduleAtFixedRate(task, delay, 1000);
             task.wait();
         }
         assertTime(time + delay, task.lastTime);
