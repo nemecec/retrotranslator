@@ -50,7 +50,7 @@ class EmbeddingConverter {
         this.environment = environment;
         embeddingPrefix = makePrefix(embed);
         this.logger = logger;
-        for (String packageName : TransformerTools.readFile("embed", target)) {
+        for (String packageName : environment.readRegistry("embed", target)) {
             prefixes.add(makePrefix(packageName));
         }
     }

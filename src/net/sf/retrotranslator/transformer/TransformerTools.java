@@ -32,9 +32,6 @@
 package net.sf.retrotranslator.transformer;
 
 import net.sf.retrotranslator.runtime.asm.Type;
-import java.net.URL;
-import java.util.*;
-import java.io.*;
 
 /**
  * @author Taras Puchko
@@ -81,33 +78,6 @@ class TransformerTools {
     public static ClassLoader getDefaultClassLoader() {
         ClassLoader classLoader = TransformerTools.class.getClassLoader();
         return classLoader != null ? classLoader : ClassLoader.getSystemClassLoader();
-    }
-
-    public static List<String> readFile(String name, ClassVersion target) {
-        try {
-            List<String> result = new ArrayList<String>();
-            String fileName = TransformerTools.class.getPackage().getName().replace('.', '/') +
-                    "/" + name + target.getName().replace(".", "") + ".properties";
-            Enumeration<URL> resources = getDefaultClassLoader().getResources(fileName);
-            while (resources.hasMoreElements()) {
-                InputStream stream = resources.nextElement().openStream();
-                try {
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
-                    String s;
-                    while((s = reader.readLine()) != null) {
-                        s = s.trim();
-                        if (s.length() > 0) {
-                            result.add(s);
-                        }
-                    }
-                } finally {
-                    stream.close();
-                }
-            }
-            return result;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
 }

@@ -51,7 +51,10 @@
             <arg value="*.class"/>
         </java>
         <jar destfile="build/retrotranslator-runtime-${version}.jar">
-            <fileset dir="build/classes" includes="net/sf/retrotranslator/runtime/**"/>
+            <fileset dir="build/classes">
+                <include name="net/sf/retrotranslator/registry/**"/>
+                <include name="net/sf/retrotranslator/runtime/**"/>
+            </fileset>
             <zipfileset file="doc/LICENSE.txt" fullpath="RETROTRANSLATOR-LICENSE.txt"/>
             <fileset file="doc/ASM-LICENSE.txt"/>
             <manifest>

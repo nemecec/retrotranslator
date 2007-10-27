@@ -35,6 +35,7 @@ import java.io.*;
 import java.lang.ref.SoftReference;
 import java.util.*;
 import java.util.zip.*;
+import java.net.URL;
 import net.sf.retrotranslator.runtime.asm.ClassReader;
 import net.sf.retrotranslator.runtime.impl.*;
 
@@ -87,7 +88,8 @@ class TargetEnvironment {
         if (content != null) {
             return content != NO_CONTENT ? content : null;
         }
-        content = RuntimeTools.readAndClose(getStream(name + RuntimeTools.CLASS_EXTENSION));
+        List<byte[]> resources = getResources(name + RuntimeTools.CLASS_EXTENSION, 1);
+        content = resources.isEmpty() ? null : resources.get(0);
         cache.put(name, content != null ? content : NO_CONTENT);
         return content;
     }
@@ -101,29 +103,6 @@ class TargetEnvironment {
         return cache;
     }
 
-    private InputStream getStream(String name) {
-        for (Entry entry : entries) {
-            InputStream stream = entry.getResourceAsStream(name);
-            if (stream != null) return stream;
-        }
-        if (classLoader != null) {
-            InputStream stream = classLoader.getResourceAsStream(name);
-            if (stream != null) {
-                return stream;
-            }
-        }
-        if (contextual) {
-            ClassLoader loader = Thread.currentThread().getContextClassLoader();
-            if (loader != null) {
-                InputStream stream = loader.getResourceAsStream(name);
-                if (stream != null) {
-                    return stream;
-                }
-            }
-        }
-        return null;
-    }
-
     public void close() {
         for (Entry entry : entries) {
             try {
@@ -132,6 +111,75 @@ class TargetEnvironment {
                 e.printStackTrace();
             }
         }
+    }
+
+    public Collection<String> readRegistry(String name, ClassVersion target) {
+        try {
+            LinkedHashSet<String> result = new LinkedHashSet<String>();
+            String resourceName = "net/sf/retrotranslator/registry/" +
+                    name + target.getName().replace(".", "") + ".properties";
+            for (byte[] resource : getResources(resourceName, Integer.MAX_VALUE)) {
+                String content = new String(resource, "UTF-8");
+                BufferedReader reader = new BufferedReader(new StringReader(content));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    line = line.trim();
+                    if (line.length() > 0) {
+                        result.add(line);
+                    }
+                }
+            }
+            return result;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private List<byte[]> getResources(final String name, final int maxCount) {
+        final List<byte[]> result = new ArrayList<byte[]>();
+
+        class ResourceLoader {
+            boolean addResource(InputStream stream) {
+                if (stream == null) {
+                    return false;
+                }
+                result.add(RuntimeTools.readAndClose(stream));
+                return result.size() >= maxCount;
+            }
+
+            boolean addResources(ClassLoader loader) {
+                if (loader == null) {
+                    return false;
+                }
+                try {
+                    Enumeration<URL> resources = loader.getResources(name);
+                    while (resources.hasMoreElements()) {
+                        URL url = resources.nextElement();
+                        if (addResource(url.openStream())) {
+                            return true;
+                        }
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                return false;
+            }
+        }
+
+        ResourceLoader loader = new ResourceLoader();
+        for (Entry entry : entries) {
+            InputStream stream = entry.getResourceAsStream(name);
+            if (loader.addResource(stream)) {
+                return result;
+            }
+        }
+        if (loader.addResources(classLoader)) {
+            return result;
+        }
+        if (contextual) {
+            loader.addResources(Thread.currentThread().getContextClassLoader());
+        }
+        return result;
     }
 
     private static interface Entry {
@@ -160,7 +208,6 @@ class TargetEnvironment {
     }
 
     private static class ZipFileEntry implements Entry {
-
         private final File file;
         private ZipFile zipFile;
 

@@ -55,7 +55,7 @@ public class Retrotranslator {
     private SourceMask sourceMask = new SourceMask(null);
     private String embed;
     private String support;
-    private List<Backport> backports = new ArrayList<Backport>();
+    private String backport;
     private ClassVersion target = ClassVersion.VERSION_14;
     private ClassLoader classLoader;
 
@@ -149,7 +149,7 @@ public class Retrotranslator {
     }
 
     public void setBackport(String backport) {
-        backports = Backport.asList(backport);
+        this.backport = backport;
     }
 
     public void setTarget(String target) {
@@ -180,7 +180,7 @@ public class Retrotranslator {
         }
         OperationMode mode = new OperationMode(advanced, support, smart);
         ReplacementLocatorFactory locatorFactory = new ReplacementLocatorFactory(
-                target, mode, retainapi, backports, environment);
+                target, mode, retainapi, backport, environment);
         ClassTransformer classTransformer = new ClassTransformer(
                 lazy, stripsign, retainflags, systemLogger, converter, locatorFactory);
         TextFileTransformer fileTransformer = new TextFileTransformer(locatorFactory, converter);

@@ -68,7 +68,7 @@ public class JITRetrotranslator {
         if (isJava5Supported()) return true;
         TargetEnvironment environment = new TargetEnvironment(TransformerTools.getDefaultClassLoader(), null, true);
         ReplacementLocatorFactory locatorFactory = new ReplacementLocatorFactory(
-                ClassVersion.VERSION_14, mode, false, Backport.asList(backport), environment);
+                ClassVersion.VERSION_14, mode, false, backport, environment);
         SystemLogger logger = new SystemLogger(new MessageLogger() {
             public void log(Message message) {
                 //do nothing

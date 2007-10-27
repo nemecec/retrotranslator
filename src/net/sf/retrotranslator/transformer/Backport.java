@@ -48,22 +48,7 @@ abstract class Backport {
     private static final Pattern MEMBER_PATTERN = Pattern.compile(
             "\\s*((?:\\w+\\.)*\\p{Upper}\\w*)\\.(\\w+)\\s*:\\s*((?:\\w+\\.)*\\p{Upper}\\w*)\\.(\\w+)\\s*");
 
-    public static List<Backport> asList(String s) {
-        if (s == null) {
-            return new Vector<Backport>();
-        }
-        return asList(Arrays.asList(s.split(";")));
-    }
-
-    public static List<Backport> asList(List<String> list) {
-        List<Backport> result = new Vector<Backport>();
-        for (String s : list) {
-            result.add(valueOf(s));
-        }
-        return result;
-    }
-
-    private static Backport valueOf(String s) {
+    public static Backport valueOf(String s) {
         Matcher memberMatcher = MEMBER_PATTERN.matcher(s);
         if (memberMatcher.matches()) {
             return new MemberBackport(

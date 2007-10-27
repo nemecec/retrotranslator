@@ -48,16 +48,29 @@ class ReplacementLocatorFactory {
     private SoftReference<ReplacementLocator> softReference = new SoftReference<ReplacementLocator>(null);
 
     public ReplacementLocatorFactory(ClassVersion target, OperationMode mode, boolean retainapi,
-                                     List<Backport> backports, TargetEnvironment environment) {
+                                     String backport, TargetEnvironment environment) {
         this.target = target;
         this.mode = mode;
         this.retainapi = retainapi;
-        this.backports = backports;
         this.environment = environment;
-        if (retainapi) {
-            return;
+        this.backports = new Vector<Backport>();
+        for (String s : getBackportNames(backport)) {
+            backports.add(Backport.valueOf(s));
         }
-        backports.addAll(Backport.asList(TransformerTools.readFile("backport", target)));
+    }
+
+    private Collection<String> getBackportNames(String backport) {
+        LinkedHashSet<String> result = new LinkedHashSet<String>();
+        if (backport != null) {
+            result.addAll(Arrays.asList(backport.split(";")));
+        }
+        if (!retainapi) {
+            result.addAll(environment.readRegistry("backport", target));
+            if (target.isBefore(ClassVersion.VERSION_15)) {
+                result.add("java.lang.StringBuilder:java.lang.StringBuffer");
+            }
+        }
+        return result;
     }
 
     public ClassVersion getTarget() {
