@@ -489,7 +489,7 @@ public class Timer_TestCase extends TestCase {
         MyTimerTask task = new MyTimerTask();
         timer.schedule(new HalfSecondTimerTask(), 0);
         timer.scheduleAtFixedRate(task, new Date(System.currentTimeMillis() + 250), 250);
-        Thread.sleep(400);
+        Thread.sleep(350);
         assertEquals(0, task.count);
         Thread.sleep(250);
         assertEquals(2, task.count);
