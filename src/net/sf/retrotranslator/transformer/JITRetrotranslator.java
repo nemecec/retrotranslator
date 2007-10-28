@@ -43,6 +43,7 @@ public class JITRetrotranslator {
     private boolean smart;
     private String support;
     private String backport;
+    private ClassTransformer transformer;
 
     public JITRetrotranslator() {
     }
@@ -74,7 +75,7 @@ public class JITRetrotranslator {
                 //do nothing
             }
         }, false);
-        ClassTransformer transformer = new ClassTransformer(true, false, false, logger, null, locatorFactory);
+        transformer = new ClassTransformer(true, false, false, logger, null, locatorFactory);
         ClassDescriptor.setBytecodeTransformer(transformer);
         SunJITRetrotranslator.install(transformer);
         if (isJava5Supported()) return true;
@@ -123,18 +124,25 @@ public class JITRetrotranslator {
         if (i == args.length) {
             printUsageAndExit();
         }
-        if (!jit.run()) {
-            System.out.println("Cannot install JIT Retrotranslator.");
-        }
+        boolean installed = jit.run();
         if (jar) {
             File file = new File(args[i]);
-            if (!file.isFile()) printErrorAndExit("Unable to access jarfile " + file);
-            JarClassLoader classLoader = new JarClassLoader(file, TransformerTools.getDefaultClassLoader());
+            if (!file.isFile()) {
+                printErrorAndExit("Unable to access jarfile " + file);
+            }
+            JarClassLoader classLoader = installed ?
+                    new JarClassLoader(file, TransformerTools.getDefaultClassLoader()) :
+                    new TransformingJarClassLoader(file, TransformerTools.getDefaultClassLoader(), jit.transformer);
             String mainClass = classLoader.getMainClass();
-            if (mainClass == null) printErrorAndExit("Failed to load Main-Class manifest attribute from " + file);
+            if (mainClass == null) {
+                printErrorAndExit("Failed to load Main-Class manifest attribute from " + file);
+            }
             Thread.currentThread().setContextClassLoader(classLoader);
             execute(classLoader, mainClass, remove(args, i + 1));
         } else {
+            if (!installed) {
+                System.out.println("Cannot install JIT Retrotranslator.");
+            }
             execute(TransformerTools.getDefaultClassLoader(), args[i], remove(args, i + 1));
         }
     }

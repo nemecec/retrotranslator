@@ -83,7 +83,8 @@ class JarClassLoader extends URLClassLoader {
         try {
             JarFile jarFile = new JarFile(file);
             try {
-                return jarFile.getManifest().getMainAttributes();
+                Manifest manifest = jarFile.getManifest();
+                return manifest == null ? null : manifest.getMainAttributes();
             } finally {
                 jarFile.close();
             }

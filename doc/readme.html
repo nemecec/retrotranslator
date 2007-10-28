@@ -277,37 +277,30 @@
     run and debug on JRE 1.4.
 </p>
 <h4><a name="jit">How to use Just-in-Time Retrotranslator?</a></h4>
-
-
-    JIT Retrotranslator is able to translate Java classes loaded with any classloader at runtime.
-    It works on J2SE 1.4 from most JVM vendors like Sun, IBM, BEA, and Apple, and does nothing in other environments.
-    However translation at runtime consumes additional memory and processing resources and will not work
-    if the classes make use of Java 5 API but were compiled for earlier targets.
-
+<p>
+    In order to run a Java 5 application on J2SE 1.4 start it with JIT Retrotranslator:
+</p>
 <ul>
     <li>
-        If you want to run a JAR file with the JIT, execute:<br>
         <code>java -cp retrotranslator-transformer-<i>n.n.n</i>.jar
             net.sf.retrotranslator.transformer.JITRetrotranslator
             &lt;options&gt; -jar &lt;jarfile&gt; [&lt;args...&gt;]</code>
     </li>
     <li>
-        When the first option does not work or if you just want to run a class from a classpath, execute:<br>
         <code>java -cp retrotranslator-transformer-<i>n.n.n</i>.jar:&lt;classpath&gt;
             net.sf.retrotranslator.transformer.JITRetrotranslator
             &lt;options&gt; &lt;class&gt; [&lt;args...&gt;]</code>
     </li>
-    <li>
-        Alternatively you may simply call <code>new JITRetrotranslator().run()</code>
-        from some JVM 1.4 compatible class before loading Java 5 classes.
-    </li>
 </ul>
 <p>
-    JIT Retrotranslator accepts the <code><a href="#option_support">support</a></code>,
-    <code><a href="#option_advanced">advanced</a></code>,
-    <code><a href="#option_smart">smart</a></code>, and
-    <code><a href="#option_backport">backport</a></code> options.
+    The options can include <code><a href="#option_support">support</a></code>,
+    <code><a href="#option_advanced">advanced</a></code>, <code><a href="#option_smart">smart</a></code>, and
+    <code><a href="#option_backport">backport</a></code>. When running on J2SE 5.0 JIT Retrotranslator simply calls
+    the application, but on J2SE 1.4 it also translates classes compiled for Java 5 or later. However this capability
+    depends on the current JVM and the application itself, so under certain conditions JIT Retrotranslator may be unable
+    to translate either a JAR file or classes from the classpath or both. 
 </p>
+
 <h4><a name="supported">What API is supported on J2SE 1.4?</a></h4>
 <table border="1" cellspacing="0" cellpadding="5">
 <tr>
