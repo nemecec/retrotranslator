@@ -40,7 +40,7 @@
 <p>
     Retrotranslator is a tool that makes Java applications compatible with various versions of the Java platform.
     It supports all Java 5 language features and a significant part of Java 5 API on J2SE 1.4. In other Java
-    environments only the Java 5 language features that does not require new API are supported.
+    environments only the Java 5 language features that don't depend on the new API are supported.
     Retrotranslator is based on the <a href="http://asm.objectweb.org/">ASM</a> bytecode manipulation framework and the
     <a href="http://dcl.mathcs.emory.edu/util/backport-util-concurrent/index.php">backport</a> of concurrency utilities.
 </p>
@@ -851,13 +851,13 @@
 
 <p>
     In order to support API unavailable on the target platform Retrotranslator should be able to replace all references
-    to new clases, constructors, methods, and fields with references to backports compatible with the platform.
+    to new classes, constructors, methods, and fields with references to backports compatible with the platform.
     The location of the backports must be specified with the <a href="#option_classpath">classpath</a> option. The
     <a href="http://retrotranslator.cvs.sourceforge.net/retrotranslator/Retrotranslator/src/net/sf/retrotranslator/registry/backport14.properties?view=markup">default</a>
     backports for the 1.4 target have been packaged into the <code>retrotranslator-runtime-<i>n.n.n</i>.jar</code> and
     <code>backport-util-concurrent-<i>n.n</i>.jar</code> files, and to complement or override them additional backport
     names may be specified via the <a href="#option_backport">backport</a> option. The backport names may have five
-    different forms, the first one declares a universal backport package and the others allow to reuse existing backports.
+    different forms, the first one declares a universal backport package and the others allow reusing existing backports.
 </p>
 <table border="1" cellspacing="0" cellpadding="5">
 <tr>
@@ -906,7 +906,7 @@
         but with an additional first parameter representing the instance.
     </li>
     <li>For a constructor there is a public static <code>convertConstructorArguments</code> method that
-        accepts constructor's arguments an returns an argument for a Java 1.4 constuctor.
+        accepts constructor's arguments and returns an argument for a Java 1.4 constructor.
     </li>
 </ul>
 <p>
@@ -917,7 +917,7 @@
     constructor backports. There is a public static
     <code>createInstanceBuilder</code> method that accepts constructor's arguments an returns an object with public
     <code>argument1</code>...<code>argumentN</code> methods and an optional public void <code>initialize</code> method.
-    All the <code>argumentX</code> methods provide arguments for a Java 1.4 constuctor and should not have any
+    All the <code>argumentX</code> methods provide arguments for a Java 1.4 constructor and should not have any
     parameters. The <code>initialize</code> method has a single parameter for the created instance and may be used for
     postprocessing. If this approach does not work there is another flexible but not always supported one used by
     <a href="http://retrotranslator.cvs.sourceforge.net/retrotranslator/Retrotranslator/src/net/sf/retrotranslator/runtime/java/lang/_StackTraceElement.java?view=markup">
