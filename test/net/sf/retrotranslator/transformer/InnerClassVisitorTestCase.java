@@ -38,6 +38,8 @@ import junit.framework.TestCase;
  */
 public class InnerClassVisitorTestCase extends TestCase {
 
+    private static final StringBuilder builder = new StringBuilder();
+
     private String message = "Hello";
 
     private class InnerClass {
@@ -126,6 +128,33 @@ public class InnerClassVisitorTestCase extends TestCase {
             }
         }
         assertSame(message, new LocalClass().new TwiceLocalClass().getMessage());
+    }
+
+    public synchronized void testNonstaticContext() {
+        builder.setLength(0);
+        final Number a = Integer.valueOf("3");
+        new Runnable() {
+            public void run() {
+                builder.append(a);
+            }
+        }.run();
+        assertEquals("3", builder.toString());
+    }
+
+    public synchronized void testStaticContext() {
+        executeInStaticMethod();
+    }
+
+    private static void executeInStaticMethod() {
+        builder.setLength(0);
+        final Number a = Integer.valueOf("1");
+        final Number b = Integer.valueOf("2");
+        new Runnable() {
+            public void run() {
+                builder.append(a).append(":").append(b);
+            }
+        }.run();
+        assertEquals("1:2", builder.toString());
     }
 
 }

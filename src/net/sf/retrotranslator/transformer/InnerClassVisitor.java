@@ -34,6 +34,7 @@ package net.sf.retrotranslator.transformer;
 import static net.sf.retrotranslator.runtime.asm.Opcodes.*;
 import static net.sf.retrotranslator.runtime.impl.RuntimeTools.CONSTRUCTOR_NAME;
 import net.sf.retrotranslator.runtime.asm.*;
+import java.util.*;
 
 /**
  * @author Taras Puchko
@@ -61,50 +62,61 @@ class InnerClassVisitor extends ClassAdapter {
         return methodVisitor;
     }
 
+    private static class FieldAssignment {
+
+        public final int localVariable;
+        public final String fieldName;
+        public final String fieldType;
+
+        public FieldAssignment(int localVariable, String fieldName, String fieldType) {
+            this.localVariable = localVariable;
+            this.fieldName = fieldName;
+            this.fieldType = fieldType;
+        }
+
+    }
+
     private class InnerClassMethodVisitor extends AbstractMethodVisitor {
 
         private boolean initialized;
         private int thisCount;
         private int superCount;
-        private Integer firstLoad;
-        private Integer secondLoad;
-        private String fieldName;
-        private String fieldType;
+
+        private boolean thisLoaded;
+        private Integer localVariable;
+        private List<FieldAssignment> assignments;
 
         public InnerClassMethodVisitor(MethodVisitor visitor) {
             super(visitor);
         }
 
         protected void flush() {
-            if (!initialized && fieldName != null) {
-                return;
+            if (thisLoaded) {
+                mv.visitVarInsn(ALOAD, 0);
+                thisLoaded = false;
+                if (localVariable != null) {
+                    mv.visitVarInsn(ALOAD, localVariable);
+                    localVariable = null;
+                }
             }
-            if (firstLoad == null) {
-                return;
+            if (initialized && assignments != null) {
+                for (FieldAssignment assignment : assignments) {
+                    mv.visitVarInsn(ALOAD, 0);
+                    mv.visitVarInsn(ALOAD, assignment.localVariable);
+                    mv.visitFieldInsn(PUTFIELD, thisName, assignment.fieldName, assignment.fieldType);
+                }
+                assignments = null;
             }
-            mv.visitVarInsn(ALOAD, firstLoad);
-            firstLoad = null;
-            if (secondLoad == null) {
-                return;
-            }
-            mv.visitVarInsn(ALOAD, secondLoad);
-            secondLoad = null;
-            if (fieldName == null) {
-                return;
-            }
-            mv.visitFieldInsn(PUTFIELD, thisName, fieldName, fieldType);
-            fieldName = null;
-            fieldType = null;
         }
 
         public void visitVarInsn(int opcode, int var) {
-            if (!initialized && opcode == ALOAD) {
-                if (firstLoad == null) {
-                    firstLoad = var;
+            if (!initialized && opcode == ALOAD && localVariable == null) {
+                if (thisLoaded) {
+                    localVariable = var;
                     return;
                 }
-                if (secondLoad == null) {
-                    secondLoad = var;
+                if (var == 0) {
+                    thisLoaded = true;
                     return;
                 }
             }
@@ -112,9 +124,13 @@ class InnerClassVisitor extends ClassAdapter {
         }
 
         public void visitFieldInsn(int opcode, String owner, String name, String desc) {
-            if (!initialized && opcode == PUTFIELD && owner.equals(thisName) && secondLoad != null) {
-                fieldName = name;
-                fieldType = desc;
+            if (!initialized && opcode == PUTFIELD && localVariable != null && owner.equals(thisName)) {
+                if (assignments == null) {
+                    assignments = new ArrayList<FieldAssignment>();
+                }
+                assignments.add(new FieldAssignment(localVariable, name, desc));
+                thisLoaded = false;
+                localVariable = null;
                 return;
             }
             super.visitFieldInsn(opcode, owner, name, desc);
