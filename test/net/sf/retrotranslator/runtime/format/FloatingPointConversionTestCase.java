@@ -119,9 +119,9 @@ public class FloatingPointConversionTestCase extends BaseTestCase {
         assertFormat("-000012,35", "%+010.2f", -12.345);
 
         assertFormat("1234567936,000000", "%f", 1234567890f);
-        assertFormat("1 234 567 936,000000", "%,f", 1234567890f);
-        assertFormat("1 234 567 936,000000", "%,f", BigDecimal.valueOf(1234567890f));
-        assertFormat("-1 234 567 890,123457", "%,f", -1234567890.123456789d);
+        assertFormat("1\u00a0234\u00a0567\u00a0936,000000", "%,f", 1234567890f);
+        assertFormat("1\u00a0234\u00a0567\u00a0936,000000", "%,f", BigDecimal.valueOf(1234567890f));
+        assertFormat("-1\u00a0234\u00a0567\u00a0890,123457", "%,f", -1234567890.123456789d);
         assertFormat("27670116110564327421,000000", "%f",
                 BigDecimal.valueOf(Long.MAX_VALUE).multiply(BigDecimal.valueOf(3)));
 
@@ -176,7 +176,7 @@ public class FloatingPointConversionTestCase extends BaseTestCase {
         assertFormat("1.23e+04", "%1.3g", BigDecimal.valueOf(12345.6789));
         assertFormat(HINDI, "1.23e+04", "%1.3g", BigDecimal.valueOf(12345.6789));
 
-        assertFormat("12 345,68", "%,1.7g", BigDecimal.valueOf(12345.6789));
+        assertFormat("12\u00a0345,68", "%,1.7g", BigDecimal.valueOf(12345.6789));
         assertFormat("12,345.68", "%,1.7g", 12345.6789);
         assertFormat("2.767011611056432742e+19", "%1.19g",
                 BigDecimal.valueOf(Long.MAX_VALUE).multiply(BigDecimal.valueOf(3)));

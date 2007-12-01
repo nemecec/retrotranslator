@@ -1,6 +1,11 @@
 Retrotranslator Changelog
 =================================
 
+1.2.4
+---------------------------------
+  - Fixed a bug in translation of inner classes for Java 1.3 and earlier.
+  - Added a workaround for a bug #4776385 in Sun JDK 1.2.2 for Windows.
+
 1.2.3 (2007-10-28)
 ---------------------------------
   - Basic support for Java 1.1, 1.2, and 1.3.

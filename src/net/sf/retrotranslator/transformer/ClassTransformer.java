@@ -75,7 +75,7 @@ class ClassTransformer implements BytecodeTransformer {
             visitor = new MirandaMethodsVisitor(visitor, locator);
         }
         if (target.isBefore(ClassVersion.VERSION_13)) {
-            visitor = new InheritedConstantVisitor(visitor, locator);
+            visitor = new InheritedConstantVisitor(new SynchronizedBlockVisitor(visitor), locator);
         }
         if (target.isBefore(ClassVersion.VERSION_14)) {
             visitor = new InnerClassVisitor(visitor);

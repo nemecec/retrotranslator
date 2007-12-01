@@ -80,6 +80,6 @@ public class _PrintWriterTestCase extends BaseTestCase {
         PrintWriter writer = new PrintWriter(stream, true);
         writer.printf("Hello, %s!", "World");
         writer.printf(Locale.FRANCE, " - %,d", 1000000);
-        assertEquals("Hello, World! - 1 000 000", stream.toString());
+        assertEquals("Hello, World! - 1\u00a0000\u00a0000", stream.toString());
     }
 }

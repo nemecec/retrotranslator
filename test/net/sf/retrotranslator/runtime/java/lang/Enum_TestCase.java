@@ -34,6 +34,7 @@ package net.sf.retrotranslator.runtime.java.lang;
 import net.sf.retrotranslator.tests.BaseTestCase;
 import net.sf.retrotranslator.runtime.impl.RuntimeTools;
 import java.util.EnumSet;
+import java.util.concurrent.Callable;
 import java.lang.ref.WeakReference;
 
 /**
@@ -167,12 +168,16 @@ public class Enum_TestCase extends BaseTestCase {
         MyClassLoader classLoader = new MyClassLoader(MyColor.class.getClassLoader());
         Class enumClass = classLoader.defineClass(bytes);
         assertEquals(3, enumClass.getEnumConstants().length);
-        WeakReference<ClassLoader> reference = new WeakReference<ClassLoader>(classLoader);
+        final WeakReference<ClassLoader> reference = new WeakReference<ClassLoader>(classLoader);
         classLoader = null;
         System.gc();
         assertSame(enumClass.getClassLoader(), reference.get());
         enumClass = null;
-        System.gc();
+        gc(new Callable<Boolean>() {
+            public Boolean call() throws Exception {
+                return reference.get() != null;
+            }
+        });
         assertNull(reference.get());
     }
 

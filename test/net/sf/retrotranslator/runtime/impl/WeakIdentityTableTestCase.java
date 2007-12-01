@@ -34,11 +34,12 @@ package net.sf.retrotranslator.runtime.impl;
 import java.util.*;
 import java.util.concurrent.*;
 import junit.framework.TestCase;
+import net.sf.retrotranslator.tests.BaseTestCase;
 
 /**
  * @author Taras Puchko
  */
-public class WeakIdentityTableTestCase extends TestCase {
+public class WeakIdentityTableTestCase extends BaseTestCase {
 
     private static class StringWeakIdentityTable extends WeakIdentityTable<String, String> {
         protected String initialValue() {
@@ -121,11 +122,12 @@ public class WeakIdentityTableTestCase extends TestCase {
         assertTrue("Table must be empty but contains " + size + " entries.", size < 10);
     }
 
-    private void gc(WeakIdentityTable table, int size) throws InterruptedException {
-        for (int i = 0; table.size() > size && i < 10; i++) {
-            System.gc();
-            Thread.sleep(100);
-        }
+    private void gc(final WeakIdentityTable table, final int size) throws Exception {
+        gc(new Callable<Boolean>() {
+            public Boolean call() throws Exception {
+                return table.size() > size;
+            }
+        });
     }
 
 }

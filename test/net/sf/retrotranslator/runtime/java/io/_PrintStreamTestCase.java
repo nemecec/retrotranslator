@@ -99,7 +99,7 @@ public class _PrintStreamTestCase extends BaseTestCase {
         PrintStream printStream = new PrintStream(stream);
         printStream.format("Hello, %s!", "World");
         printStream.format(Locale.FRANCE, " - %,d", 1000000);
-        assertEquals("Hello, World! - 1 000 000", stream.toString());
+        assertEquals("Hello, World! - 1\u00a0000\u00a0000", stream.toString());
     }
 
     public void testPrintf() throws Exception {

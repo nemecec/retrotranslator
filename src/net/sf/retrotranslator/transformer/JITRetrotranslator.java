@@ -141,7 +141,7 @@ public class JITRetrotranslator {
             execute(classLoader, mainClass, remove(args, i + 1));
         } else {
             if (!installed) {
-                System.out.println("Cannot install JIT Retrotranslator.");
+                System.out.println("Cannot install Retrotranslator, use -jar.");
             }
             execute(TransformerTools.getDefaultClassLoader(), args[i], remove(args, i + 1));
         }

@@ -144,6 +144,7 @@
                 <include name="**/InheritedConstantVisitorTestCase*"/>
                 <include name="**/ObjectMethodsVisitorTestCase*"/>
                 <include name="**/Miranda*"/>
+                <include name="**/SynchronizedBlockVisitorTestCase*"/>
             </fileset>
         </copy>
         <retrotranslator srcdir="${test_dir}" target="${target}"/>
@@ -162,6 +163,9 @@
         </antcall>
         <antcall target="test-class">
             <param name="simple_name" value="MirandaMethodsVisitorTestCase"/>
+        </antcall>
+        <antcall target="test-class">
+            <param name="simple_name" value="SynchronizedBlockVisitorTestCase"/>
         </antcall>
     </target>
 

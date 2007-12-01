@@ -58,11 +58,11 @@ public class DecimalIntegralConversionTestCase extends BaseTestCase {
         assertFormat("-005", "%04d", BigInteger.valueOf(-5));
 
         assertFormat("1234567890", "%d", 1234567890);
-        assertFormat("1 234 567 890", "%,d", 1234567890);
+        assertFormat("1\u00a0234\u00a0567\u00a0890", "%,d", 1234567890);
 
         assertFormat(HINDI, "\u0967,\u0968\u0969\u096a,\u096b\u096c\u096d,\u096e\u096f\u0966", "%,d", 1234567890);
 
-        assertFormat("1 234", "%,d", BigInteger.valueOf(1234));
+        assertFormat("1\u00a0234", "%,d", BigInteger.valueOf(1234));
         assertFormat(" null", "%5d", (Object) null);
         assertFormat("(5) ", "%-(4d", -5);
         assertFormat("-128", "%d", Byte.MIN_VALUE);

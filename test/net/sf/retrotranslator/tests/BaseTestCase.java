@@ -34,6 +34,7 @@ package net.sf.retrotranslator.tests;
 import java.io.*;
 import java.lang.reflect.*;
 import java.util.*;
+import java.util.concurrent.Callable;
 import junit.framework.TestCase;
 
 /**
@@ -109,6 +110,18 @@ public abstract class BaseTestCase extends TestCase {
             return reader.readLine();
         } finally {
             reader.close();
+        }
+    }
+
+    protected void gc(Callable<Boolean> predicate) throws Exception {
+        System.gc();
+        try {
+            List<long[]> list = new ArrayList<long[]>();
+            while (predicate.call() && list.size() < Integer.MAX_VALUE) {
+                list.add(new long[1000000]);
+            }
+        } catch (OutOfMemoryError e) {
+            // ok
         }
     }
 
