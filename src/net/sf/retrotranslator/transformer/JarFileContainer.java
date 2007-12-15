@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
+ *
  * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
@@ -121,30 +121,29 @@ class JarFileContainer extends FileContainer {
     }
 
     private void flush(FileOutputStream fileOutputStream, SystemLogger logger) throws IOException {
-        JarFileEntry manifestEntry = entries.get(JarFile.MANIFEST_NAME);
-        Manifest manifest = manifestEntry == null ? new Manifest()
-                : new Manifest(new ByteArrayInputStream(manifestEntry.getContent()));
-        fixMainAttributes(manifest);
-        boolean signatureRemoved = removeSignatureAttributes(manifest);
-        JarOutputStream stream = new JarOutputStream(fileOutputStream, manifest);
+        Manifest manifest = getManifest();
+        boolean signatureRemoved = removeSignature(manifest);
+        List<JarFileEntry> fileEntries = getFileEntries(logger, signatureRemoved);
+        Set<String> folderNames = getFolderNames(fileEntries);
+        JarOutputStream stream = new JarOutputStream(fileOutputStream);
         stream.setLevel(Deflater.BEST_COMPRESSION);
-        for (JarFileEntry entry : this.entries.values()) {
-            if (entry == manifestEntry) continue;
-            if (SIGNATURE_ENTRY.matcher(entry.getName()).matches()) {
-                signatureRemoved = true;
-                continue;
-            }
-            stream.putNextEntry(new ZipEntry(entry.getName()));
-            byte[] content = entry.getContent();
-            if (content != null) stream.write(content);
+        stream.putNextEntry(new ZipEntry("META-INF/"));
+        stream.putNextEntry(new ZipEntry(JarFile.MANIFEST_NAME));
+        manifest.write(stream);
+        for (String name : folderNames) {
+            stream.putNextEntry(new ZipEntry(name));
         }
-        if (signatureRemoved) {
-            logger.log(new Message(Level.INFO, "Removing digital signature from " + location, location, null));
+        for (JarFileEntry entry : fileEntries) {
+            stream.putNextEntry(new ZipEntry(entry.getName()));
+            stream.write(entry.getContent());
         }
         stream.close();
     }
 
-    private void fixMainAttributes(Manifest manifest) {
+    private Manifest getManifest() throws IOException {
+        JarFileEntry entry = entries.get(JarFile.MANIFEST_NAME);
+        Manifest manifest = entry == null ? new Manifest()
+                : new Manifest(new ByteArrayInputStream(entry.getContent()));
         Attributes attributes = manifest.getMainAttributes();
         attributes.putValue("Manifest-Version", "1.0");
         attributes.putValue("Created-By",
@@ -154,18 +153,51 @@ class JarFileContainer extends FileContainer {
         if (title != null && version != null) {
             attributes.putValue("Retrotranslator-Version", title + " " + version);
         }
+        return manifest;
     }
 
-    private boolean removeSignatureAttributes(Manifest manifest) {
+    private boolean removeSignature(Manifest manifest) {
+        boolean result = false;
         for (Attributes attributes : manifest.getEntries().values()) {
             Iterator<Map.Entry<Object, Object>> iterator = attributes.entrySet().iterator();
             while (iterator.hasNext()) {
                 if (SIGNATURE_ATTRIBUTE.matcher(iterator.next().getKey().toString()).matches()) {
                     iterator.remove();
+                    result = true;
                 }
             }
         }
-        return false;
+        return result;
+    }
+
+    private List<JarFileEntry> getFileEntries(SystemLogger logger, boolean signatureRemoved) {
+        List<JarFileEntry> result = new ArrayList<JarFileEntry>(entries.values());
+        for (Iterator<JarFileEntry> iterator = result.iterator(); iterator.hasNext();) {
+            JarFileEntry entry = iterator.next();
+            if (entry.getName().equals(JarFile.MANIFEST_NAME)) {
+                iterator.remove();
+            }
+            if (SIGNATURE_ENTRY.matcher(entry.getName()).matches()) {
+                iterator.remove();
+                signatureRemoved = true;
+            }
+        }
+        if (signatureRemoved) {
+            logger.log(new Message(Level.INFO, "Removing digital signature from " + location, location, null));
+        }
+        return result;
+    }
+
+    private Set<String> getFolderNames(List<JarFileEntry> entries) {
+        Set<String> result = new LinkedHashSet<String>();
+        for (JarFileEntry entry : entries) {
+            String name = entry.getName();
+            int index = -1;
+            while ((index = name.indexOf('/', index + 1)) >= 0) {
+                result.add(name.substring(0, index + 1));
+            }
+        }
+        return result;
     }
 
     private static class JarFileEntry extends FileEntry {
