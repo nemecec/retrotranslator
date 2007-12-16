@@ -139,6 +139,9 @@ public class FloatingPointConversionTestCase extends BaseTestCase {
         assertFormatException(IllegalFormatConversionException.class, "%f", "x");
         assertFormatException(IllegalFormatFlagsException.class, "%-012.3f");
         assertFormatException(IllegalFormatFlagsException.class, "%+ 12.3f");
+
+        assertFormat("1234567936,000", "%.3f", 1234567890f);
+        assertFormatException(UnknownFormatConversionException.class, "%.f");
     }
 
     public void testFormat_GeneralScientific() throws Exception {

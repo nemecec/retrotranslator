@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
+ *
  * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
@@ -33,6 +33,7 @@ package net.sf.retrotranslator.runtime.java.util;
 
 import java.io.Serializable;
 import java.security.*;
+import java.util.*;
 
 /**
  * @author Taras Puchko
@@ -65,14 +66,24 @@ public class UUID_ implements Serializable, Comparable<UUID_> {
     }
 
     public static UUID_ fromString(String name) {
-        String[] values = name.split("-");
-        if (values.length != 5) throw new IllegalArgumentException(name);
+        Long[] values = new Long[5];
+        StringTokenizer tokenizer = new StringTokenizer(name, "-", true);
         try {
-            return new UUID_(Long.parseLong(values[0], 16) << 32 | Long.parseLong(values[1], 16) << 16 |
-                    Long.parseLong(values[2], 16), Long.parseLong(values[3], 16) << 48 | Long.parseLong(values[4], 16));
-        } catch (NumberFormatException e) {
-            throw new IllegalStateException(name);
+            for (int i = 0; i < 5; i++) {
+                if (i > 0 && !tokenizer.nextToken().equals("-")) {
+                    throw new IllegalArgumentException(name);
+                }
+                values[i] = Long.parseLong(tokenizer.nextToken(), 16);
+            }
+        } catch (NoSuchElementException e) {
+            throw new IllegalArgumentException(name, e);
         }
+        while (tokenizer.hasMoreTokens()) {
+            if (!tokenizer.nextToken().equals("-")) {
+                throw new IllegalArgumentException(name);
+            }
+        }
+        return new UUID_(values[0] << 32 | values[1] << 16 | values[2], values[3] << 48 | values[4]);
     }
 
     public long getMostSignificantBits() {

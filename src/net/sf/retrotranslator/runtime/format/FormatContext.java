@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
+ *
  * Copyright (c) 2005 - 2007 Taras Puchko
  * All rights reserved.
  *
@@ -33,7 +33,6 @@ package net.sf.retrotranslator.runtime.format;
 
 import java.text.DecimalFormatSymbols;
 import java.util.*;
-import java.util.regex.*;
 
 /**
  * @author Taras Puchko
@@ -41,8 +40,6 @@ import java.util.regex.*;
 public abstract class FormatContext {
 
     private static final DecimalFormatSymbols US_SYMBOLS = new DecimalFormatSymbols(Locale.US);
-    private static final Pattern PATTERN = Pattern.compile("%(?:(\\d+)\\$)?([-#+ 0,(\\<]*)?(\\d+)?(?:\\.(\\d+))?" +
-            "([bBhHsScCdoxXeEfgGaA%n]|(?:[tT][HIklMSLNpzZsQBbhAaCYyjmdeRTrDFc]))");
 
     private Locale locale;
     private DecimalFormatSymbols symbols;
@@ -56,6 +53,8 @@ public abstract class FormatContext {
     private int width;
     private int precision;
     private String conversion;
+    private String format;
+    private int position;
 
     protected FormatContext(Locale locale) {
         this.locale = locale;
@@ -70,27 +69,110 @@ public abstract class FormatContext {
     public abstract boolean writeFormattable();
 
     public void printf(String format, Object... args) {
+        this.format = format;
         arguments = args;
         effectiveIndex = 0;
         ordinaryIndex = 0;
-        int position = 0;
-        for (Matcher matcher = PATTERN.matcher(format); matcher.find(position); position = matcher.end()) {
-            writeText(format, position, matcher.start());
+        position = 0;
+        int index;
+        while ((index = format.indexOf('%', position)) >= 0) {
+            append(format, position, index);
+            scanOptions(index);
             effectiveIndexComputed = false;
-            specifier = matcher.group();
-            explicitIndex = parse(matcher.group(1));
-            String f = matcher.group(2);
-            flags = f != null ? f : "";
-            width = parse(matcher.group(3));
-            precision = parse(matcher.group(4));
-            conversion = matcher.group(5);
-            Conversion.getInstance(conversion).format(this);
+            specifier = format.substring(index, position);
+            Conversion instance = Conversion.getInstance(conversion);
+            if (instance == null) {
+                throw new UnknownFormatConversionException(conversion);
+            }
+            instance.format(this);
         }
-        writeText(format, position, format.length());
+        append(format, position, format.length());
     }
 
-    private static int parse(String s) {
-        return s == null ? -1 : Integer.valueOf(s);
+    private void scanOptions(int index) {
+        position = index + 1;
+        try {
+            scanExplicitIndex();
+            scanFlags();
+            scanWidth();
+            scanPrecision();
+            scanConversion();
+        } catch (IndexOutOfBoundsException e) {
+            throw new UnknownFormatConversionException(format.substring(index));
+        }
+    }
+
+    private void scanExplicitIndex() {
+        int index = skipDigits(format, position);
+        if (index > position && format.charAt(index) == '$') {
+            explicitIndex = parse(format, position, index);
+            position = index + 1;
+        } else {
+            explicitIndex = -1;
+        }
+    }
+
+    private void scanFlags() {
+        int index = skipFlags(format, position);
+        if (index > position) {
+            flags = format.substring(position, index);
+            position = index;
+        } else {
+            flags = "";
+        }
+    }
+
+    private void scanWidth() {
+        int index = skipDigits(format, position);
+        if (index > position) {
+            width = parse(format, position, index);
+            position = index;
+        } else {
+            width = -1;
+        }
+    }
+
+    private void scanPrecision() {
+        if (format.charAt(position) == '.') {
+            position++;
+            int index = skipDigits(format, position);
+            if (index > position) {
+                precision = parse(format, position, index);
+                position = index;
+            } else {
+                throw new IndexOutOfBoundsException();
+            }
+        } else {
+            precision = -1;
+        }
+    }
+
+    private void scanConversion() {
+        char c = format.charAt(position);
+        int endIndex = (c == 't' || c == 'T') ? position + 2 : position + 1;
+        conversion = format.substring(position, endIndex);
+        position = endIndex;
+    }
+
+    private static int skipDigits(String s, int index) {
+        char c = s.charAt(index);
+        while (c >= '0' && c <= '9') {
+            c = s.charAt(++index);
+        }
+        return index;
+    }
+
+    private static int skipFlags(String s, int index) {
+        char c = s.charAt(index);
+        while (c == '-' || c == '#' || c == '+' || c == ' ' ||
+                c == '0' || c == ',' || c == '(' || c == '<' ) {
+            c = s.charAt(++index);
+        }
+        return index;
+    }
+
+    private static Integer parse(String format, int beginIndex, int endIndex) {
+        return Integer.valueOf(format.substring(beginIndex, endIndex));
     }
 
     private char getConversionType() {
@@ -151,16 +233,6 @@ public abstract class FormatContext {
         if (arguments == null || effectiveIndex == 0 || effectiveIndex > arguments.length) {
             throw new MissingFormatArgumentException(specifier);
         }
-    }
-
-    private void writeText(String s, int start, int end) {
-        if (start == end) return;
-        int i = s.indexOf('%', start);
-        if (i >= 0 && i < end) {
-            String unknownFormat = s.substring(i + 1, end);
-            throw new UnknownFormatConversionException(unknownFormat.length() > 0 ? unknownFormat : "%");
-        }
-        append(s, start, end);
     }
 
     public void writeRestricted(String s) {
