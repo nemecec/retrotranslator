@@ -50,6 +50,16 @@
             <arg value="-srcmask"/>
             <arg value="*.class"/>
         </java>
+        <java classname="net.sf.retrotranslator.runtime.impl.AdvancedPostProcessor"
+              classpathref="classpath" classpath="build/classes14" failonerror="true"
+              jvm="${java15_home}/bin/java" fork="true">
+            <arg value="build/classes"/>
+            <arg value="build/classes/net/sf/retrotranslator/registry/advanced14.properties"/>
+        </java>
+        <delete>
+            <fileset dir="build/classes/net/sf/retrotranslator/runtime/impl"
+                     includes="AdvancedPostProcessor*.class Advanced.class"/>
+        </delete>
         <jar destfile="build/retrotranslator-runtime-${version}.jar">
             <fileset dir="build/classes">
                 <include name="net/sf/retrotranslator/registry/**"/>
@@ -393,7 +403,7 @@
                jvm="${java_home}/bin/java" failureproperty="test.failed">
             <jvmarg value="-Xfuture"/>
             <sysproperty key="net.sf.retrotranslator.tests.support" value="true"/>
-            <classpath location="lib/junit.jar"/>
+            <classpath refid="classpath"/>
             <classpath location="build/retrotranslator-runtime-${version}.jar"/>
             <classpath location="build/test-support"/>
             <formatter type="brief" usefile="false"/>

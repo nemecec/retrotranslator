@@ -83,6 +83,10 @@ public class FieldDescriptor extends AnnotatedElementDescriptor implements Membe
         return classDescriptor;
     }
 
+    public String getInfo() {
+        return RuntimeTools.getFieldInfo(classDescriptor.getName(), name);
+    }
+
     protected TypeVariable findTypeVariable(String name) {
         return classDescriptor.findTypeVariable(name);
     }

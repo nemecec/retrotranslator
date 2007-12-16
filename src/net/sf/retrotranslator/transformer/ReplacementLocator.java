@@ -35,7 +35,6 @@ import java.util.*;
 import static net.sf.retrotranslator.runtime.asm.Opcodes.*;
 import net.sf.retrotranslator.runtime.asm.*;
 import net.sf.retrotranslator.runtime.impl.*;
-import net.sf.retrotranslator.runtime.java.lang.annotation.Annotation_;
 
 /**
  * @author Taras Puchko
@@ -48,6 +47,7 @@ class ReplacementLocator {
     private final List<Backport> backports;
     private final TargetEnvironment environment;
     private final Map<String, ClassReplacement> replacements = new Hashtable<String, ClassReplacement>();
+    private final Set<String> unsupportedBackports = new HashSet<String>();
 
     interface KeyProvider {
         MemberKey getKey(String name, String desc);
@@ -57,10 +57,28 @@ class ReplacementLocator {
         this.mode = mode;
         this.backports = backports;
         this.environment = environment;
+        for (String entry : environment.readRegistry("advanced", mode.getTarget())) {
+            String[] pair = entry.split(":");
+            if (pair.length != 2) {
+                throw new IllegalArgumentException(entry);
+            }
+            if (isTotallyUnsupported(pair[1].split(","))) {
+                unsupportedBackports.add(pair[0]);
+            }
+        }
     }
 
     public TargetEnvironment getEnvironment() {
         return environment;
+    }
+
+    private boolean isTotallyUnsupported(String[] features) {
+        for (String feature : features) {
+            if (mode.isSupportedFeature(feature)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public ClassReplacement getReplacement(String className) {
@@ -200,7 +218,7 @@ class ReplacementLocator {
             if (!member.isAccess(ACC_PUBLIC) || !member.isAccess(ACC_STATIC)) {
                 continue;
             }
-            if (!isSupportedFeature(member)) {
+            if (!isSupportedBackport(member)) {
                 continue;
             }
             MemberKey key = keyProvider.getKey(member.getName(), member.getDesc());
@@ -340,20 +358,11 @@ class ReplacementLocator {
             return null;
         }
         ClassDescriptor descriptor = new ClassDescriptor(ReplacementLocator.class, content);
-        return isSupportedFeature(descriptor) ? descriptor : null;
+        return isSupportedBackport(descriptor) ? descriptor : null;
     }
 
-    private boolean isSupportedFeature(AnnotatedElementDescriptor descriptor) {
-        Annotation_ annotation = descriptor.getAnnotation(Advanced.class);
-        if (annotation == null) {
-            return true;
-        }
-        for (String feature : ((Advanced) annotation).value()) {
-            if (mode.isSupportedFeature(feature)) {
-                return true;
-            }
-        }
-        return false;
+    private boolean isSupportedBackport(AnnotatedElementDescriptor descriptor) {
+        return !unsupportedBackports.contains(descriptor.getInfo());
     }
 
     public String getUniqueTypeName(String className) {

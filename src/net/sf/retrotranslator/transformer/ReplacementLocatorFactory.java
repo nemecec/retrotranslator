@@ -39,7 +39,6 @@ import java.util.*;
  */
 class ReplacementLocatorFactory {
 
-    private final ClassVersion target;
     private final OperationMode mode;
     private final boolean retainapi;
     private final List<Backport> backports;
@@ -47,9 +46,8 @@ class ReplacementLocatorFactory {
 
     private SoftReference<ReplacementLocator> softReference = new SoftReference<ReplacementLocator>(null);
 
-    public ReplacementLocatorFactory(ClassVersion target, OperationMode mode, boolean retainapi,
+    public ReplacementLocatorFactory(OperationMode mode, boolean retainapi,
                                      String backport, TargetEnvironment environment) {
-        this.target = target;
         this.mode = mode;
         this.retainapi = retainapi;
         this.environment = environment;
@@ -65,16 +63,13 @@ class ReplacementLocatorFactory {
             result.addAll(Arrays.asList(backport.split(";")));
         }
         if (!retainapi) {
+            ClassVersion target = mode.getTarget();
             result.addAll(environment.readRegistry("backport", target));
             if (target.isBefore(ClassVersion.VERSION_15)) {
                 result.add("java.lang.StringBuilder:java.lang.StringBuffer");
             }
         }
         return result;
-    }
-
-    public ClassVersion getTarget() {
-        return target;
     }
 
     public OperationMode getMode() {

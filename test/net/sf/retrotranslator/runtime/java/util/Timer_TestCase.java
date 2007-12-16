@@ -323,12 +323,12 @@ public class Timer_TestCase extends TestCase {
         Timer timer = new Timer();
         MyTimerTask task = new MyTimerTask();
         timer.schedule(new HalfSecondTimerTask(), 0);
-        timer.schedule(task, new Date(System.currentTimeMillis() + 100), 100);
-        Thread.sleep(450);
+        timer.schedule(task, new Date(System.currentTimeMillis() + 200), 200);
+        Thread.sleep(400);
         assertEquals(0, task.count);
-        Thread.sleep(100);
+        Thread.sleep(200);
         assertEquals(1, task.count);
-        Thread.sleep(100);
+        Thread.sleep(200);
         assertEquals(2, task.count);
         assertTrue(task.cancel());
     }

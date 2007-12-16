@@ -205,4 +205,21 @@ public class RuntimeTools {
         }
     }
 
+    public static String getDisplayClassName(String internalName) {
+        return internalName.replace('/', '.');
+    }
+
+    public static String getFieldInfo(String className, String fieldName) {
+        return className + '.' + fieldName;
+    }
+
+    public static String getMethodInfo(String className, String methodName, String methodDesc) {
+        StringBuilder builder = new StringBuilder(className).append('.').append(methodName);
+        builder.append('(');
+        for (Type type : Type.getArgumentTypes(methodDesc)) {
+            builder.append(type.getClassName()).append(',');
+        }
+        builder.setCharAt(builder.length() - 1, ')');
+        return builder.toString();
+    }
 }

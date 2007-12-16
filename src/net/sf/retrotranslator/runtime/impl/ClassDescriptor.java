@@ -115,6 +115,10 @@ public class ClassDescriptor extends GenericDeclarationDescriptor {
         return this;
     }
 
+    public String getInfo() {
+        return RuntimeTools.getDisplayClassName(name);
+    }
+
     public MethodDescriptor getEnclosingMethodDescriptor() {
         return enclosingMethod == null ? null
                 : getInstance(getClassByInternalName(enclosingClass)).getMethodDescriptor(enclosingMethod);

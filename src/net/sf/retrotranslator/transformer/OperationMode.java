@@ -41,8 +41,11 @@ class OperationMode {
     private final boolean advanced;
     private final boolean smart;
     private final Set<String> features = Collections.synchronizedSet(new HashSet<String>());
+    private final ClassVersion target;
 
-    public OperationMode(boolean advanced, String support, boolean smart) {
+    public OperationMode(boolean advanced, String support, boolean smart, ClassVersion target) {
+        this.advanced = advanced;
+        this.target = target;
         this.smart = smart;
         if (support != null) {
             if (advanced) {
@@ -53,7 +56,6 @@ class OperationMode {
                 features.add(tokenizer.nextToken());
             }
         }
-        this.advanced = advanced;
     }
 
     public boolean isSupportedFeature(String feature) {
@@ -63,5 +65,9 @@ class OperationMode {
     public boolean isSmart() {
         return smart;
     }
-    
+
+    public ClassVersion getTarget() {
+        return target;
+    }
+
 }

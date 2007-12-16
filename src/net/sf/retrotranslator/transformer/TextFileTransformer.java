@@ -33,6 +33,7 @@ package net.sf.retrotranslator.transformer;
 
 import java.io.UnsupportedEncodingException;
 import java.util.regex.*;
+import net.sf.retrotranslator.runtime.impl.RuntimeTools;
 
 /**
  * @author Taras Puchko
@@ -61,7 +62,7 @@ class TextFileTransformer {
                 matcher.appendReplacement(buffer, "$0");
             } else {
                 modified = true;
-                matcher.appendReplacement(buffer, Matcher.quoteReplacement(name.replace('/', '.')));
+                matcher.appendReplacement(buffer, Matcher.quoteReplacement(RuntimeTools.getDisplayClassName(name)));
             }
         }
         return modified ? toBytes(matcher.appendTail(buffer).toString()) : bytes;

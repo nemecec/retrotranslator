@@ -35,6 +35,7 @@ import java.util.*;
 import net.sf.retrotranslator.runtime.asm.*;
 import static net.sf.retrotranslator.runtime.asm.Opcodes.*;
 import static net.sf.retrotranslator.runtime.impl.RuntimeTools.CONSTRUCTOR_NAME;
+import net.sf.retrotranslator.runtime.impl.RuntimeTools;
 
 /**
  * @author Taras Puchko
@@ -175,7 +176,8 @@ class InstantiationAnalysisVisitor extends ClassAdapter {
             }
             if (point == null || point.getDuplicationIndex() == 0) {
                 logger.logForFile(Level.WARNING, "Cannot translate " +
-                        owner.replace('/', '.') + " constructor call in " + methodName + " method.");
+                        RuntimeTools.getDisplayClassName(owner) + 
+                        " constructor call in " + methodName + " method.");
                 return;
             }
             point.setInitializationIndex(initializationIndex);

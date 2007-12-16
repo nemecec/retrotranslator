@@ -65,7 +65,7 @@ class ReferenceVerifyingVisitor extends GenericClassVisitor {
 
     private void checkVersion(int version, String name) {
         if (target.isBefore(version)) {
-            println("Incompatible class: " + getClassInfo(name));
+            println("Incompatible class: " + RuntimeTools.getDisplayClassName(name));
         }
     }
 
@@ -80,7 +80,7 @@ class ReferenceVerifyingVisitor extends GenericClassVisitor {
     }
 
     private void printClassNotFound(ClassNotFoundException e) {
-        println("Class not found: " + getClassInfo(e.getMessage()));
+        println("Class not found: " + RuntimeTools.getDisplayClassName(e.getMessage()));
     }
 
     protected void visitFieldInstruction(MethodVisitor visitor, int opcode, String owner, String name, String desc) {
@@ -137,15 +137,11 @@ class ReferenceVerifyingVisitor extends GenericClassVisitor {
         }
     }
 
-    private static String getClassInfo(String name) {
-        return name.replace('/', '.');
-    }
-
     private static String getFieldInfo(String owner, boolean stat, String name, String desc, String message) {
         StringBuffer buffer = new StringBuffer("Field ").append(message).append(": ");
         if (stat) buffer.append("static ");
         buffer.append(Type.getType(desc).getClassName()).append(' ');
-        buffer.append(getClassInfo(owner)).append('.').append(name);
+        buffer.append(RuntimeTools.getDisplayClassName(owner)).append('.').append(name);
         return buffer.toString();
     }
 
@@ -153,12 +149,12 @@ class ReferenceVerifyingVisitor extends GenericClassVisitor {
         StringBuffer buffer = new StringBuffer();
         if (name.equals(RuntimeTools.CONSTRUCTOR_NAME)) {
             buffer.append("Constructor ").append(message).append(": ");
-            buffer.append(getClassInfo(owner));
+            buffer.append(RuntimeTools.getDisplayClassName(owner));
         } else {
             buffer.append("Method ").append(message).append(": ");
             if (stat) buffer.append("static ");
             buffer.append(Type.getReturnType(desc).getClassName());
-            buffer.append(' ').append(getClassInfo(owner)).append('.').append(name);
+            buffer.append(' ').append(RuntimeTools.getDisplayClassName(owner)).append('.').append(name);
         }
         buffer.append('(');
         boolean first = true;

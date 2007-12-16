@@ -154,6 +154,10 @@ public class MethodDescriptor extends GenericDeclarationDescriptor implements Me
         return classDescriptor;
     }
 
+    public String getInfo() {
+        return RuntimeTools.getMethodInfo(classDescriptor.getInfo(), name, desc);
+    }
+
     protected TypeVariable findTypeVariable(String name) {
         TypeVariable variable = getTypeVariable(name);
         return variable != null ? variable : classDescriptor.findTypeVariable(name);

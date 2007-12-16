@@ -31,26 +31,52 @@
  */
 package net.sf.retrotranslator.tests;
 
-import junit.framework.TestCase;
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
+import java.util.Timer;
+import junit.framework.TestCase;
 
 /**
  * @author Taras Puchko
  */
 public class SupportAPITestCase extends TestCase {
 
-    public void test() {
-        if (Boolean.getBoolean("net.sf.retrotranslator.tests.support") &&
-                System.getProperty("java.version").startsWith("1.4")) {
-            new StringBuilder().append("a").trimToSize();
-            new ThreadLocal().remove();
-            try {
-                new BigDecimal(10).setScale(-1);
-                fail();
-            } catch (ArithmeticException e) {
-                //ok
-            }
+    public void testTranslated() {
+        new StringBuilder().append("a").trimToSize();
+        new ThreadLocal().remove();
+        assertEquals(0, ThreadLocal.class.getAnnotations().length);
+    }
+
+    public void testNotTranslated() {
+        if (!Boolean.getBoolean("net.sf.retrotranslator.tests.support")) {
+            return;
+        }
+        if (!System.getProperty("java.version").startsWith("1.4")) {
+            return;
+        }
+        try {
+            new BigDecimal(10).setScale(-1);
+            fail();
+        } catch (ArithmeticException e) {
+            //ok
+        }
+        Thread thread = Thread.currentThread();
+        try {
+            thread.getState();
+            fail();
+        } catch (NoSuchMethodError e) {
+            //ok
+        }
+        try {
+            new Timer("test");
+            fail();
+        } catch (NoSuchMethodError e) {
+            //ok
+        }
+        try {
+            new Timer().purge();
+            fail();
+        } catch (NoSuchMethodError e) {
+            //ok
         }
     }
 

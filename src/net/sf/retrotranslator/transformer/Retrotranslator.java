@@ -178,12 +178,11 @@ public class Retrotranslator {
             }
             converter = new EmbeddingConverter(target, embed, environment, systemLogger);
         }
-        OperationMode mode = new OperationMode(advanced, support, smart);
-        ReplacementLocatorFactory locatorFactory = new ReplacementLocatorFactory(
-                target, mode, retainapi, backport, environment);
+        OperationMode mode = new OperationMode(advanced, support, smart, target);
+        ReplacementLocatorFactory factory = new ReplacementLocatorFactory(mode, retainapi, backport, environment);
         ClassTransformer classTransformer = new ClassTransformer(
-                lazy, stripsign, retainflags, systemLogger, converter, locatorFactory);
-        TextFileTransformer fileTransformer = new TextFileTransformer(locatorFactory, converter);
+                lazy, stripsign, retainflags, systemLogger, converter, factory);
+        TextFileTransformer fileTransformer = new TextFileTransformer(factory, converter);
         FileTranslator translator = new FileTranslator(
                 classTransformer, fileTransformer, converter, systemLogger, sourceMask, uptodatecheck);
         boolean modified = false;

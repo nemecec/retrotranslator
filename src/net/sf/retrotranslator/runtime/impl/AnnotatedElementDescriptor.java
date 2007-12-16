@@ -94,6 +94,8 @@ public abstract class AnnotatedElementDescriptor extends EmptyVisitor {
 
     public abstract ClassDescriptor getClassDescriptor();
 
+    public abstract String getInfo();
+
     protected abstract TypeVariable findTypeVariable(String name);
 
     protected abstract Annotation_[] createAnnotations(Annotation_[] declaredAnnotations);
@@ -119,7 +121,7 @@ public abstract class AnnotatedElementDescriptor extends EmptyVisitor {
     }
 
     protected Class getClassByInternalName(String name) {
-        name = name.replace('/', '.');
+        name = RuntimeTools.getDisplayClassName(name);
         try {
             return Class.forName(name, false, getClassLoader());
         } catch (ClassNotFoundException e) {

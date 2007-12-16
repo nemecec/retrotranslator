@@ -77,7 +77,7 @@ class TargetEnvironment {
         try {
             return getClassReader(className);
         } catch (ClassNotFoundException e) {
-            logger.logForFile(Level.INFO, "Cannot find " + className.replace('/', '.'));
+            logger.logForFile(Level.INFO, "Cannot find " + RuntimeTools.getDisplayClassName(className));
             return null;
         }
     }

@@ -34,6 +34,7 @@ package net.sf.retrotranslator.transformer;
 import java.util.*;
 import net.sf.retrotranslator.runtime.asm.*;
 import net.sf.retrotranslator.runtime.asm.signature.*;
+import net.sf.retrotranslator.runtime.impl.RuntimeTools;
 
 /**
  * @author Taras Puchko
@@ -65,7 +66,8 @@ class DuplicateInterfacesVisitor extends ClassAdapter {
         Set<String> set = new LinkedHashSet<String>();
         for (String s : values) {
             if (!set.add(s)) {
-                logger.logForFile(Level.VERBOSE, "Repetitive interface name removed: " + s.replace('/', '.'));
+                logger.logForFile(Level.VERBOSE,
+                        "Repetitive interface name removed: " + RuntimeTools.getDisplayClassName(s));
             }
         }
         if (set.size() == values.length) return values;

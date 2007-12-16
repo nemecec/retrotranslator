@@ -58,7 +58,7 @@ class ClassTransformer implements BytecodeTransformer {
     }
 
     public byte[] transform(byte[] bytes, int offset, int length) {
-        ClassVersion target = factory.getTarget();
+        ClassVersion target = factory.getMode().getTarget();
         if (lazy && !target.isBefore(TransformerTools.getClassVersion(bytes, offset))) {
             if (offset == 0 && length == bytes.length) return bytes;
             byte[] result = new byte[length];
