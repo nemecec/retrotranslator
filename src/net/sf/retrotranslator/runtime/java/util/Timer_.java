@@ -154,7 +154,8 @@ public class Timer_ {
         }
 
         public Thread newThread(Runnable runnable) {
-            Thread thread = new Thread(runnable, name);
+            Thread thread = new Thread(runnable);
+            thread.setName(name);
             thread.setDaemon(daemon);
             return thread;
         }
