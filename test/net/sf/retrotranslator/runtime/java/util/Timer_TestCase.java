@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  *
- * Copyright (c) 2005 - 2007 Taras Puchko
+ * Copyright (c) 2005 - 2008 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -232,12 +232,12 @@ public class Timer_TestCase extends TestCase {
         Timer timer = new Timer();
         MyTimerTask task = new MyTimerTask();
         timer.schedule(new HalfSecondTimerTask(), 0);
-        timer.schedule(task, 100, 100);
+        timer.schedule(task, 200, 200);
         Thread.sleep(450);
         assertEquals(0, task.count);
-        Thread.sleep(100);
+        Thread.sleep(200);
         assertEquals(1, task.count);
-        Thread.sleep(100);
+        Thread.sleep(200);
         assertEquals(2, task.count);
         assertTrue(task.cancel());
     }
@@ -324,7 +324,7 @@ public class Timer_TestCase extends TestCase {
         MyTimerTask task = new MyTimerTask();
         timer.schedule(new HalfSecondTimerTask(), 0);
         timer.schedule(task, new Date(System.currentTimeMillis() + 200), 200);
-        Thread.sleep(400);
+        Thread.sleep(450);
         assertEquals(0, task.count);
         Thread.sleep(200);
         assertEquals(1, task.count);
@@ -410,13 +410,13 @@ public class Timer_TestCase extends TestCase {
         Timer timer = new Timer();
         MyTimerTask task = new MyTimerTask();
         timer.schedule(new HalfSecondTimerTask(), 0);
-        timer.scheduleAtFixedRate(task, 250, 250);
-        Thread.sleep(400);
+        timer.scheduleAtFixedRate(task, 200, 200);
+        Thread.sleep(450);
         assertEquals(0, task.count);
-        Thread.sleep(250);
-        assertEquals(2, task.count);
-        Thread.sleep(250);
+        Thread.sleep(200);
         assertEquals(3, task.count);
+        Thread.sleep(200);
+        assertEquals(4, task.count);
         assertTrue(task.cancel());
     }
 

@@ -4,6 +4,8 @@
 
     <property file="build.properties"/>
 
+    <property name="pom.dir" value="build/classes/META-INF/maven/net.sf.retrotranslator"/>
+
     <path id="classpath">
         <fileset dir="lib" includes="**/*.jar"/>
     </path>
@@ -60,10 +62,16 @@
             <fileset dir="build/classes/net/sf/retrotranslator/runtime/impl"
                      includes="AdvancedPostProcessor*.class Advanced.class"/>
         </delete>
+        <filter token="version" value="${version}"/>
+        <mkdir dir="${pom.dir}"/>
+        <copy todir="${pom.dir}" filtering="on">
+            <fileset dir="conf"/>
+        </copy>
         <jar destfile="build/retrotranslator-runtime-${version}.jar">
             <fileset dir="build/classes">
                 <include name="net/sf/retrotranslator/registry/**"/>
                 <include name="net/sf/retrotranslator/runtime/**"/>
+                <include name="META-INF/**/retrotranslator-runtime/**"/>
             </fileset>
             <zipfileset file="doc/LICENSE.txt" fullpath="RETROTRANSLATOR-LICENSE.txt"/>
             <fileset file="doc/ASM-LICENSE.txt"/>
@@ -73,7 +81,10 @@
             </manifest>
         </jar>
         <jar destfile="build/retrotranslator-transformer-${version}.jar">
-            <fileset dir="build/classes" includes="net/sf/retrotranslator/transformer/**"/>
+            <fileset dir="build/classes">
+                <include name="net/sf/retrotranslator/transformer/**"/>
+                <include name="META-INF/**/retrotranslator-transformer/**"/>
+            </fileset>
             <zipfileset file="doc/LICENSE.txt" fullpath="RETROTRANSLATOR-LICENSE.txt"/>
             <manifest>
                 <attribute name="Implementation-Title" value="Retrotranslator Transformer"/>
@@ -116,7 +127,7 @@
                classpathref="classpath" classpath="build/classes15" includes="**/*Java6*"/>
     </target>
 
-    <target name="test" depends="test-java13, test-java12, test-java11, test-translated, test-with-jit,
+    <target name="test" depends="test-translated, test-java13, test-java12, test-java11, test-with-jit,
             test-embedded, test-retainapi, test-support, test-custom-backport, test-duplicates, test-wrong-format"/>
 
     <target name="test-java13" depends="compile-tests" if="java13_home">
@@ -534,19 +545,12 @@
 
     <target name="maven-dist" depends="test" description="Creates the maven deployment units">
         <mkdir dir="dist/maven"/>
-        <filter token="version" value="${version}"/>
-
-        <mkdir dir="build/maven/runtime"/>
-        <copy todir="build/maven/runtime" file="conf/runtime/pom.xml" filtering="on"/>
         <jar destfile="dist/maven/retrotranslator-runtime-${version}-bundle.jar">
-            <fileset file="build/maven/runtime/pom.xml"/>
+            <fileset file="${pom.dir}/retrotranslator-runtime/pom.xml"/>
             <fileset file="build/retrotranslator-runtime-${version}.jar"/>
         </jar>
-
-        <mkdir dir="build/maven/transformer"/>
-        <copy todir="build/maven/transformer" file="conf/transformer/pom.xml" filtering="on"/>
         <jar destfile="dist/maven/retrotranslator-transformer-${version}-bundle.jar">
-            <fileset file="build/maven/transformer/pom.xml"/>
+            <fileset file="${pom.dir}/retrotranslator-transformer/pom.xml"/>
             <fileset file="build/retrotranslator-transformer-${version}.jar"/>
         </jar>
     </target>
@@ -559,14 +563,13 @@
 
         <mkdir dir="${runtime.dir}"/>
         <mkdir dir="${transformer.dir}"/>
-        <filter token="version" value="${version}"/>
 
         <copy todir="${runtime.dir}" file="build/retrotranslator-runtime-${version}.jar"/>
         <copy todir="${transformer.dir}" file="build/retrotranslator-transformer-${version}.jar"/>
 
-        <copy tofile="${runtime.dir}/retrotranslator-runtime-${version}.pom" file="conf/runtime/pom.xml"
-              filtering="on"/>
-        <copy tofile="${transformer.dir}/retrotranslator-transformer-${version}.pom" file="conf/transformer/pom.xml"
-              filtering="on"/>
+        <copy tofile="${runtime.dir}/retrotranslator-runtime-${version}.pom"
+              file="${pom.dir}/retrotranslator-runtime/pom.xml" />
+        <copy tofile="${transformer.dir}/retrotranslator-transformer-${version}.pom"
+              file="${pom.dir}/retrotranslator-transformer/pom.xml"/>
     </target>
 </project>

@@ -2,7 +2,7 @@
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
  *
- * Copyright (c) 2005 - 2007 Taras Puchko
+ * Copyright (c) 2005 - 2008 Taras Puchko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,8 +42,9 @@ import java.util.zip.*;
  */
 class JarFileContainer extends FileContainer {
 
-    private static Pattern SIGNATURE_ENTRY = Pattern.compile("META-INF/SIG-.+|META-INF/.+\\.(SF|DSA|RSA)");
-    private static Pattern SIGNATURE_ATTRIBUTE = Pattern.compile("Magic|.+-Digest(-.+)?");
+    private static final String META_INF_NAME = "META-INF/";
+    private static final Pattern SIGNATURE_ENTRY = Pattern.compile("META-INF/SIG-.+|META-INF/.+\\.(SF|DSA|RSA)");
+    private static final Pattern SIGNATURE_ATTRIBUTE = Pattern.compile("Magic|.+-Digest(-.+)?");
 
     private Map<String, JarFileEntry> entries;
     private boolean modified;
@@ -127,7 +128,7 @@ class JarFileContainer extends FileContainer {
         Set<String> folderNames = getFolderNames(fileEntries);
         JarOutputStream stream = new JarOutputStream(fileOutputStream);
         stream.setLevel(Deflater.BEST_COMPRESSION);
-        stream.putNextEntry(new ZipEntry("META-INF/"));
+        stream.putNextEntry(new ZipEntry(META_INF_NAME));
         stream.putNextEntry(new ZipEntry(JarFile.MANIFEST_NAME));
         manifest.write(stream);
         for (String name : folderNames) {
@@ -197,6 +198,7 @@ class JarFileContainer extends FileContainer {
                 result.add(name.substring(0, index + 1));
             }
         }
+        result.remove(META_INF_NAME);
         return result;
     }
 
