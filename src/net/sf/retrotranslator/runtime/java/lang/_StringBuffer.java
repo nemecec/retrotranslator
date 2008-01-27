@@ -31,7 +31,7 @@
  */
 package net.sf.retrotranslator.runtime.java.lang;
 
-import net.sf.retrotranslator.runtime.impl.Advanced;
+import net.sf.retrotranslator.registry.Advanced;
 
 /**
  * @author Taras Puchko
@@ -51,25 +51,25 @@ public class _StringBuffer {
     }
 
     public static StringBuffer appendCodePoint(StringBuffer buffer, int codePoint) {
-        buffer.append(Character.toChars(codePoint));
+        buffer.append(_Character.toChars(codePoint));
         return buffer;
     }
 
     public static int codePointAt(StringBuffer buffer, int index) {
         synchronized (buffer) {
-            return Character.codePointAt(buffer, index);
+            return _Character.codePointAt(buffer, index);
         }
     }
 
     public static int codePointBefore(StringBuffer buffer, int index) {
         synchronized (buffer) {
-            return Character.codePointBefore(buffer, index);
+            return _Character.codePointBefore(buffer, index);
         }
     }
 
     public static int codePointCount(StringBuffer buffer, int beginIndex, int endIndex) {
         synchronized (buffer) {
-            return Character.codePointCount(buffer, beginIndex, endIndex);
+            return _Character.codePointCount(buffer, beginIndex, endIndex);
         }
     }
 
@@ -83,7 +83,7 @@ public class _StringBuffer {
 
     public static int offsetByCodePoints(StringBuffer buffer, int index, int codePointOffset) {
         synchronized (buffer) {
-            return Character.offsetByCodePoints(buffer, index, codePointOffset);
+            return _Character.offsetByCodePoints(buffer, index, codePointOffset);
         }
     }
 

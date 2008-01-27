@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
+ *
  * Copyright (c) 2005 - 2008 Taras Puchko
  * All rights reserved.
  *
@@ -29,27 +29,18 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.runtime.impl;
+package net.sf.retrotranslator.runtime13.v14.java.lang;
 
-import java.io.*;
+import junit.framework.TestCase;
 
 /**
  * @author Taras Puchko
  */
-public class NullOutputStream extends OutputStream {
+public class _CharacterTestCase extends TestCase {
 
-    public static final NullOutputStream INSTANCE = new NullOutputStream();
-
-    private NullOutputStream() {
-    }
-
-    public void write(int b) throws IOException {
-    }
-
-    public void write(byte b[]) throws IOException {
-    }
-
-    public void write(byte b[], int off, int len) throws IOException {
+    public void testToString() throws Exception {
+        assertEquals("a", Character.toString('a'));
+        assertEquals("1", Character.toString('1'));
     }
 
 }

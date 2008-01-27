@@ -31,7 +31,7 @@ package net.sf.retrotranslator.runtime.asm;
 
 /**
  * An {@link FieldVisitor} that generates Java fields in bytecode form.
- * 
+ *
  * @author Eric Bruneton
  */
 final class FieldWriter implements FieldVisitor {
@@ -96,7 +96,7 @@ final class FieldWriter implements FieldVisitor {
 
     /**
      * Constructs a new {@link FieldWriter}.
-     * 
+     *
      * @param cw the class writer to which this field must be added.
      * @param access the field's access flags (see {@link Opcodes}).
      * @param name the field's name.
@@ -166,7 +166,7 @@ final class FieldWriter implements FieldVisitor {
 
     /**
      * Returns the size of this field.
-     * 
+     *
      * @return the size of this field.
      */
     int getSize() {
@@ -185,7 +185,9 @@ final class FieldWriter implements FieldVisitor {
             cw.newUTF8("Deprecated");
             size += 6;
         }
-        if (cw.version == Opcodes.V1_4 && (access & Opcodes.ACC_ENUM) != 0) {
+        if ((access & Opcodes.ACC_ENUM) != 0
+                && (cw.version & 0xffff) < Opcodes.V1_5)
+        {
             cw.newUTF8("Enum");
             size += 6;
         }
@@ -209,7 +211,7 @@ final class FieldWriter implements FieldVisitor {
 
     /**
      * Puts the content of this field into the given byte vector.
-     * 
+     *
      * @param out where the content of this field must be put.
      * @param dropTigerFlags
      */
@@ -231,7 +233,8 @@ final class FieldWriter implements FieldVisitor {
         if ((access & Opcodes.ACC_DEPRECATED) != 0) {
             ++attributeCount;
         }
-        if (cw.version == Opcodes.V1_4 && (access & Opcodes.ACC_ENUM) != 0) {
+        if ((access & Opcodes.ACC_ENUM) != 0
+                && (cw.version & 0xffff) < Opcodes.V1_5) {
             ++attributeCount;
         }
         if (signature != 0) {
@@ -259,7 +262,8 @@ final class FieldWriter implements FieldVisitor {
         if ((access & Opcodes.ACC_DEPRECATED) != 0) {
             out.putShort(cw.newUTF8("Deprecated")).putInt(0);
         }
-        if (cw.version == Opcodes.V1_4 && (access & Opcodes.ACC_ENUM) != 0) {
+        if ((access & Opcodes.ACC_ENUM) != 0
+                && (cw.version & 0xffff) < Opcodes.V1_5) {
             out.putShort(cw.newUTF8("Enum")).putInt(0);
         }
         if (signature != 0) {

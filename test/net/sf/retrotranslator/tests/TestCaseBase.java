@@ -40,14 +40,14 @@ import junit.framework.TestCase;
 /**
  * @author Taras Puchko
  */
-public abstract class BaseTestCase extends TestCase {
+public abstract class TestCaseBase extends TestCase {
 
     protected static final Locale HINDI = new Locale("hi", "IN");
 
-    protected BaseTestCase() {
+    protected TestCaseBase() {
     }
 
-    protected BaseTestCase(String string) {
+    protected TestCaseBase(String string) {
         super(string);
     }
 
@@ -125,4 +125,11 @@ public abstract class BaseTestCase extends TestCase {
         }
     }
 
+    protected static boolean isJava14AtLeast() {
+        return System.getProperty("java.version").compareTo("1.4") >= 0;
+    }
+
+    protected static boolean isJava5AtLeast() {
+        return System.getProperty("java.version").compareTo("1.5") >= 0;
+    }
 }

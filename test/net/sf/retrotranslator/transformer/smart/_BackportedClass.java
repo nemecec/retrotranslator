@@ -36,7 +36,7 @@ package net.sf.retrotranslator.transformer.smart;
  */
 public class _BackportedClass {
 
-    public static Object FIELD = "Hi";
+    public static final Object FIELD = "Backported";
 
     public static int add(int a, int b) {
         return (a + b) * 2;

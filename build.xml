@@ -1,89 +1,87 @@
 <project name="retrotranslator" default="build" basedir=".">
 
-    <property name="version" value="1.2.3"/>
+    <property name="version" value="1.2.4"/>
 
     <property file="build.properties"/>
 
-    <property name="pom.dir" value="build/classes/META-INF/maven/net.sf.retrotranslator"/>
+    <property name="pom.dir" value="build/pom/META-INF/maven/net.sf.retrotranslator"/>
 
     <path id="classpath">
-        <fileset dir="lib" includes="**/*.jar"/>
+        <fileset dir="lib" includes="junit.jar backport-util-concurrent-3.1.jar"/>
+        <path path="${mx4j_jars}"/>
     </path>
 
-    <target name="build" depends="dist-bin, dist-src, maven-dist"/>
+    <path id="classpath13">
+        <fileset dir="lib" includes="junit.jar backport-util-concurrent-java12-3.1.jar"/>
+        <path path="${mx4j_jars}"/>
+        <path path="${xalan_jars}"/>
+    </path>
 
-    <target name="init">
+    <target name="compile15">
         <delete dir="build"/>
         <delete dir="dist"/>
-    </target>
-
-    <target name="compile" depends="init">
+        <filter token="version" value="${version}"/>
+        <mkdir dir="${pom.dir}"/>
+        <copy todir="${pom.dir}" filtering="on">
+            <fileset dir="conf"/>
+        </copy>
         <mkdir dir="build/classes15"/>
-        <mkdir dir="build/classes14"/>
-        <mkdir dir="build/classes"/>
         <javac fork="yes" srcdir="src" destdir="build/classes15" debug="true"
                classpathref="classpath" executable="${java15_home}/bin/javac"
                source="1.5" target="1.5"/>
         <copy todir="build/classes15">
             <fileset dir="src" includes="**/*.properties"/>
         </copy>
-        <delete>
-            <fileset dir="build/classes15/net/sf/retrotranslator/transformer"
-                     includes="ClassFileTransformer.class ClassPreProcessor.class"/>
-        </delete>
+    </target>
+
+    <target name="compile14" depends="compile15">
+        <mkdir dir="build/classes14"/>
+        <copy todir="build/classes14">
+            <fileset dir="build/classes15">
+                <include name="net/sf/retrotranslator/registry/*14.properties"/>
+                <include name="net/sf/retrotranslator/runtime/**"/>
+                <include name="net/sf/retrotranslator/transformer/**"/>
+                <exclude name="**/ClassFileTransformer.class"/>
+                <exclude name="**/ClassPreProcessor.class"/>
+                <exclude name="**/Runtime13Creator*.class"/>
+            </fileset>
+        </copy>
         <java classname="net.sf.retrotranslator.transformer.Retrotranslator"
               classpathref="classpath" classpath="build/classes15" failonerror="true"
               jvm="${java15_home}/bin/java" fork="true">
             <arg value="-srcdir"/>
-            <arg value="build/classes15"/>
-            <arg value="-destdir"/>
             <arg value="build/classes14"/>
             <arg value="-backport"/>
             <arg value="net.sf.retrotranslator.transformer.ClassFileTransformer:sun.misc.ClassFileTransformer;
             net.sf.retrotranslator.transformer.ClassPreProcessor:com.bea.jvm.ClassPreProcessor"/>
         </java>
-        <java classname="net.sf.retrotranslator.transformer.Retrotranslator"
-              classpathref="classpath" classpath="build/classes14" failonerror="true"
+        <java classname="net.sf.retrotranslator.registry.AdvancedPostProcessor"
+              classpathref="classpath" classpath="build/classes15" failonerror="true"
               jvm="${java15_home}/bin/java" fork="true">
-            <arg value="-srcdir"/>
             <arg value="build/classes14"/>
-            <arg value="-destdir"/>
-            <arg value="build/classes"/>
-            <arg value="-srcmask"/>
-            <arg value="*.class"/>
+            <arg value="build/classes14/net/sf/retrotranslator/registry/advanced14.properties"/>
         </java>
-        <java classname="net.sf.retrotranslator.runtime.impl.AdvancedPostProcessor"
-              classpathref="classpath" classpath="build/classes14" failonerror="true"
-              jvm="${java15_home}/bin/java" fork="true">
-            <arg value="build/classes"/>
-            <arg value="build/classes/net/sf/retrotranslator/registry/advanced14.properties"/>
-        </java>
-        <delete>
-            <fileset dir="build/classes/net/sf/retrotranslator/runtime/impl"
-                     includes="AdvancedPostProcessor*.class Advanced.class"/>
-        </delete>
-        <filter token="version" value="${version}"/>
-        <mkdir dir="${pom.dir}"/>
-        <copy todir="${pom.dir}" filtering="on">
-            <fileset dir="conf"/>
-        </copy>
         <jar destfile="build/retrotranslator-runtime-${version}.jar">
-            <fileset dir="build/classes">
+            <fileset dir="build/classes14">
                 <include name="net/sf/retrotranslator/registry/**"/>
                 <include name="net/sf/retrotranslator/runtime/**"/>
-                <include name="META-INF/**/retrotranslator-runtime/**"/>
+            </fileset>
+            <fileset dir="build/pom">
+                <include name="**/retrotranslator-runtime/**"/>
             </fileset>
             <zipfileset file="doc/LICENSE.txt" fullpath="RETROTRANSLATOR-LICENSE.txt"/>
             <fileset file="doc/ASM-LICENSE.txt"/>
             <manifest>
-                <attribute name="Implementation-Title" value="Retrotranslator Runtime"/>
+                <attribute name="Implementation-Title" value="Retrotranslator Runtime for Java 1.4"/>
                 <attribute name="Implementation-Version" value="${version}"/>
             </manifest>
         </jar>
         <jar destfile="build/retrotranslator-transformer-${version}.jar">
-            <fileset dir="build/classes">
+            <fileset dir="build/classes14">
                 <include name="net/sf/retrotranslator/transformer/**"/>
-                <include name="META-INF/**/retrotranslator-transformer/**"/>
+            </fileset>
+            <fileset dir="build/pom">
+                <include name="**/retrotranslator-transformer/**"/>
             </fileset>
             <zipfileset file="doc/LICENSE.txt" fullpath="RETROTRANSLATOR-LICENSE.txt"/>
             <manifest>
@@ -101,45 +99,195 @@
                 <pathelement location="build/retrotranslator-transformer-${version}.jar"/>
             </classpath>
         </taskdef>
+    </target>
+
+    <target name="compile13" depends="compile14">
+        <java classname="net.sf.retrotranslator.transformer.Runtime13Creator"
+              classpathref="classpath" classpath="build/classes15" failonerror="true"
+              jvm="${java15_home}/bin/java" fork="true">
+            <arg value="build/classes15"/>
+        </java>
+        <mkdir dir="build/classes13"/>
+        <copy todir="build/classes13">
+            <fileset dir="build/classes15">
+                <include name="net/sf/retrotranslator/registry/*13.properties"/>
+                <include name="net/sf/retrotranslator/runtime13/**"/>
+                <exclude name="net/sf/retrotranslator/runtime13/v15/javax/**"/>
+                <exclude name="net/sf/retrotranslator/runtime13/v15/java/nio/**"/>
+                <exclude name="net/sf/retrotranslator/runtime13/v15/java/util/regex/**"/>
+                <exclude name="**/_URL.class"/>
+                <exclude name="**/Proxy_*.class"/>
+                <exclude name="**/ProxySelector_.class"/>
+                <exclude name="**/_StackTraceElement.class"/>
+                <exclude name="**/_Reader.class"/>
+                <exclude name="**/Readable_.class"/>
+                <exclude name="**/_Readable.class"/>
+                <exclude name="**/*PrintStreamBuilder.class"/>
+            </fileset>
+        </copy>
+        <retrotranslator target="1.3" classpath="build/classes15">
+            <fileset dir="build/classes13">
+                <include name="**/_Appendable.class"/>
+            </fileset>
+        </retrotranslator>
+        <retrotranslator srcdir="build/classes13" target="1.3" smart="true"
+                         backport="java.nio.channels.Channel:java.io.Writer;
+                         java.nio.CharBuffer:java.io.Writer;
+                         net.sf.retrotranslator.runtime13.v15.java.nio._CharBuffer:
+                         net.sf.retrotranslator.runtime13.v15.java.io._Writer">
+            <classpath path="${java13_rt_jar}"/>
+            <classpath refid="classpath13"/>
+            <classpath path="build/classes15"/>
+        </retrotranslator>
+        <java classname="net.sf.retrotranslator.registry.AdvancedPostProcessor"
+              classpathref="classpath" classpath="build/classes15" failonerror="true"
+              jvm="${java15_home}/bin/java" fork="true">
+            <arg value="build/classes13"/>
+            <arg value="build/classes13/net/sf/retrotranslator/registry/advanced13.properties"/>
+        </java>
+        <jar destfile="build/retrotranslator-runtime13-${version}.jar">
+            <fileset dir="build/classes13"/>
+            <fileset dir="build/pom">
+                <include name="**/retrotranslator-runtime13/**"/>
+            </fileset>
+            <zipfileset file="doc/LICENSE.txt" fullpath="RETROTRANSLATOR-LICENSE.txt"/>
+            <fileset file="doc/ASM-LICENSE.txt"/>
+            <manifest>
+                <attribute name="Implementation-Title" value="Retrotranslator Runtime for Java 1.3"/>
+                <attribute name="Implementation-Version" value="${version}"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="compile" depends="compile13">
         <retrotranslator verify="true" classpath="${java14_rt_jar}" classpathref="classpath">
-            <fileset dir="build/classes" excludes="**/*JITRetrotranslator* **/RetrotranslatorTask*"/>
+            <fileset dir="build/classes14" excludes="**/*JITRetrotranslator* **/RetrotranslatorTask*"/>
+        </retrotranslator>
+        <retrotranslator verify="true" target="1.3" classpath="${java13_rt_jar}" classpathref="classpath13">
+            <fileset dir="build/classes13"/>
         </retrotranslator>
     </target>
 
-    <target name="compile-tests" depends="compile">
+    <target name="compile-tests15" depends="compile">
         <mkdir dir="build/test-classes15"/>
         <javac srcdir="test" destdir="build/test-classes15"
                fork="yes" debug="true" executable="${java15_home}/bin/javac"
                classpathref="classpath" classpath="build/classes15" excludes="**/*Java6*"/>
-        <antcall target="compile-tests-java6"/>
         <copy todir="build/test-classes15">
             <fileset dir="test" includes="**/*.properties"/>
         </copy>
-        <mkdir dir="build/test-classes-duplicates"/>
-        <move todir="build/test-classes-duplicates">
+    </target>
+
+    <target name="compile-tests16" depends="compile-tests15" if="java16_home">
+        <javac srcdir="test" destdir="build/test-classes15"
+               fork="yes" debug="true" executable="${java16_home}/bin/javac"
+               classpathref="classpath" includes="**/*Java6*"/>
+    </target>
+
+    <target name="compile-tests" depends="compile-tests16" >
+        <mkdir dir="build/test-duplicates"/>
+        <move todir="build/test-duplicates">
             <fileset dir="build/test-classes15" includes="**/DuplicateMethodsTestCase*"/>
+        </move>
+        <mkdir dir="build/test-smart"/>
+        <copy todir="build/test-smart">
+            <fileset dir="build/test-classes15">
+                <include name="net/sf/retrotranslator/tests/TestCaseBase*"/>
+            </fileset>
+        </copy>
+        <move todir="build/test-smart">
+            <fileset dir="build/test-classes15">
+                <include name="net/sf/retrotranslator/transformer/smart/**"/>
+                <include name="net/sf/retrotranslator/transformer/SmartReplacementVisitorTestCase*"/>
+            </fileset>
         </move>
     </target>
 
-    <target name="compile-tests-java6" if="java16_home">
-        <javac srcdir="test" destdir="build/test-classes15"
-               fork="yes" debug="true" executable="${java16_home}/bin/javac"
-               classpathref="classpath" classpath="build/classes15" includes="**/*Java6*"/>
-    </target>
-
-    <target name="test" depends="test-translated, test-java13, test-java12, test-java11, test-with-jit,
-            test-embedded, test-retainapi, test-support, test-custom-backport, test-duplicates, test-wrong-format"/>
-
-    <target name="test-java13" depends="compile-tests" if="java13_home">
-        <antcall target="test-lang">
-            <param name="target" value="1.3"/>
-            <param name="java_home" value="${java13_home}"/>
-            <param name="test_dir" value="build/test-classes13"/>
+    <target name="test-java14" depends="compile-tests">
+        <mkdir dir="build/test-classes14"/>
+        <copy todir="build/test-classes14">
+            <fileset dir="build/test-classes15"/>
+        </copy>
+        <antcall target="subtest-java14"/>
+        <!-- twice translate and test on Java 1.4 -->
+        <antcall target="subtest-java14"/>
+        <antcall target="subtest-junit14">
+            <param name="java_home" value="${java15_home}"/>
         </antcall>
     </target>
 
+    <target name="subtest-java14">
+        <retrotranslator srcdir="build/test-classes14" advanced="true" verify="true" srcmask="*.class;*.properties">
+            <classpath path="${java14_rt_jar}"/>
+            <classpath location="build/retrotranslator-runtime-${version}.jar"/>
+            <classpath refid="classpath"/>
+        </retrotranslator>
+        <antcall target="subtest-junit14">
+            <param name="java_home" value="${java14_home}"/>
+        </antcall>
+    </target>
+
+    <target name="subtest-junit14">
+        <echo message="Running classes in build/test-classes14 on ${java_home}"/>
+        <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
+               jvm="${java_home}/bin/java" failureproperty="test.failed">
+            <jvmarg value="-Xfuture"/>
+            <classpath>
+                <path refid="classpath"/>
+                <pathelement location="build/test-classes14"/>
+                <pathelement location="build/retrotranslator-runtime-${version}.jar"/>
+            </classpath>
+            <formatter type="brief" usefile="false"/>
+            <batchtest>
+                <fileset dir="build/test-classes14" includes="**/*TestCase.class" />
+            </batchtest>
+        </junit>
+        <fail if="test.failed"/>
+    </target>
+
+    <target name="test-java13" depends="compile-tests">
+        <mkdir dir="build/test-classes13"/>
+        <copy todir="build/test-classes13">
+            <fileset dir="build/test-classes15" includes="**/TestCaseBase**"/>
+            <fileset dir="build/test-classes15">
+                <exclude name="net/sf/retrotranslator/tests/**"/>
+                <exclude name="net/sf/retrotranslator/runtime/impl/**"/>
+                <exclude name="net/sf/retrotranslator/runtime/java/nio/**"/>
+                <exclude name="net/sf/retrotranslator/runtime/java/util/regex/**"/>
+                <exclude name="net/sf/retrotranslator/runtime/javax/**"/>
+                <exclude name="**/*Java14TestCase*"/>
+                <exclude name="**/_ReaderTestCase*"/>
+                <exclude name="**/_ReadableTestCase*"/>
+                <exclude name="**/ProxySelector_TestCase*"/>
+                <exclude name="**/Proxy_TestCase*"/>
+                <exclude name="**/_URLTestCase*"/>
+            </fileset>
+        </copy>
+        <retrotranslator srcdir="build/test-classes13" target="1.3" smart="true" 
+                         advanced="true" verify="true" srcmask="*.class;*.properties">
+            <classpath path="${java13_rt_jar}"/>
+            <classpath location="build/retrotranslator-runtime13-${version}.jar"/>
+            <classpath refid="classpath13"/>
+        </retrotranslator>
+        <echo message="Running classes in build/test-classes13 on ${java13_home}"/>
+        <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
+               jvm="${java13_home}/bin/java" failureproperty="test.failed">
+            <jvmarg value="-Xfuture"/>
+            <classpath>
+                <path refid="classpath13"/>
+                <pathelement location="build/test-classes13"/>
+                <pathelement location="build/retrotranslator-runtime13-${version}.jar"/>
+            </classpath>
+            <formatter type="brief" usefile="false"/>
+            <batchtest>
+                <fileset dir="build/test-classes13" includes="**/*TestCase.class" />
+            </batchtest>
+        </junit>
+        <fail if="test.failed"/>
+    </target>
+
     <target name="test-java12" depends="compile-tests" if="java12_home">
-        <antcall target="test-lang">
+        <antcall target="subtest-lang">
             <param name="target" value="1.2"/>
             <param name="java_home" value="${java12_home}"/>
             <param name="test_dir" value="build/test-classes12"/>
@@ -147,7 +295,7 @@
     </target>
 
     <target name="test-java11" depends="compile-tests" if="java11_home">
-        <antcall target="test-lang">
+        <antcall target="subtest-lang">
             <param name="target" value="1.1"/>
             <param name="java_home" value="${java11_home}"/>
             <param name="test_dir" value="build/test-classes11"/>
@@ -155,7 +303,7 @@
         </antcall>
     </target>
 
-    <target name="test-lang">
+    <target name="subtest-lang">
         <mkdir dir="${test_dir}"/>
         <copy todir="${test_dir}">
             <fileset dir="build/test-classes15">
@@ -170,27 +318,27 @@
         </copy>
         <retrotranslator srcdir="${test_dir}" target="${target}"/>
         <echo message="Running classes in ${test_dir} on ${java_home}"/>
-        <antcall target="test-class">
+        <antcall target="subtest-class">
             <param name="simple_name" value="InnerClassVisitorTestCase"/>
         </antcall>
-        <antcall target="test-class">
+        <antcall target="subtest-class">
             <param name="simple_name" value="ClassLiteralVisitorTestCase"/>
         </antcall>
-        <antcall target="test-class">
+        <antcall target="subtest-class">
             <param name="simple_name" value="InheritedConstantVisitorTestCase"/>
         </antcall>
-        <antcall target="test-class">
+        <antcall target="subtest-class">
             <param name="simple_name" value="ObjectMethodsVisitorTestCase"/>
         </antcall>
-        <antcall target="test-class">
+        <antcall target="subtest-class">
             <param name="simple_name" value="MirandaMethodsVisitorTestCase"/>
         </antcall>
-        <antcall target="test-class">
+        <antcall target="subtest-class">
             <param name="simple_name" value="SynchronizedBlockVisitorTestCase"/>
         </antcall>
     </target>
 
-    <target name="test-class">
+    <target name="subtest-class">
         <java classname="junit.textui.TestRunner" jvm="${java_home}/bin/java" fork="true" failonerror="true">
             <classpath>
                 <path path="${additional_classpath}"/>
@@ -201,45 +349,25 @@
         </java>
     </target>
 
-    <target name="test-translated" depends="compile-tests">
-        <mkdir dir="build/test-classes14"/>
-        <copy todir="build/test-classes14">
-            <fileset dir="build/test-classes15"/>
-        </copy>
-        <antcall target="test-translated-java14"/>
-        <!-- twice translate and test on Java 1.4 -->
-        <antcall target="test-translated-java14"/>
-        <antcall target="test-translated-junit">
-            <param name="java_home" value="${java15_home}"/>
-        </antcall>
+    <target name="test-jit" depends="compile-tests">
+        <java classname="net.sf.retrotranslator.transformer.JITRetrotranslator" failonerror="true"
+              fork="true" jvm="${java14_home}/bin/java"
+              classpath="${java.class.path}" classpathref="classpath">
+            <classpath path="build/retrotranslator-transformer-${version}.jar"/>
+            <arg value="-advanced"/>
+            <arg value="org.apache.tools.ant.Main"/>
+            <arg value="subtest-jit"/>
+        </java>
     </target>
 
-    <target name="test-translated-java14">
-        <retrotranslator srcdir="build/test-classes14" advanced="true" verify="true" srcmask="*.class;*.properties">
-            <classpath path="${java14_rt_jar}"/>
-            <classpath location="build/retrotranslator-runtime-${version}.jar"/>
-            <classpath refid="classpath"/>
-        </retrotranslator>
-        <antcall target="test-translated-junit">
-            <param name="java_home" value="${java14_home}"/>
-        </antcall>
-    </target>
-
-    <target name="test-translated-junit">
-        <echo message="Running classes in build/test-classes14 on ${java_home}"/>
-        <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
-               jvm="${java_home}/bin/java" failureproperty="test.failed">
-            <jvmarg value="-Xfuture"/>
-            <classpath>
-                <path refid="classpath"/>
-                <pathelement location="build/test-classes14"/>
-                <pathelement location="build/retrotranslator-runtime-${version}.jar"/>
-            </classpath>
+    <target name="subtest-jit">
+        <echo message="Running classes in test-classes15 on ${java.home}"/>
+        <junit printsummary="withOutAndErr" fork="no" reloading="false" failureproperty="test.failed">
             <formatter type="brief" usefile="false"/>
+            <classpath location="build/test-classes15"/>
             <batchtest>
-                <fileset dir="build/test-classes14" includes="**/*TestCase.class">
-                    <exclude name="**/BaseTestCase.class"/>
-                </fileset>
+                <fileset dir="build/test-classes15" includes="**/*TestCase.class"
+                         excludes="**/TextFileTransformerTestCase.class" />
             </batchtest>
         </junit>
         <fail if="test.failed"/>
@@ -254,116 +382,26 @@
                          embed="com.mycompany.internal" srcmask="*.class;*.properties">
             <jarfileset file="build/test-embedded.jar"/>
         </retrotranslator>
-        <antcall target="test-embedded-junit">
+        <antcall target="subtest-embedded">
             <param name="java_home" value="${java14_home}"/>
         </antcall>
-        <antcall target="test-embedded-junit">
+        <antcall target="subtest-embedded">
             <param name="java_home" value="${java15_home}"/>
         </antcall>
     </target>
 
-    <target name="test-embedded-junit">
+    <target name="subtest-embedded">
         <echo message="Running classes in build/test-embedded on ${java_home}"/>
         <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
                jvm="${java_home}/bin/java" failureproperty="test.failed">
             <jvmarg value="-Xfuture"/>
             <classpath location="lib/junit.jar"/>
-            <classpath location="lib/mx4j.jar"/>
+            <classpath path="${mx4j_jars}"/>
             <classpath location="build/test-embedded"/>
             <formatter type="brief" usefile="false"/>
             <batchtest>
-                <fileset dir="build/test-embedded" includes="**/*TestCase.class">
-                    <exclude name="**/BaseTestCase.class"/>
-                </fileset>
+                <fileset dir="build/test-embedded" includes="**/*TestCase.class" />
             </batchtest>
-        </junit>
-        <fail if="test.failed"/>
-    </target>
-
-    <target name="test-custom-backport" depends="compile-tests">
-        <mkdir dir="build/test-custom-backport"/>
-        <java classname="net.sf.retrotranslator.transformer.Retrotranslator"
-              classpathref="classpath" classpath="build/retrotranslator-transformer-${version}.jar"
-              failonerror="true" jvm="${java15_home}/bin/java" fork="true">
-            <classpath location="build/test-classes15"/>
-            <arg value="-srcdir"/>
-            <arg value="build/test-classes15"/>
-            <arg value="-destdir"/>
-            <arg value="build/test-custom-backport"/>
-            <arg value="-backport"/>
-            <arg value="net.sf.retrotranslator.tests;net.sf.retrotranslator.tests:net.sf.retrotranslator.tests.custom"/>
-        </java>
-        <antcall target="test-custom-backport-junit">
-            <param name="java_home" value="${java14_home}"/>
-        </antcall>
-        <antcall target="test-custom-backport-junit">
-            <param name="java_home" value="${java15_home}"/>
-        </antcall>
-    </target>
-
-    <target name="test-custom-backport-junit">
-        <echo message="Running classes in build/test-custom-backport on ${java_home}"/>
-        <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
-               jvm="${java_home}/bin/java" failureproperty="test.failed">
-            <jvmarg value="-Xfuture"/>
-            <sysproperty key="net.sf.retrotranslator.tests.custom-backport" value="true"/>
-            <classpath>
-                <path refid="classpath"/>
-                <pathelement location="build/test-custom-backport"/>
-                <pathelement location="build/retrotranslator-runtime-${version}.jar"/>
-            </classpath>
-            <formatter type="brief" usefile="false"/>
-            <test name="net.sf.retrotranslator.tests.CustomBackportTestCase"/>
-        </junit>
-        <fail if="test.failed"/>
-    </target>
-
-    <target name="test-smart" depends="compile-tests">
-        <mkdir dir="build/test-smart"/>
-        <copy todir="build/test-smart">
-            <fileset dir="build/test-classes15">
-                <include name="net/sf/retrotranslator/transformer/smart/**"/>
-                <include name="net/sf/retrotranslator/transformer/SmartReplacementVisitorTestCase*"/>
-            </fileset>
-        </copy>
-        <java classname="net.sf.retrotranslator.transformer.Retrotranslator"
-              failonerror="true" jvm="${java15_home}/bin/java" fork="true">
-            <classpath refid="classpath"/>
-            <classpath location="build/retrotranslator-runtime-${version}.jar"/>
-            <classpath location="build/retrotranslator-transformer-${version}.jar"/>
-            <classpath location="build/test-smart"/>
-            <arg value="-srcdir"/>
-            <arg value="build/test-smart"/>
-            <arg value="-retainapi"/>
-            <arg value="-smart"/>
-            <arg value="-backport"/>
-            <arg value="net.sf.retrotranslator.transformer.smart:net.sf.retrotranslator.transformer.smart;java.lang:net.sf.retrotranslator.transformer.smart"/>
-            <arg value="-verify"/>
-            <arg value="-classpath"/>
-            <arg value="${java14_rt_jar}"/>
-            <arg value="-classpath"/>
-            <arg value="lib/junit.jar"/>
-        </java>
-        <antcall target="test-smart-junit">
-            <param name="java_home" value="${java14_home}"/>
-        </antcall>
-        <antcall target="test-smart-junit">
-            <param name="java_home" value="${java15_home}"/>
-        </antcall>
-    </target>
-
-    <target name="test-smart-junit">
-        <echo message="Running classes in build/test-smart on ${java_home}"/>
-        <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
-               jvm="${java_home}/bin/java" failureproperty="test.failed">
-            <jvmarg value="-Xfuture"/>
-            <sysproperty key="net.sf.retrotranslator.tests.smart-test" value="true"/>
-            <classpath>
-                <path refid="classpath"/>
-                <pathelement location="build/test-smart"/>
-            </classpath>
-            <formatter type="brief" usefile="false"/>
-            <test name="net.sf.retrotranslator.transformer.SmartReplacementVisitorTestCase"/>
         </junit>
         <fail if="test.failed"/>
     </target>
@@ -373,15 +411,15 @@
         <retrotranslator destdir="build/test-retainapi" retainapi="true">
             <dirset dir="build" includes="test-classes15"/>
         </retrotranslator>
-        <antcall target="test-retainapi-junit">
+        <antcall target="subtest-retainapi">
             <param name="java_home" value="${java14_home}"/>
         </antcall>
-        <antcall target="test-retainapi-junit">
+        <antcall target="subtest-retainapi">
             <param name="java_home" value="${java15_home}"/>
         </antcall>
     </target>
 
-    <target name="test-retainapi-junit">
+    <target name="subtest-retainapi">
         <echo message="Running classes in build/test-retainapi on ${java_home}"/>
         <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
                jvm="${java_home}/bin/java" failureproperty="test.failed">
@@ -400,15 +438,15 @@
         <retrotranslator destdir="build/test-support" support="StringBuffer.trimToSize;ThreadLocal.remove">
             <fileset dir="build/test-classes15" includes="**/SupportAPITestCase.class"/>
         </retrotranslator>
-        <antcall target="test-support-junit">
+        <antcall target="subtest-support">
             <param name="java_home" value="${java14_home}"/>
         </antcall>
-        <antcall target="test-support-junit">
+        <antcall target="subtest-support">
             <param name="java_home" value="${java15_home}"/>
         </antcall>
     </target>
 
-    <target name="test-support-junit">
+    <target name="subtest-support">
         <echo message="Running classes in build/test-support on ${java_home}"/>
         <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
                jvm="${java_home}/bin/java" failureproperty="test.failed">
@@ -423,9 +461,114 @@
         <fail if="test.failed"/>
     </target>
 
-    <target name="test-wrong-format" depends="compile-tests">
-        <mkdir dir="build/test-wrong-format"/>
-        <copy todir="build/test-wrong-format">
+    <target name="test-smart" depends="compile-tests">
+        <retrotranslator srcdir="build/test-smart" smart="true" verify="true" advanced="true"
+                         backport="net.sf.retrotranslator.transformer.smart:net.sf.retrotranslator.transformer.smart;
+                         java.security.cert:net.sf.retrotranslator.transformer.smart">
+            <classpath>
+                <path path="${java14_rt_jar}"/>
+                <path refid="classpath"/>
+                <pathelement location="build/retrotranslator-runtime-${version}.jar"/>
+            </classpath>
+        </retrotranslator>
+        <antcall target="subtest-smart">
+            <param name="java_home" value="${java14_home}"/>
+        </antcall>
+        <antcall target="subtest-smart">
+            <param name="java_home" value="${java15_home}"/>
+        </antcall>
+    </target>
+
+    <target name="subtest-smart">
+        <echo message="Running classes in build/test-smart on ${java_home}"/>
+        <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
+               jvm="${java_home}/bin/java" failureproperty="test.failed">
+            <jvmarg value="-Xfuture"/>
+            <sysproperty key="net.sf.retrotranslator.tests.smart-test" value="true"/>
+            <classpath>
+                <path refid="classpath"/>
+                <pathelement location="build/test-smart"/>
+                <pathelement location="build/retrotranslator-runtime-${version}.jar"/>
+            </classpath>
+            <formatter type="brief" usefile="false"/>
+            <test name="net.sf.retrotranslator.transformer.SmartReplacementVisitorTestCase"/>
+        </junit>
+        <fail if="test.failed"/>
+    </target>
+
+    <target name="test-custom" depends="compile-tests">
+        <mkdir dir="build/test-custom"/>
+        <java classname="net.sf.retrotranslator.transformer.Retrotranslator"
+              classpathref="classpath" classpath="build/retrotranslator-transformer-${version}.jar"
+              failonerror="true" jvm="${java15_home}/bin/java" fork="true">
+            <classpath location="build/test-classes15"/>
+            <arg value="-srcdir"/>
+            <arg value="build/test-classes15"/>
+            <arg value="-destdir"/>
+            <arg value="build/test-custom"/>
+            <arg value="-backport"/>
+            <arg value="net.sf.retrotranslator.tests;net.sf.retrotranslator.tests:net.sf.retrotranslator.tests.custom"/>
+        </java>
+        <antcall target="subtest-custom">
+            <param name="java_home" value="${java14_home}"/>
+        </antcall>
+        <antcall target="subtest-custom">
+            <param name="java_home" value="${java15_home}"/>
+        </antcall>
+    </target>
+
+    <target name="subtest-custom">
+        <echo message="Running classes in build/test-custom on ${java_home}"/>
+        <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
+               jvm="${java_home}/bin/java" failureproperty="test.failed">
+            <jvmarg value="-Xfuture"/>
+            <sysproperty key="net.sf.retrotranslator.tests.custom-backport" value="true"/>
+            <classpath>
+                <path refid="classpath"/>
+                <pathelement location="build/test-custom"/>
+                <pathelement location="build/retrotranslator-runtime-${version}.jar"/>
+            </classpath>
+            <formatter type="brief" usefile="false"/>
+            <test name="net.sf.retrotranslator.tests.CustomBackportTestCase"/>
+        </junit>
+        <fail if="test.failed"/>
+    </target>
+
+    <target name="test-duplicates" depends="compile-tests">
+        <retrotranslator srcdir="build/test-duplicates" failonwarning="false">
+            <classpath path="${java14_rt_jar}"/>
+            <classpath location="build/retrotranslator-runtime-${version}.jar"/>
+            <classpath refid="classpath"/>
+        </retrotranslator>
+        <antcall target="subtest-duplicates">
+            <param name="java_home" value="${java14_home}"/>
+        </antcall>
+        <antcall target="subtest-duplicates">
+            <param name="java_home" value="${java15_home}"/>
+        </antcall>
+    </target>
+
+    <target name="subtest-duplicates">
+        <echo message="Running classes in build/test-duplicates on ${java_home}"/>
+        <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
+               jvm="${java_home}/bin/java" failureproperty="test.failed">
+            <jvmarg value="-Xfuture"/>
+            <classpath>
+                <path refid="classpath"/>
+                <pathelement location="build/test-duplicates"/>
+                <pathelement location="build/retrotranslator-runtime-${version}.jar"/>
+            </classpath>
+            <formatter type="brief" usefile="false"/>
+            <batchtest>
+                <fileset dir="build/test-duplicates" includes="**/*TestCase.class"/>
+            </batchtest>
+        </junit>
+        <fail if="test.failed"/>
+    </target>
+
+    <target name="test-incompatible" depends="compile-tests">
+        <mkdir dir="build/test-incompatible"/>
+        <copy todir="build/test-incompatible">
             <fileset dir="build/test-classes15">
                 <include name="**/ObjectMethodsVisitorTestCase*.class"/>
             </fileset>
@@ -438,78 +581,27 @@
             <classpath refid="classpath"/>
             <arg value="-verify"/>
             <arg value="-srcdir"/>
-            <arg value="build/test-wrong-format"/>
+            <arg value="build/test-incompatible"/>
         </java>
         <echo message="${outputproperty}"/>
         <fail>
             <condition>
                 <or>
-                    <not><equals arg1="${resultproperty}"
-                                 arg2="2"/></not>
-                    <not><contains string="${outputproperty}"
-                                   substring="Incompatible class: java.lang.Object"/></not>
+                    <not>
+                        <equals arg1="${resultproperty}"
+                                arg2="2"/>
+                    </not>
+                    <not>
+                        <contains string="${outputproperty}"
+                                  substring="Incompatible class: java.lang.Object"/>
+                    </not>
                 </or>
             </condition>
         </fail>
     </target>
 
-    <target name="test-duplicates" depends="compile-tests">
-        <retrotranslator srcdir="build/test-classes-duplicates" failonwarning="false">
-            <classpath path="${java14_rt_jar}"/>
-            <classpath location="build/retrotranslator-runtime-${version}.jar"/>
-            <classpath refid="classpath"/>
-        </retrotranslator>
-        <antcall target="test-duplicates-junit">
-            <param name="java_home" value="${java14_home}"/>
-        </antcall>
-        <antcall target="test-duplicates-junit">
-            <param name="java_home" value="${java15_home}"/>
-        </antcall>
-    </target>
-
-    <target name="test-duplicates-junit">
-        <echo message="Running classes in build/test-classes-duplicates on ${java_home}"/>
-        <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
-               jvm="${java_home}/bin/java" failureproperty="test.failed">
-            <jvmarg value="-Xfuture"/>
-            <classpath>
-                <path refid="classpath"/>
-                <pathelement location="build/test-classes-duplicates"/>
-                <pathelement location="build/retrotranslator-runtime-${version}.jar"/>
-            </classpath>
-            <formatter type="brief" usefile="false"/>
-            <batchtest>
-                <fileset dir="build/test-classes-duplicates" includes="**/*TestCase.class"/>
-            </batchtest>
-        </junit>
-        <fail if="test.failed"/>
-    </target>
-
-    <target name="test-with-jit" depends="compile-tests">
-        <java classname="net.sf.retrotranslator.transformer.JITRetrotranslator" failonerror="true"
-              fork="true" jvm="${java14_home}/bin/java"
-              classpath="${java.class.path}" classpathref="classpath">
-            <classpath path="build/retrotranslator-transformer-${version}.jar"/>
-            <arg value="-advanced"/>
-            <arg value="org.apache.tools.ant.Main"/>
-            <arg value="junit-for-jit"/>
-        </java>
-    </target>
-
-    <target name="junit-for-jit">
-        <echo message="Running classes in test-classes15 on ${java.home}"/>
-        <junit printsummary="withOutAndErr" fork="no" reloading="false" failureproperty="test.failed">
-            <formatter type="brief" usefile="false"/>
-            <classpath location="build/test-classes15"/>
-            <batchtest>
-                <fileset dir="build/test-classes15" includes="**/*TestCase.class">
-                    <exclude name="**/BaseTestCase.class"/>
-                    <exclude name="**/TextFileTransformerTestCase.class"/>
-                </fileset>
-            </batchtest>
-        </junit>
-        <fail if="test.failed"/>
-    </target>
+    <target name="test" depends="test-java14, test-java13, test-java12, test-java11, test-jit, test-embedded,
+    test-retainapi, test-support, test-smart, test-custom, test-duplicates, test-incompatible"/>
 
     <target name="dist-bin" depends="test">
         <mkdir dir="dist"/>
@@ -518,10 +610,12 @@
             <zipfileset prefix="${bin.name}" dir="doc"/>
             <zipfileset prefix="${bin.name}" dir="build">
                 <include name="retrotranslator-runtime-${version}.jar"/>
+                <include name="retrotranslator-runtime13-${version}.jar"/>
                 <include name="retrotranslator-transformer-${version}.jar"/>
             </zipfileset>
             <zipfileset prefix="${bin.name}" dir="lib">
                 <include name="backport-util-concurrent-3.1.jar"/>
+                <include name="backport-util-concurrent-java12-3.1.jar"/>
             </zipfileset>
         </zip>
     </target>
@@ -549,6 +643,10 @@
             <fileset file="${pom.dir}/retrotranslator-runtime/pom.xml"/>
             <fileset file="build/retrotranslator-runtime-${version}.jar"/>
         </jar>
+        <jar destfile="dist/maven/retrotranslator-runtime13-${version}-bundle.jar">
+            <fileset file="${pom.dir}/retrotranslator-runtime13/pom.xml"/>
+            <fileset file="build/retrotranslator-runtime13-${version}.jar"/>
+        </jar>
         <jar destfile="dist/maven/retrotranslator-transformer-${version}-bundle.jar">
             <fileset file="${pom.dir}/retrotranslator-transformer/pom.xml"/>
             <fileset file="build/retrotranslator-transformer-${version}.jar"/>
@@ -559,17 +657,25 @@
             description="Installs the compile units into the current Maven 2 repository">
         <property name="maven.dir" value="${user.home}/.m2/repository/net/sf/retrotranslator"/>
         <property name="runtime.dir" value="${maven.dir}/retrotranslator-runtime/${version}"/>
+        <property name="runtime13.dir" value="${maven.dir}/retrotranslator-runtime13/${version}"/>
         <property name="transformer.dir" value="${maven.dir}/retrotranslator-transformer/${version}"/>
 
         <mkdir dir="${runtime.dir}"/>
+        <mkdir dir="${runtime13.dir}"/>
         <mkdir dir="${transformer.dir}"/>
 
         <copy todir="${runtime.dir}" file="build/retrotranslator-runtime-${version}.jar"/>
+        <copy todir="${runtime13.dir}" file="build/retrotranslator-runtime13-${version}.jar"/>
         <copy todir="${transformer.dir}" file="build/retrotranslator-transformer-${version}.jar"/>
 
         <copy tofile="${runtime.dir}/retrotranslator-runtime-${version}.pom"
-              file="${pom.dir}/retrotranslator-runtime/pom.xml" />
+              file="${pom.dir}/retrotranslator-runtime/pom.xml"/>
+        <copy tofile="${runtime13.dir}/retrotranslator-runtime13-${version}.pom"
+              file="${pom.dir}/retrotranslator-runtime13/pom.xml"/>
         <copy tofile="${transformer.dir}/retrotranslator-transformer-${version}.pom"
               file="${pom.dir}/retrotranslator-transformer/pom.xml"/>
     </target>
+
+    <target name="build" depends="dist-bin, dist-src, maven-dist"/>
+
 </project>

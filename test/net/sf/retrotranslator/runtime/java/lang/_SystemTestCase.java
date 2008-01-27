@@ -31,12 +31,12 @@
  */
 package net.sf.retrotranslator.runtime.java.lang;
 
-import net.sf.retrotranslator.tests.BaseTestCase;
+import net.sf.retrotranslator.tests.TestCaseBase;
 
 /**
  * @author Taras Puchko
  */
-public class _SystemTestCase extends BaseTestCase {
+public class _SystemTestCase extends TestCaseBase {
 
     public void testClearProperty() throws Exception {
         String key = _SystemTestCase.class.getName();

@@ -33,7 +33,8 @@ package net.sf.retrotranslator.runtime.java.text;
 
 import java.math.BigDecimal;
 import java.text.*;
-import net.sf.retrotranslator.runtime.impl.*;
+import net.sf.retrotranslator.registry.Advanced;
+import net.sf.retrotranslator.runtime.impl.WeakIdentityTable;
 
 /**
  * @author Taras Puchko

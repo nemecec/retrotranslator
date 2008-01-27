@@ -33,12 +33,12 @@ package net.sf.retrotranslator.runtime.format;
 
 import java.math.BigDecimal;
 import java.util.*;
-import net.sf.retrotranslator.tests.BaseTestCase;
+import net.sf.retrotranslator.tests.TestCaseBase;
 
 /**
  * @author Taras Puchko
  */
-public class HexadecimalExponentialConversionTestCase extends BaseTestCase {
+public class HexadecimalExponentialConversionTestCase extends TestCaseBase {
 
     public void testFormat() throws Exception {
         assertFormat("0x0.0p0", "%a", 0.0);

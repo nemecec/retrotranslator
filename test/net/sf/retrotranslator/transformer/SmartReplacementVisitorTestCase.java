@@ -31,25 +31,26 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import junit.framework.TestCase;
 import net.sf.retrotranslator.transformer.smart.*;
+import net.sf.retrotranslator.tests.TestCaseBase;
 import java.math.*;
+import java.security.cert.CertificateEncodingException;
 
 /**
  * @author Taras Puchko
  */
-public class SmartReplacementVisitorTestCase extends TestCase {
+public class SmartReplacementVisitorTestCase extends TestCaseBase {
 
     public void testField() {
-        assertEquals("Bye", FullDerivedClass.FIELD);
+        assertEquals("Unchanged", FullDerivedClass.FIELD);
         Object baseValue = BackportedClass.FIELD;
         Object derivedValue = EmptyDerivedClass.FIELD;
         if (isSmart()) {
-            assertEquals("Hi", baseValue);
-            assertEquals("Hi", derivedValue);
+            assertEquals("Backported", baseValue);
+            assertEquals("Backported", derivedValue);
         } else {
-            assertEquals("Hello", baseValue);
-            assertEquals("Hello", derivedValue);
+            assertNull(baseValue);
+            assertNull(derivedValue);
         }
     }
 
@@ -80,10 +81,10 @@ public class SmartReplacementVisitorTestCase extends TestCase {
     }
 
     public void testConstructor() {
-        Exception exception1 = new IllegalArgumentException();
-        Exception exception2 = new IllegalArgumentException("test2");
-        Exception exception3 = new IllegalArgumentException("test3", new Exception("cause3"));
-        Exception exception4 = new IllegalArgumentException(new Exception("cause4"));
+        Exception exception1 = new CertificateEncodingException();
+        Exception exception2 = new CertificateEncodingException("test2");
+        Exception exception3 = new CertificateEncodingException("test3", new Exception("cause3"));
+        Exception exception4 = new CertificateEncodingException(new Exception("cause4"));
         assertNull(exception1.getMessage());
         assertNull(exception1.getCause());
         assertEquals("test2", exception2.getMessage());
@@ -105,13 +106,8 @@ public class SmartReplacementVisitorTestCase extends TestCase {
         return Boolean.getBoolean("net.sf.retrotranslator.tests.smart-test");
     }
 
-    private boolean isJava5() {
-        String version = System.getProperty("java.version");
-        return version.length() > 3 && version.substring(0, 3).compareTo("1.5") >= 0;
-    }
-
     public void testBigDecimal() {
-        if (isSmart() || isJava5()) {
+        if (isSmart() || isJava5AtLeast()) {
             class MyDecimal extends BigDecimal {
                 public MyDecimal(int val) {
                     super(val);

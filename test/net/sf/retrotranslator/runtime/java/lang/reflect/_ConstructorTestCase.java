@@ -34,12 +34,12 @@ package net.sf.retrotranslator.runtime.java.lang.reflect;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import net.sf.retrotranslator.runtime.java.lang.*;
-import net.sf.retrotranslator.tests.BaseTestCase;
+import net.sf.retrotranslator.tests.TestCaseBase;
 
 /**
  * @author Taras Puchko
  */
-public class _ConstructorTestCase extends BaseTestCase {
+public class _ConstructorTestCase extends TestCaseBase {
 
     @MyStyle("bold")
     public _ConstructorTestCase() {
@@ -50,7 +50,7 @@ public class _ConstructorTestCase extends BaseTestCase {
         super(string);
     }
 
-    public _ConstructorTestCase(String string, @MyStyle("glass") int i) throws RuntimeException {
+    public _ConstructorTestCase(String string, @MyStyle("glass")int i) throws RuntimeException {
         super(string + i);
     }
 
@@ -131,16 +131,13 @@ public class _ConstructorTestCase extends BaseTestCase {
         assertFalse(_ConstructorTestCase.class.getConstructor(String.class, int.class).isVarArgs());
     }
 
-    public void testGetGenericString() throws Exception {
-        class Test<T extends String, RE extends RuntimeException> {
-            public <E extends Number> Test(T t, E e, String[] strings) throws RE, ClassNotFoundException {
-            }
+    static class Test2<T extends String, RE extends RuntimeException> {
+        public <E extends Number> Test2(T t, E e, String[] strings) throws RE, ClassNotFoundException {
         }
+    }
 
-        assertEquals("public <E> " +
-                this.getClass().getName() +
-                "$1Test(T,E,java.lang.String[])" +
-                " throws RE,java.lang.ClassNotFoundException",
-                Test.class.getConstructors()[0].toGenericString());
+    public void testGetGenericString() throws Exception {
+        assertEquals("public <E> " + this.getClass().getName() + "$Test2(T,E,java.lang.String[])" +
+                " throws RE,java.lang.ClassNotFoundException", Test2.class.getConstructors()[0].toGenericString());
     }
 }

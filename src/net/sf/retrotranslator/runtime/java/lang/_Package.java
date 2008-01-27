@@ -31,24 +31,24 @@
  */
 package net.sf.retrotranslator.runtime.java.lang;
 
+import java.lang.annotation.Annotation;
 import java.security.*;
 import net.sf.retrotranslator.runtime.impl.*;
-import net.sf.retrotranslator.runtime.java.lang.annotation.Annotation_;
 
 /**
  * @author Taras Puchko
  */
 public class _Package {
 
-    public static Annotation_ getAnnotation(Package aPackage, Class annotationType) {
+    public static Annotation getAnnotation(Package aPackage, Class annotationType) {
         return getPackageInfo(aPackage).getAnnotation(annotationType);
     }
 
-    public static Annotation_[] getAnnotations(Package aPackage) {
+    public static Annotation[] getAnnotations(Package aPackage) {
         return getPackageInfo(aPackage).getAnnotations();
     }
 
-    public static Annotation_[] getDeclaredAnnotations(Package aPackage) {
+    public static Annotation[] getDeclaredAnnotations(Package aPackage) {
         return getPackageInfo(aPackage).getDeclaredAnnotations();
     }
 

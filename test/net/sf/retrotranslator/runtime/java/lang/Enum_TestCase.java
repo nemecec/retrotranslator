@@ -31,16 +31,17 @@
  */
 package net.sf.retrotranslator.runtime.java.lang;
 
-import net.sf.retrotranslator.tests.BaseTestCase;
+import net.sf.retrotranslator.tests.TestCaseBase;
 import net.sf.retrotranslator.runtime.impl.RuntimeTools;
 import java.util.EnumSet;
 import java.util.concurrent.Callable;
 import java.lang.ref.WeakReference;
+import java.io.*;
 
 /**
  * @author Taras Puchko
  */
-public class Enum_TestCase extends BaseTestCase {
+public class Enum_TestCase extends TestCaseBase {
 
     public void testName() throws Exception {
         assertEquals("GREEN", getName(MyColor.GREEN));
@@ -163,10 +164,16 @@ public class Enum_TestCase extends BaseTestCase {
     }
 
     public void testGarbageCollector() throws Exception {
-        String resourceName = "/" + MyColor.class.getName().replace('.', '/') + ".class";
-        byte[] bytes = RuntimeTools.readResourceToByteArray(MyColor.class, resourceName);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        byte[] buffer = new byte[0x1000];
+        InputStream inputStream = MyColor.class.getResourceAsStream(MyColor.class.getSimpleName() + ".class");
+        int count;
+        while ((count = inputStream.read(buffer)) > 0) {
+            outputStream.write(buffer, 0, count);
+        }
+        inputStream.close();
         MyClassLoader classLoader = new MyClassLoader(MyColor.class.getClassLoader());
-        Class enumClass = classLoader.defineClass(bytes);
+        Class enumClass = classLoader.defineClass(outputStream.toByteArray());
         assertEquals(3, enumClass.getEnumConstants().length);
         final WeakReference<ClassLoader> reference = new WeakReference<ClassLoader>(classLoader);
         classLoader = null;

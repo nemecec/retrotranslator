@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
+ *
  * Copyright (c) 2005 - 2008 Taras Puchko
  * All rights reserved.
  *
@@ -29,15 +29,23 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.runtime.impl;
+package net.sf.retrotranslator.runtime13.v14.java.lang;
 
-import java.lang.annotation.*;
+import junit.framework.TestCase;
 
 /**
  * @author Taras Puchko
  */
-@Target({ElementType.TYPE, ElementType.FIELD, ElementType.METHOD})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Advanced {
-    String[] value();
+public class _BooleanTestCase extends TestCase {
+
+    public void testToString() throws Exception {
+        assertEquals("true", Boolean.toString(true));
+        assertEquals("false", Boolean.toString(false));
+    }
+
+    public void testValueOf() throws Exception {
+        assertSame(Boolean.TRUE, Boolean.valueOf(true));
+        assertSame(Boolean.FALSE, Boolean.valueOf(false));
+    }
+
 }

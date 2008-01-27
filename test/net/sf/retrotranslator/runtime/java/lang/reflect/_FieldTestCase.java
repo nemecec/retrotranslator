@@ -36,12 +36,12 @@ import java.lang.reflect.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import net.sf.retrotranslator.runtime.java.lang.*;
-import net.sf.retrotranslator.tests.BaseTestCase;
+import net.sf.retrotranslator.tests.TestCaseBase;
 
 /**
  * @author Taras Puchko
  */
-public class _FieldTestCase extends BaseTestCase {
+public class _FieldTestCase extends TestCaseBase {
 
     @MyFormatter(
             pattern = "aabbcc",
@@ -127,13 +127,22 @@ public class _FieldTestCase extends BaseTestCase {
     }
 
     private static void delete(StringBuffer buffer, String substring) {
-        int index = buffer.indexOf(substring);
+        String s = buffer.toString();
+        int index = s.indexOf(substring);
         if (index == -1) {
-            substring = substring.replaceAll("\\s", "");
-            index = buffer.indexOf(substring);
+            substring = removeSpaces(substring);
+            index = s.indexOf(substring);
         }
         assertFalse("Cannot find: " + substring + " in " + buffer, index == -1);
         buffer.delete(index, index + substring.length());
+    }
+
+    private static String removeSpaces(String s) {
+        int index;
+        while((index = s.indexOf(' ')) >= 0) {
+            s = s.substring(0, index) + s.substring(index + 1);
+        }
+        return s;
     }
 
     public void testGetAnnotations() throws Exception {

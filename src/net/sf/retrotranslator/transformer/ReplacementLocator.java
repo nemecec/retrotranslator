@@ -32,8 +32,8 @@
 package net.sf.retrotranslator.transformer;
 
 import java.util.*;
-import static net.sf.retrotranslator.runtime.asm.Opcodes.*;
 import net.sf.retrotranslator.runtime.asm.*;
+import static net.sf.retrotranslator.runtime.asm.Opcodes.*;
 import net.sf.retrotranslator.runtime.impl.*;
 
 /**
@@ -211,9 +211,9 @@ class ReplacementLocator {
         loadMembers(owner, descriptor.getMethodDescriptors(), keyProvider, replacement.getMethodReplacements());
     }
 
-    private <T extends AnnotatedElementDescriptor & MemberDescriptor>
-    void loadMembers(String owner, Collection<T> members, KeyProvider keyProvider,
-                     Map<MemberKey, MemberReplacement> replacements) {
+    private <T extends AnnotatedElementDescriptor> void loadMembers(
+            String owner, Collection<T> members, KeyProvider keyProvider,
+            Map<MemberKey, MemberReplacement> replacements) {
         for (T member : members) {
             if (!member.isAccess(ACC_PUBLIC) || !member.isAccess(ACC_STATIC)) {
                 continue;

@@ -1,0 +1,46 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>net.sf.retrotranslator</groupId>
+    <artifactId>retrotranslator-runtime13</artifactId>
+    <packaging>jar</packaging>
+    <version>@version@</version>
+    <name>Retrotranslator Runtime for Java 1.3</name>
+    <url>http://retrotranslator.sourceforge.net/</url>
+    <description>Library classes for Java 1.3 applications produced by Retrotranslator</description>
+    <licenses>
+        <license>
+            <name>BSD license</name>
+            <url>http://retrotranslator.sourceforge.net/LICENSE.txt</url>
+            <distribution>repo</distribution>
+        </license>
+        <license>
+            <name>BSD license</name>
+            <url>http://asm.objectweb.org/license.html</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <organization>
+        <name>Taras Puchko</name>
+        <url>http://sourceforge.net/users/tarasp/</url>
+    </organization>
+    <scm>
+        <url>http://retrotranslator.cvs.sourceforge.net/retrotranslator/</url>
+    </scm>
+    <dependencies>
+        <dependency>
+            <groupId>backport-util-concurrent</groupId>
+            <artifactId>backport-util-concurrent-java12</artifactId>
+            <version>3.1</version>
+            <scope>compile</scope>
+            <optional/>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>3.8.1</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

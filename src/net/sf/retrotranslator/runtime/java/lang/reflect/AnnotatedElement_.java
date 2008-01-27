@@ -31,19 +31,19 @@
  */
 package net.sf.retrotranslator.runtime.java.lang.reflect;
 
-import net.sf.retrotranslator.runtime.java.lang.annotation.Annotation_;
+import java.lang.annotation.Annotation;
 
 /**
  * @author Taras Puchko
  */
 public interface AnnotatedElement_ {
 
-    <T extends Annotation_> T getAnnotation(Class<T> annotationType);
+    <T extends Annotation> T getAnnotation(Class<T> annotationType);
 
-    Annotation_[] getAnnotations();
+    Annotation[] getAnnotations();
 
-    Annotation_[] getDeclaredAnnotations();
+    Annotation[] getDeclaredAnnotations();
 
-    boolean isAnnotationPresent(Class<? extends Annotation_> annotationType);
+    boolean isAnnotationPresent(Class<? extends Annotation> annotationType);
 
 }

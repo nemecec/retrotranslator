@@ -31,8 +31,8 @@
  */
 package net.sf.retrotranslator.runtime.java.lang.management;
 
-import javax.management.*;
 import java.util.List;
+import javax.management.*;
 
 /**
  * @author Taras Puchko

@@ -31,14 +31,13 @@
  */
 package net.sf.retrotranslator.runtime.impl;
 
-import java.lang.annotation.Inherited;
+import java.lang.annotation.*;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.*;
 import java.lang.reflect.Type;
 import java.util.*;
 import net.sf.retrotranslator.runtime.asm.*;
 import net.sf.retrotranslator.runtime.asm.signature.*;
-import net.sf.retrotranslator.runtime.java.lang.annotation.Annotation_;
 
 /**
  * @author Taras Puchko
@@ -89,26 +88,30 @@ public class ClassDescriptor extends GenericDeclarationDescriptor {
         return map;
     }
 
-    protected Annotation_[] createAnnotations(Annotation_[] declaredAnnotations) {
+    protected Annotation[] createAnnotations(Annotation[] declaredAnnotations) {
         Class superclass = target.getSuperclass();
         if (superclass == null) return declaredAnnotations;
-        Annotation_[] superAnnotations = getInstance(superclass).getAnnotations();
+        Annotation[] superAnnotations = getInstance(superclass).getAnnotations();
         if (superAnnotations.length == 0) return declaredAnnotations;
-        Map<Class, Annotation_> result = new HashMap<Class, Annotation_>();
-        for (Annotation_ annotation : superAnnotations) {
+        Map<Class, Annotation> result = new HashMap<Class, Annotation>();
+        for (Annotation annotation : superAnnotations) {
             Class annotationClass = annotation.getClass().getInterfaces()[0];
             if (annotationClass.isAnnotationPresent(Inherited.class)) {
                 result.put(annotationClass, annotation);
             }
         }
-        for (Annotation_ annotation : declaredAnnotations) {
+        for (Annotation annotation : declaredAnnotations) {
             result.put(annotation.getClass().getInterfaces()[0], annotation);
         }
-        return result.values().toArray(new Annotation_[result.size()]);
+        return result.values().toArray(new Annotation[result.size()]);
     }
 
     public String getName() {
         return name;
+    }
+
+    public String getDesc() {
+        return null;
     }
 
     public ClassDescriptor getClassDescriptor() {

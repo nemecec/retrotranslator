@@ -31,9 +31,9 @@
  */
 package net.sf.retrotranslator.runtime.java.lang.reflect;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import net.sf.retrotranslator.runtime.java.lang.*;
-import net.sf.retrotranslator.runtime.java.lang.annotation.Annotation_;
 
 /**
  * @author Taras Puchko
@@ -68,7 +68,7 @@ public class _AnnotatedElement {
         return (AnnotatedElement_) object;
     }
 
-    public static Annotation_ getAnnotation(Object object, Class<? extends Annotation_> annotationType) {
+    public static Annotation getAnnotation(Object object, Class<? extends Annotation> annotationType) {
         if (object instanceof Class) {
             return _Class.getAnnotation((Class) object, annotationType);
         }
@@ -87,7 +87,7 @@ public class _AnnotatedElement {
         return ((AnnotatedElement_) object).getAnnotation(annotationType);
     }
 
-    public static Annotation_[] getAnnotations(Object object) {
+    public static Annotation[] getAnnotations(Object object) {
         if (object instanceof Class) {
             return _Class.getAnnotations((Class) object);
         }
@@ -106,7 +106,7 @@ public class _AnnotatedElement {
         return ((AnnotatedElement_) object).getAnnotations();
     }
 
-    public static Annotation_[] getDeclaredAnnotations(Object object) {
+    public static Annotation[] getDeclaredAnnotations(Object object) {
         if (object instanceof Class) {
             return _Class.getDeclaredAnnotations((Class) object);
         }
@@ -125,7 +125,7 @@ public class _AnnotatedElement {
         return ((AnnotatedElement_) object).getDeclaredAnnotations();
     }
 
-    public static boolean isAnnotationPresent(Object object, Class<? extends Annotation_> annotationType) {
+    public static boolean isAnnotationPresent(Object object, Class<? extends Annotation> annotationType) {
         if (object instanceof Class) {
             return _Class.isAnnotationPresent((Class) object, annotationType);
         }

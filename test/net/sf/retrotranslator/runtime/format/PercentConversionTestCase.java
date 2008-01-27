@@ -31,12 +31,12 @@
  */
 package net.sf.retrotranslator.runtime.format;
 
-import net.sf.retrotranslator.tests.BaseTestCase;
+import net.sf.retrotranslator.tests.TestCaseBase;
 
 /**
  * @author Taras Puchko
  */
-public class PercentConversionTestCase extends BaseTestCase {
+public class PercentConversionTestCase extends TestCaseBase {
 
     public void testFormat() throws Exception {
         assertFormat("AxB%CyD", "A%sB%%C%sD", "x", "y");

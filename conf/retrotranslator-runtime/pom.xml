@@ -6,7 +6,7 @@
     <artifactId>retrotranslator-runtime</artifactId>
     <packaging>jar</packaging>
     <version>@version@</version>
-    <name>Retrotranslator Runtime</name>
+    <name>Retrotranslator Runtime for Java 1.4</name>
     <url>http://retrotranslator.sourceforge.net/</url>
     <description>Library classes for Java 1.4 applications produced by Retrotranslator</description>
     <licenses>

@@ -31,8 +31,8 @@
  */
 package net.sf.retrotranslator.runtime.java.lang;
 
-import net.sf.retrotranslator.runtime.impl.*;
 import java.util.*;
+import net.sf.retrotranslator.registry.Advanced;
 
 /**
  * @author Taras Puchko

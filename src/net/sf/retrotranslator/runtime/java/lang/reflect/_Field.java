@@ -31,31 +31,30 @@
  */
 package net.sf.retrotranslator.runtime.java.lang.reflect;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import net.sf.retrotranslator.runtime.asm.Opcodes;
 import net.sf.retrotranslator.runtime.impl.*;
-import net.sf.retrotranslator.runtime.java.lang.annotation.Annotation_;
 
 /**
  * @author Taras Puchko
  */
 public class _Field {
 
-    public static Annotation_ getAnnotation(Field field, Class annotationType) {
+    public static Annotation getAnnotation(Field field, Class annotationType) {
         return FieldDescriptor.getInstance(field).getAnnotation(annotationType);
     }
 
-    public static Annotation_[] getAnnotations(Field field) {
+    public static Annotation[] getAnnotations(Field field) {
         return FieldDescriptor.getInstance(field).getAnnotations();
     }
 
-    public static Annotation_[] getDeclaredAnnotations(Field field) {
+    public static Annotation[] getDeclaredAnnotations(Field field) {
         return FieldDescriptor.getInstance(field).getDeclaredAnnotations();
     }
 
     public static Type getGenericType(Field field) {
-        Type type = FieldDescriptor.getInstance(field).getGenericType();
-        return type != null ? type : field.getType();
+        return RuntimeTools.getType(field.getType(), FieldDescriptor.getInstance(field).getGenericType());
     }
 
     public static boolean isAnnotationPresent(Field field, Class annotationType) {

@@ -31,14 +31,14 @@
  */
 package net.sf.retrotranslator.runtime.impl;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import net.sf.retrotranslator.runtime.asm.signature.SignatureReader;
-import net.sf.retrotranslator.runtime.java.lang.annotation.Annotation_;
 
 /**
  * @author Taras Puchko
  */
-public class FieldDescriptor extends AnnotatedElementDescriptor implements MemberDescriptor {
+public class FieldDescriptor extends AnnotatedElementDescriptor {
 
     private String name;
     private String desc;
@@ -91,7 +91,7 @@ public class FieldDescriptor extends AnnotatedElementDescriptor implements Membe
         return classDescriptor.findTypeVariable(name);
     }
 
-    protected Annotation_[] createAnnotations(Annotation_[] declaredAnnotations) {
+    protected Annotation[] createAnnotations(Annotation[] declaredAnnotations) {
         return declaredAnnotations;
     }
 

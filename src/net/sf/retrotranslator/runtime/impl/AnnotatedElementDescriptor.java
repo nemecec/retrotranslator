@@ -31,36 +31,35 @@
  */
 package net.sf.retrotranslator.runtime.impl;
 
+import java.lang.annotation.*;
 import java.lang.reflect.*;
 import java.util.*;
 import net.sf.retrotranslator.runtime.asm.*;
 import net.sf.retrotranslator.runtime.asm.Type;
-import net.sf.retrotranslator.runtime.java.lang.annotation.*;
-import net.sf.retrotranslator.runtime.java.lang.Enum_;
 
 /**
  * @author Taras Puchko
  */
 public abstract class AnnotatedElementDescriptor extends EmptyVisitor {
 
-    private static final Annotation_[] EMPTY = new Annotation_[0];
+    private static final Annotation[] EMPTY = new Annotation[0];
     protected static final EmptyVisitor EMPTY_VISITOR = new EmptyVisitor();
 
     protected int access;
 
-    private LazyList<AnnotationValue, Annotation_> declaredAnnotations = new LazyList<AnnotationValue, Annotation_>() {
-        protected Annotation_ resolve(AnnotationValue input) {
+    private LazyList<AnnotationValue, Annotation> declaredAnnotations = new LazyList<AnnotationValue, Annotation>() {
+        protected Annotation resolve(AnnotationValue input) {
             return createAnnotation(input);
         }
 
-        protected Annotation_[] newArray(int size) {
-            return new Annotation_[size];
+        protected Annotation[] newArray(int size) {
+            return new Annotation[size];
         }
     };
 
-    private LazyValue<LazyList<AnnotationValue, Annotation_>, Annotation_[]> annotations
-            = new LazyValue<LazyList<AnnotationValue, Annotation_>, Annotation_[]>(declaredAnnotations) {
-        protected Annotation_[] resolve(LazyList<AnnotationValue, Annotation_> input) {
+    private LazyValue<LazyList<AnnotationValue, Annotation>, Annotation[]> annotations
+            = new LazyValue<LazyList<AnnotationValue, Annotation>, Annotation[]>(declaredAnnotations) {
+        protected Annotation[] resolve(LazyList<AnnotationValue, Annotation> input) {
             return createAnnotations(input.getLive());
         }
     };
@@ -70,27 +69,31 @@ public abstract class AnnotatedElementDescriptor extends EmptyVisitor {
     }
 
     public boolean isAnnotationPresent(Class annotationType) {
-        for (Annotation_ annotation : annotations.get()) {
+        for (Annotation annotation : annotations.get()) {
             if (annotationType.isInstance(annotation)) return true;
         }
         return false;
     }
 
-    public Annotation_ getAnnotation(Class annotationType) {
-        for (Annotation_ annotation : annotations.get()) {
+    public Annotation getAnnotation(Class annotationType) {
+        for (Annotation annotation : annotations.get()) {
             if (annotationType.isInstance(annotation)) return annotation;
         }
         return null;
     }
 
-    public Annotation_[] getAnnotations() {
-        Annotation_[] result = annotations.get();
+    public Annotation[] getAnnotations() {
+        Annotation[] result = annotations.get();
         return result.length == 0 ? result : result.clone();
     }
 
-    public Annotation_[] getDeclaredAnnotations() {
+    public Annotation[] getDeclaredAnnotations() {
         return declaredAnnotations.getClone();
     }
+
+    public abstract String getName();
+
+    public abstract String getDesc();
 
     public abstract ClassDescriptor getClassDescriptor();
 
@@ -98,11 +101,11 @@ public abstract class AnnotatedElementDescriptor extends EmptyVisitor {
 
     protected abstract TypeVariable findTypeVariable(String name);
 
-    protected abstract Annotation_[] createAnnotations(Annotation_[] declaredAnnotations);
+    protected abstract Annotation[] createAnnotations(Annotation[] declaredAnnotations);
 
-    protected Annotation_[] createAnnotations(List<AnnotationValue> values) {
+    protected Annotation[] createAnnotations(List<AnnotationValue> values) {
         if (values == null) return EMPTY;
-        Annotation_[] result = new Annotation_[values.size()];
+        Annotation[] result = new Annotation[values.size()];
         for (int i = 0; i < result.length; i++) {
             result[i] = createAnnotation(values.get(i));
         }
@@ -204,7 +207,7 @@ public abstract class AnnotatedElementDescriptor extends EmptyVisitor {
         return result;
     }
 
-    private Annotation_ createAnnotation(AnnotationValue annotationValue) {
+    private Annotation createAnnotation(AnnotationValue annotationValue) {
         Class annotationType = getClassByDesc(annotationValue.getDesc());
         StringBuffer buffer = new StringBuffer("@").append(annotationType.getName()).append('(');
         Map<String, Object> values = new HashMap<String, Object>();
@@ -219,7 +222,7 @@ public abstract class AnnotatedElementDescriptor extends EmptyVisitor {
             Object elementValue = annotationValue.getElement(elementName);
             Object resolvedValue = elementValue == null ? descriptor.getDefaultValue()
                     : resolveValue(elementValue, descriptor.getReturnType(), descriptor);
-            if (resolvedValue == null) throw new IncompleteAnnotationException_(annotationType, elementName);
+            if (resolvedValue == null) throw new IncompleteAnnotationException(annotationType, elementName);
             values.put(elementName, resolvedValue);
             buffer.append(elementName).append('=');
             append(buffer, resolvedValue);
@@ -227,28 +230,28 @@ public abstract class AnnotatedElementDescriptor extends EmptyVisitor {
         buffer.append(")");
         ClassLoader classLoader;
         Class[] interfaces;
-        if (Annotation_.class.isAssignableFrom(annotationType)) {
+        if (Annotation.class.isAssignableFrom(annotationType)) {
             classLoader = getClassLoader();
             interfaces = new Class[]{annotationType};
         } else {
             classLoader = getProxyClassLoader(annotationType);
-            interfaces = new Class[]{annotationType, Annotation_.class};
+            interfaces = new Class[]{annotationType, Annotation.class};
         }
-        return (Annotation_) Proxy.newProxyInstance(classLoader,
+        return (Annotation) Proxy.newProxyInstance(classLoader,
                 interfaces, new AnnotationHandler(annotationType, buffer.toString(), values));
     }
 
     private ClassLoader getProxyClassLoader(Class annotationType) {
         try {
-            if (Annotation_.class == Class.forName(Annotation_.class.getName(), false, getClassLoader())) {
+            if (Annotation.class == Class.forName(Annotation.class.getName(), false, getClassLoader())) {
                 return getClassLoader();
             }
         } catch (ClassNotFoundException e) {
             // ignore
         }
         try {
-            if (annotationType == Class.forName(annotationType.getName(), false, Annotation_.class.getClassLoader())) {
-                return Annotation_.class.getClassLoader();
+            if (annotationType == Class.forName(annotationType.getName(), false, Annotation.class.getClassLoader())) {
+                return Annotation.class.getClassLoader();
             }
         } catch (ClassNotFoundException e) {
             // ignore
@@ -275,14 +278,14 @@ public abstract class AnnotatedElementDescriptor extends EmptyVisitor {
             }
         }
         if (!type.isPrimitive() && !type.isInstance(value)) {
-            throw new AnnotationTypeMismatchException_(descriptor.getMethod(), type.getName());
+            throw new AnnotationTypeMismatchException(descriptor.getMethod(), type.getName());
         }
         return value;
     }
 
     private Object getEnumValue(Class enumType, String name) {
         try {
-            return Enum_.valueOf(enumType, name);
+            return Enum.valueOf(enumType, name);
         } catch (IllegalArgumentException e) {
             try {
                 return enumType.getMethod("valueOf", String.class).invoke(null, name);

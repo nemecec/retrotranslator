@@ -106,7 +106,7 @@ class GeneralReplacementVisitor extends GenericClassVisitor {
             if (replacement != null) {
                 MemberKey key = new MemberKey(true, name, typeDescriptor(desc));
                 MemberReplacement field = replacement.getFieldReplacements().get(key);
-                if (field != null && !owner.equals(currentClassName)) {
+                if (field != null && !field.getOwner().equals(currentClassName)) {
                     visitor.visitFieldInsn(opcode, field.getOwner(), field.getName(), field.getDesc());
                     return;
                 }
@@ -135,7 +135,7 @@ class GeneralReplacementVisitor extends GenericClassVisitor {
                     replacement = locator.getReplacement(owner);
                     method = replacement == null ? null : replacement.getMethodReplacements().get(key);
                 }
-                if (method != null && !owner.equals(currentClassName) && !method.getOwner().equals(currentClassName)) {
+                if (method != null && !method.getOwner().equals(currentClassName)) {
                     visitor.visitMethodInsn(INVOKESTATIC, method.getOwner(), method.getName(), method.getDesc());
                     return;
                 }

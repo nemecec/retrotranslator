@@ -29,11 +29,12 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.runtime.impl;
+package net.sf.retrotranslator.registry;
 
 import java.io.*;
 import java.util.*;
 import net.sf.retrotranslator.runtime.asm.*;
+import net.sf.retrotranslator.runtime.impl.*;
 
 /**
  * @author Taras Puchko
@@ -172,6 +173,7 @@ public class AdvancedPostProcessor {
     }
 
     private void save(File outputFile) throws IOException {
+        outputFile.getParentFile().mkdirs();
         Writer writer = new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8");
         try {
             for (Map.Entry<String, String> entry : map.entrySet()) {

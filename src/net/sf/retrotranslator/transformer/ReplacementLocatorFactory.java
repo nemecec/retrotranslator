@@ -53,7 +53,7 @@ class ReplacementLocatorFactory {
         this.environment = environment;
         this.backports = new Vector<Backport>();
         for (String s : getBackportNames(backport)) {
-            backports.add(Backport.valueOf(s));
+            backports.addAll(Backport.getBackports(s));
         }
     }
 

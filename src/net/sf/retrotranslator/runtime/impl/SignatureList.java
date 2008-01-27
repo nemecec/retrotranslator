@@ -32,7 +32,8 @@
 package net.sf.retrotranslator.runtime.impl;
 
 import java.util.*;
-import edu.emory.mathcs.backport.java.util.Queue;
+import java.util.concurrent.ConcurrentMap;
+import net.sf.retrotranslator.runtime.asm.Type;
 
 
 /**
@@ -49,14 +50,25 @@ public class SignatureList {
         return map.get(className);
     }
 
+    private static String getAccessToken() {
+        Type randomAccessType = Type.getType("Ljava/util/RandomAccess;");
+        for (Class anInterface : ArrayList.class.getInterfaces()) {
+            if (anInterface.getName().equals(randomAccessType.getClassName())) {
+                return randomAccessType.getDescriptor();
+            }
+        }
+        return "";
+    }
+
     private static Map<String, String> getMap() {
-        final String queueClassName = "java/util/Queue";
+        String originalName = "java/util/concurrent/ConcurrentMap";
         Map<String, String> map = new Hashtable<String, String>();
-        String name = Queue.class.getName().replace('.', '/');
-        if (!name.endsWith(queueClassName)) {
+        String actualName = ConcurrentMap.class.getName().replace('.', '/');
+        if (!actualName.endsWith(originalName)) {
             return map;
         }
-        String prefix = name.substring(0, name.length() - queueClassName.length());
+        String accessToken = getAccessToken();
+        String prefix = actualName.substring(0, actualName.length() - originalName.length());
         map.put("java/util/Collection",
                 "<E:Ljava/lang/Object;>Ljava/lang/Object;");
         map.put("java/util/Set",
@@ -86,7 +98,7 @@ public class SignatureList {
                         "Ljava/lang/Cloneable;Ljava/io/Serializable;");
         map.put("java/util/ArrayList",
                 "<E:Ljava/lang/Object;>Ljava/util/AbstractList<TE;>;Ljava/util/List<TE;>;" +
-                        "Ljava/util/RandomAccess;Ljava/lang/Cloneable;Ljava/io/Serializable;");
+                        accessToken + "Ljava/lang/Cloneable;Ljava/io/Serializable;");
         map.put("java/util/LinkedList",
                 "<E:Ljava/lang/Object;>Ljava/util/AbstractSequentialList<TE;>;" +
                         "Ljava/util/List<TE;>;Ljava/lang/Cloneable;Ljava/io/Serializable;");
@@ -102,7 +114,7 @@ public class SignatureList {
                 "<K:Ljava/lang/Object;V:Ljava/lang/Object;>Ljava/util/HashMap<TK;TV;>;");
         map.put("java/util/Vector",
                 "<E:Ljava/lang/Object;>Ljava/util/AbstractList<TE;>;Ljava/util/List<TE;>;" +
-                        "Ljava/util/RandomAccess;Ljava/lang/Cloneable;Ljava/io/Serializable;");
+                        accessToken + "Ljava/lang/Cloneable;Ljava/io/Serializable;");
         map.put("java/util/Hashtable",
                 "<K:Ljava/lang/Object;V:Ljava/lang/Object;>Ljava/util/Dictionary<TK;TV;>;" +
                         "Ljava/util/Map<TK;TV;>;Ljava/lang/Cloneable;Ljava/io/Serializable;");
@@ -113,7 +125,7 @@ public class SignatureList {
                         "Ljava/util/Map<TK;TV;>;Ljava/io/Serializable;Ljava/lang/Cloneable;");
         map.put(prefix + "java/util/concurrent/CopyOnWriteArrayList",
                 "<E:Ljava/lang/Object;>Ljava/lang/Object;Ljava/util/List<TE;>;" +
-                        "Ljava/util/RandomAccess;Ljava/lang/Cloneable;Ljava/io/Serializable;");
+                        accessToken + "Ljava/lang/Cloneable;Ljava/io/Serializable;");
         map.put(prefix + "java/util/concurrent/CopyOnWriteArraySet",
                 "<E:Ljava/lang/Object;>Ljava/util/AbstractSet<TE;>;Ljava/io/Serializable;");
         map.put(prefix + "java/util/concurrent/ConcurrentLinkedQueue",

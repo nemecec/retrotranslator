@@ -32,7 +32,7 @@
 package net.sf.retrotranslator.runtime.java.math;
 
 import java.math.*;
-import net.sf.retrotranslator.runtime.impl.Advanced;
+import net.sf.retrotranslator.registry.Advanced;
 
 /**
  * @author Taras Puchko
@@ -42,6 +42,15 @@ public class _BigDecimal {
     public static final BigDecimal ZERO = BigDecimal.valueOf(0);
     public static final BigDecimal ONE = BigDecimal.valueOf(1);
     public static final BigDecimal TEN = BigDecimal.valueOf(10);
+
+    private static final BigInteger[] FIVE_POWERS = new BigInteger[32];
+
+    static {
+        FIVE_POWERS[0] = BigInteger.valueOf(5);
+        for (int i = 1; i < FIVE_POWERS.length; i++) {
+            FIVE_POWERS[i] = FIVE_POWERS[i - 1].multiply(FIVE_POWERS[0]);
+        }
+    }
 
     public static BigInteger convertConstructorArguments(int value) {
         return BigInteger.valueOf(value);
@@ -57,6 +66,30 @@ public class _BigDecimal {
 
     public static String convertConstructorArguments(char[] in) {
         return new String(in);
+    }
+
+    public static BigDecimal divide(BigDecimal dividend, BigDecimal divisor) {
+        BigInteger p = dividend.unscaledValue();
+        BigInteger q = divisor.unscaledValue();
+        if (q.signum() == 0) {
+            throw new ArithmeticException("Division by zero");
+        }
+        long preferredScale = (long) dividend.scale() - divisor.scale();
+        if (p.signum() == 0) {
+            return getZero(preferredScale);
+        }
+        BigInteger gcd = p.gcd(q);
+        p = p.divide(gcd);
+        q = q.divide(gcd);
+        if (q.signum() < 0) {
+            p = p.negate();
+            q = q.negate();
+        }
+        int x = q.getLowestSetBit();
+        int y = log5(q.shiftRight(x));
+        BigInteger value = x > y ? multiplyBy5Power(p, x - y) : p.shiftLeft(y - x);
+        int scale = castScaleToInt(preferredScale + Math.max(x, y));
+        return scale >= 0 ? new BigDecimal(value, scale) : new BigDecimal(value, 0).movePointLeft(scale);
     }
 
     public static BigDecimal[] divideAndRemainder(BigDecimal dividend, BigDecimal divisor) {
@@ -76,14 +109,15 @@ public class _BigDecimal {
     }
 
     public static BigDecimal pow(BigDecimal bigDecimal, int n) {
+        if (n == 0) {
+            return ONE;
+        }
         if (n < 0 || n > 999999999) {
             throw new ArithmeticException("Invalid operation");
         }
-        BigDecimal result = ONE;
-        while (n-- > 0) {
-            result = result.multiply(bigDecimal);
-        }
-        return result;
+        long scale = bigDecimal.scale() * (long) n;
+        return bigDecimal.signum() == 0 ? getZero(scale) :
+                new BigDecimal(bigDecimal.unscaledValue().pow(n), castScaleToInt(scale));
     }
 
     public static BigDecimal remainder(BigDecimal dividend, BigDecimal divisor) {
@@ -110,5 +144,43 @@ public class _BigDecimal {
         return BigDecimal.valueOf(val, 0);
     }
 
+    private static int castScaleToInt(long scale) {
+        if (scale > Integer.MAX_VALUE) {
+            throw new ArithmeticException("Underflow");
+        }
+        if (scale < Integer.MIN_VALUE) {
+            throw new ArithmeticException("Overflow");
+        }
+        return (int) scale;
+    }
+
+    private static BigDecimal getZero(long scale) {
+        return BigDecimal.valueOf(0, (int) Math.max(Integer.MIN_VALUE, Math.min(Integer.MAX_VALUE, scale)));
+    }
+
+    private static int log5(BigInteger x) {
+        int result = 0;
+        int power = 1;
+        while (true) {
+            BigInteger[] quotientAndReminder = x.divideAndRemainder(FIVE_POWERS[power - 1]);
+            if (quotientAndReminder[1].signum() == 0) {
+                x = quotientAndReminder[0];
+                result += power;
+                power = Math.min(power + 1, FIVE_POWERS.length);
+            } else if (power > 1) {
+                power /= 2;
+            } else if (x.bitLength() == 1) {
+                return result;
+            } else {
+                throw new ArithmeticException("Non-terminating decimal expansion");
+            }
+        }
+    }
+
+    private static BigInteger multiplyBy5Power(BigInteger x, int power) {
+        return power <= FIVE_POWERS.length ?
+                x.multiply(FIVE_POWERS[power - 1]) :
+                x.multiply(FIVE_POWERS[0].pow(power));
+    }
 
 }

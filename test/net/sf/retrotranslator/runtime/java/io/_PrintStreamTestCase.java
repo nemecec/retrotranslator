@@ -33,21 +33,16 @@ package net.sf.retrotranslator.runtime.java.io;
 
 import java.io.*;
 import java.util.Locale;
-import net.sf.retrotranslator.tests.BaseTestCase;
+import net.sf.retrotranslator.tests.TestCaseBase;
 
 /**
  * @author Taras Puchko
  */
-public class _PrintStreamTestCase extends BaseTestCase {
+public class _PrintStreamTestCase extends TestCaseBase {
 
     static class MyPrintStream extends PrintStream {
         public MyPrintStream(File file) throws FileNotFoundException {
             super(file);
-        }
-
-        public MyPrintStream(String fileName, String csn)
-                throws FileNotFoundException, UnsupportedEncodingException {
-            super(fileName, csn);
         }
     }
 
@@ -57,21 +52,11 @@ public class _PrintStreamTestCase extends BaseTestCase {
             writeAndClose(new PrintStream(file), "test1");
             assertEquals("test1", readLine(file, null));
 
-            writeAndClose(new PrintStream(file, "UTF-16"), "test2");
-            assertEquals("test2", readLine(file, "UTF-16"));
-
             writeAndClose(new PrintStream(file.getPath()), "test3");
             assertEquals("test3", readLine(file, null));
 
-            writeAndClose(new PrintStream(file.getPath(), "UTF-16"), "test4");
-            assertEquals("test4", readLine(file, "UTF-16"));
-
             writeAndClose(new MyPrintStream(file), "test5");
             assertEquals("test5", readLine(file, null));
-
-            writeAndClose(new MyPrintStream(file.getPath(), "UTF-16"), "test6");
-            assertEquals("test6", readLine(file, "UTF-16"));
-
         } finally {
             file.delete();
         }

@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
+ *
  * Copyright (c) 2005 - 2008 Taras Puchko
  * All rights reserved.
  *
@@ -43,23 +43,19 @@ public class _CloseableTestCase extends TestCase {
     public void testClose() throws Exception {
         File tempFile = File.createTempFile("closeable", "test");
         tempFile.deleteOnExit();
-        RandomAccessFile randomAccessFile = new RandomAccessFile(tempFile, "r");
-
-        List<Closeable> closeables = Arrays.asList(new Closeable[] {
+        List<Closeable> closeables = Arrays.asList(
                 new ByteArrayInputStream("abc".getBytes()),
                 new ByteArrayOutputStream(),
                 new StringReader("abc"),
                 new StringWriter(),
-                randomAccessFile,
-                randomAccessFile.getChannel(),
+                new RandomAccessFile(tempFile, "r"),
                 new Closeable() {
                     public void close() throws IOException {
                     }
-                }
-        });
-
+                });
         for (Closeable closeable : closeables) {
             closeable.close();
         }
     }
+
 }

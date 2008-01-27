@@ -33,8 +33,8 @@ package net.sf.retrotranslator.runtime.impl;
 
 import java.io.*;
 import java.lang.reflect.*;
-import java.util.MissingResourceException;
 import java.security.*;
+import java.util.MissingResourceException;
 import net.sf.retrotranslator.runtime.asm.Type;
 
 /**
@@ -154,7 +154,7 @@ public class RuntimeTools {
 
     public static UndeclaredThrowableException unwrap(InvocationTargetException exception) {
         try {
-            throw exception.getCause();
+            throw exception.getTargetException();
         } catch (RuntimeException e) {
             throw e;
         } catch (Error e) {
@@ -222,4 +222,29 @@ public class RuntimeTools {
         builder.setCharAt(builder.length() - 1, ')');
         return builder.toString();
     }
+
+    public static java.lang.reflect.Type[] getTypes(Class[] rawTypes, java.lang.reflect.Type[] genericTypes) {
+        if (genericTypes == null || genericTypes.length != rawTypes.length) {
+            return rawTypes;
+        }
+        for (int i = 0; i < rawTypes.length; i++) {
+            if (!isCorrect(rawTypes[i], genericTypes[i])) return rawTypes;
+        }
+        return genericTypes;
+    }
+
+    public static java.lang.reflect.Type getType(Class rawType, java.lang.reflect.Type genericType) {
+        return isCorrect(rawType, genericType) ? genericType : rawType;
+    }
+
+    private static boolean isCorrect(Class rawType, java.lang.reflect.Type genericType) {
+        if (genericType instanceof Class) {
+            return rawType == genericType;
+        } else if (genericType instanceof ParameterizedType) {
+            return ((ParameterizedType) genericType).getRawType() == rawType;
+        } else {
+            return genericType != null;
+        }
+    }
+
 }

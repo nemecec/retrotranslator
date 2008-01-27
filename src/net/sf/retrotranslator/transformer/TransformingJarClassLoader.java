@@ -34,7 +34,7 @@ package net.sf.retrotranslator.transformer;
 import java.io.*;
 import java.net.*;
 import java.util.jar.Manifest;
-import net.sf.retrotranslator.runtime.impl.*;
+import net.sf.retrotranslator.runtime.impl.RuntimeTools;
 
 /**
  * @author Taras Puchko

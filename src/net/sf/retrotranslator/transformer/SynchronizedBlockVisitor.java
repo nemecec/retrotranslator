@@ -31,9 +31,9 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import static net.sf.retrotranslator.runtime.asm.Opcodes.*;
-import net.sf.retrotranslator.runtime.asm.*;
 import java.util.*;
+import net.sf.retrotranslator.runtime.asm.*;
+import static net.sf.retrotranslator.runtime.asm.Opcodes.*;
 
 /**
  * @author Taras Puchko

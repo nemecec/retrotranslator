@@ -8,7 +8,7 @@
     <version>@version@</version>
     <name>Retrotranslator Transformer</name>
     <url>http://retrotranslator.sourceforge.net/</url>
-    <description>A tool that makes Java applications compatible with various versions of the Java platform</description>
+    <description>A tool that makes Java applications compatible with Java 1.4, Java 1.3 and other environments.</description>
     <licenses>
         <license>
             <name>BSD license</name>

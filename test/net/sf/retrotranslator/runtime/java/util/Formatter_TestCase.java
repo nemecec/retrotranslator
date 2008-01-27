@@ -33,12 +33,12 @@ package net.sf.retrotranslator.runtime.java.util;
 
 import java.io.*;
 import java.util.*;
-import net.sf.retrotranslator.tests.BaseTestCase;
+import net.sf.retrotranslator.tests.TestCaseBase;
 
 /**
  * @author Taras Puchko
  */
-public class Formatter_TestCase extends BaseTestCase {
+public class Formatter_TestCase extends TestCaseBase {
 
     public void testFormatter_1() throws Exception {
         Formatter formatter = new Formatter();

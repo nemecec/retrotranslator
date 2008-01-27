@@ -71,26 +71,13 @@ public class _AppendableTestCase extends TestCase {
 
     public void testAppend() throws Exception {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        List<Appendable> list = Arrays.asList(new Appendable[] {
-                new StringBuffer(),
+        List<Appendable> list = Arrays.asList(new StringBuffer(),
                 new PrintStream(out),
                 new StringWriter(),
-                CharBuffer.wrap(new char[10]),
-                new AppendableWrapper(new StringBuffer())
-        });
+                new AppendableWrapper(new StringBuffer()));
         for (Appendable appendable : list) {
             assertSame(appendable, appendable.append("abc").append("xyz", 1, 2).append('0'));
-            String s;
-            if (appendable instanceof PrintStream) {
-                s = out.toString();
-            } else if (appendable instanceof CharBuffer) {
-                CharBuffer buffer = ((CharBuffer) appendable);
-                buffer.limit(buffer.position());
-                buffer.position(0);
-                s = buffer.toString();
-            } else {
-                s = appendable.toString();
-            }
+            String s = appendable instanceof PrintStream ? out.toString() : appendable.toString();
             assertEquals("abcy0", s);
         }
     }

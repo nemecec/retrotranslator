@@ -78,7 +78,7 @@ public class _ThreadTestCase extends TestCase {
 
     public void testGetStackTrace() throws Exception {
         StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-        String className = this.getClass().getName();
+        String className = _ThreadTestCase.class.getName();
         StackTraceElement element = null;
         for (int i = 1; i < stackTrace.length; i++) {
             element = stackTrace[i];
@@ -153,7 +153,7 @@ public class _ThreadTestCase extends TestCase {
                 },
                 new Thread(runnable, "name"),
                 new Thread(group, runnable, "name"),
-                new Thread(group, runnable, "name", 0),
+                createThreadWithStackSize(group, runnable),
         };
         for (Thread thread : threads) {
             MyHandler handler = new MyHandler();
@@ -165,6 +165,10 @@ public class _ThreadTestCase extends TestCase {
             assertSame(thread, handler.thread);
             assertSame(exception, handler.exception);
         }
+    }
+
+    protected Thread createThreadWithStackSize(ThreadGroup group, Runnable runnable) {
+        return new Thread(group, runnable, "name");
     }
 
     public void testSetUncaughtExceptionHandler_NoException() throws Exception {
@@ -213,7 +217,7 @@ public class _ThreadTestCase extends TestCase {
                 },
                 new Thread(runnable, "name"),
                 new Thread(group, runnable, "name"),
-                new Thread(group, runnable, "name", 0),
+                createThreadWithStackSize(group, runnable),
         };
         for (Thread thread : threads) {
             MyHandler handler = new MyHandler();

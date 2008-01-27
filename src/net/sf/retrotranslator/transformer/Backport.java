@@ -32,50 +32,30 @@
 package net.sf.retrotranslator.transformer;
 
 import java.util.*;
-import java.util.regex.*;
 
 /**
  * @author Taras Puchko
  */
 abstract class Backport {
 
-    private static final Pattern RUNTIME_PATTERN = Pattern.compile(
-            "\\s*((?:\\w+\\.)*\\w+)\\s*");
-    private static final Pattern PACKAGE_PATTERN = Pattern.compile(
-            "\\s*((?:\\w+\\.)*\\w+)\\s*:\\s*((?:\\w+\\.)*\\w+)\\s*");
-    private static final Pattern CLASS_PATTERN = Pattern.compile(
-            "\\s*((?:\\w+\\.)*\\p{Upper}\\w*)\\s*:\\s*((?:\\w+\\.)*\\p{Upper}\\w*)\\s*");
-    private static final Pattern MEMBER_PATTERN = Pattern.compile(
-            "\\s*((?:\\w+\\.)*\\p{Upper}\\w*)\\.(\\w+)\\s*:\\s*((?:\\w+\\.)*\\p{Upper}\\w*)\\.(\\w+)\\s*");
-
-    public static Backport valueOf(String s) {
-        Matcher memberMatcher = MEMBER_PATTERN.matcher(s);
-        if (memberMatcher.matches()) {
-            return new MemberBackport(
-                    toInternalName(memberMatcher.group(1)),
-                    memberMatcher.group(2),
-                    toInternalName(memberMatcher.group(3)),
-                    memberMatcher.group(4));
+    public static List<Backport> getBackports(String s) {
+        int colonIndex = s.indexOf(':');
+        if (colonIndex < 0) {
+            return Collections.<Backport>singletonList(new PackageBackport("", toPrefixName(s.trim())));
         }
-        Matcher classMatcher = CLASS_PATTERN.matcher(s);
-        if (classMatcher.matches()) {
-            return new ClassBackport(
-                    toInternalName(classMatcher.group(1)),
-                    toInternalName(classMatcher.group(2)));
+        String leftToken = s.substring(0, colonIndex).trim();
+        String rightToken = s.substring(colonIndex + 1).trim();
+        int leftIndex = leftToken.lastIndexOf('.');
+        int rightIndex = rightToken.lastIndexOf('.');
+        List<Backport> result = new ArrayList<Backport>();
+        if (leftIndex >= 0 && rightIndex >= 0) {
+            result.add(new MemberBackport(
+                    toInternalName(leftToken.substring(0, leftIndex)), leftToken.substring(leftIndex + 1),
+                    toInternalName(rightToken.substring(0, rightIndex)), rightToken.substring(rightIndex + 1)));
         }
-        Matcher packageMatcher = PACKAGE_PATTERN.matcher(s);
-        if (packageMatcher.matches()) {
-            return new PackageBackport(
-                    toPrefixName(packageMatcher.group(1)),
-                    toPrefixName(packageMatcher.group(2)));
-        }
-        Matcher runtimeMatcher = RUNTIME_PATTERN.matcher(s);
-        if (runtimeMatcher.matches()) {
-            return new PackageBackport(
-                    "",
-                    toPrefixName(runtimeMatcher.group(1)));
-        }
-        throw new IllegalArgumentException("Illegal backport name: " + s);
+        result.add(new ClassBackport(toInternalName(leftToken), toInternalName(rightToken)));
+        result.add(new PackageBackport(toPrefixName(leftToken), toPrefixName(rightToken)));
+        return result;
     }
 
     private static String toInternalName(String name) {

@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
+ *
  * Copyright (c) 2005 - 2008 Taras Puchko
  * All rights reserved.
  *
@@ -201,6 +201,22 @@ public class CollectionsTestCase extends TestCase {
         syncMap.put("a", "b");
         assertEquals(1, map.size());
         assertEquals("b", map.get("a"));
+    }
+
+    public void testList() throws Exception {
+        assertEquals(Arrays.asList("a", "b", "c"), Collections.list(new StringTokenizer("a b c")));
+    }
+
+    public void testReplaceAll() throws Exception {
+        List<String> list = Arrays.asList("a", "b", "c", "b", "c");
+        assertTrue(Collections.replaceAll(list, "c", "x"));
+        assertEquals(Arrays.asList("a", "b", "x", "b", "x"), list);
+    }
+
+    public void testSwap() throws Exception {
+        List<String> list = Arrays.asList("a", "b", "c", "d", "e");
+        Collections.swap(list, 2, 4);
+        assertEquals(Arrays.asList("a", "b", "e", "d", "c"), list);
     }
 
 }

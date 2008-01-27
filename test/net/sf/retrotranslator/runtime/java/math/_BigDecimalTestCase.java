@@ -32,12 +32,12 @@
 package net.sf.retrotranslator.runtime.java.math;
 
 import java.math.*;
-import net.sf.retrotranslator.tests.BaseTestCase;
+import net.sf.retrotranslator.tests.TestCaseBase;
 
 /**
  * @author Taras Puchko
  */
-public class _BigDecimalTestCase extends BaseTestCase {
+public class _BigDecimalTestCase extends TestCaseBase {
 
     public void testConstants() throws Exception {
         assertEquals(0, BigDecimal.ZERO.intValue());
@@ -88,6 +88,13 @@ public class _BigDecimalTestCase extends BaseTestCase {
 
     }
 
+    public void testDivideToIntegralValue_scale1() throws Exception {
+        BigDecimal dividend = BigDecimal.valueOf(100, 0);
+        BigDecimal divisor = BigDecimal.valueOf(5, 1);
+        BigDecimal quotient = dividend.divideToIntegralValue(divisor);
+        assertEquals(0, BigDecimal.valueOf(200).compareTo(quotient));
+    }
+
     public void testDivideToIntegralValue_scale2() throws Exception {
         BigDecimal dividend = BigDecimal.valueOf(123.456);
         assertEquals(3, dividend.scale());
@@ -134,8 +141,17 @@ public class _BigDecimalTestCase extends BaseTestCase {
         assertEquals(10, new BigDecimal(10).pow(1).intValue());
         assertEquals(100, new BigDecimal(10).pow(2).intValue());
         assertEquals(100000, new BigDecimal(10).pow(5).intValue());
+        assertEquals(8, BigDecimal.valueOf(20, 1).pow(3).intValue());
+        assertEquals(0, BigDecimal.valueOf(0, Integer.MAX_VALUE / 2).pow(3).unscaledValue().intValue());
         try {
-            new BigDecimal(10).pow(-10);
+            int n = -10;
+            new BigDecimal(10).pow(n);
+            fail();
+        } catch (ArithmeticException e) {
+            //ok
+        }
+        try {
+            BigDecimal.valueOf(1, Integer.MAX_VALUE / 2).pow(3);
             fail();
         } catch (ArithmeticException e) {
             //ok
@@ -165,6 +181,60 @@ public class _BigDecimalTestCase extends BaseTestCase {
     public void testValueOf() throws Exception {
         assertEquals(1.23, BigDecimal.valueOf(1.23).doubleValue());
         assertEquals(123, BigDecimal.valueOf(123).longValue());
+    }
+
+    public void testDivide() {
+        assertEquals(BigDecimal.valueOf(2, 1), BigDecimal.valueOf(1, 0).divide(BigDecimal.valueOf(5, 0)));
+        assertEquals(BigDecimal.valueOf(5, 1), BigDecimal.valueOf(1, 0).divide(BigDecimal.valueOf(2, 0)));
+        assertEquals(BigDecimal.valueOf(3, 1), BigDecimal.valueOf(9, 0).divide(BigDecimal.valueOf(30, 0)));
+        assertEquals(BigDecimal.valueOf(-3, 1), BigDecimal.valueOf(9, 0).divide(BigDecimal.valueOf(-30, 0)));
+        assertEquals(BigDecimal.valueOf(5, 3), BigDecimal.valueOf(1, 5).divide(BigDecimal.valueOf(2, 3)));
+        assertEquals(BigDecimal.valueOf(3, 2), BigDecimal.valueOf(9, 3).divide(BigDecimal.valueOf(30, 2)));
+        assertEquals(BigDecimal.valueOf(0, 3), BigDecimal.valueOf(0, 5).divide(BigDecimal.valueOf(1, 2)));
+        assertEquals(BigDecimal.valueOf(0, 0), BigDecimal.valueOf(0, 0).divide(BigDecimal.valueOf(1, 0)));
+        assertEquals(0, BigDecimal.valueOf(50, 0).compareTo(BigDecimal.valueOf(1, 3).divide(BigDecimal.valueOf(2, 5))));
+    }
+
+    public void testDivide_Java5() {
+        if (isJava5AtLeast()) {
+            assertEquals(BigDecimal.valueOf(0, Integer.MAX_VALUE),
+                    BigDecimal.valueOf(0, Integer.MAX_VALUE).divide(BigDecimal.valueOf(2, -10)));
+            assertEquals(BigDecimal.valueOf(0, Integer.MIN_VALUE),
+                    BigDecimal.valueOf(0, Integer.MIN_VALUE).divide(BigDecimal.valueOf(2, 10)));
+        }
+    }
+
+    public void testDivide_Large2() {
+        BigDecimal p = BigDecimal.valueOf(3, 0);
+        BigDecimal q = new BigDecimal(BigInteger.valueOf(2).pow(600).multiply(BigInteger.valueOf(125)), 0);
+        assertEquals(0, p.divide(q).multiply(q).compareTo(p));
+    }
+
+    public void testDivide_Large5() {
+        BigDecimal p = BigDecimal.valueOf(3, 0);
+        BigDecimal q = new BigDecimal(BigInteger.valueOf(5).pow(600).multiply(BigInteger.valueOf(8)), 0);
+        assertEquals(0, p.divide(q).multiply(q).compareTo(p));
+    }
+
+    public void testDivide_Exceptions() {
+        try {
+            BigDecimal.valueOf(1, Integer.MAX_VALUE).divide(BigDecimal.valueOf(2, 0));
+            fail();
+        } catch (ArithmeticException e) {
+            //ok
+        }
+        try {
+            BigDecimal.valueOf(1, 0).divide(BigDecimal.valueOf(0));
+            fail();
+        } catch (ArithmeticException e) {
+            //ok
+        }
+        try {
+            BigDecimal.valueOf(0).divide(BigDecimal.valueOf(0));
+            fail();
+        } catch (ArithmeticException e) {
+            //ok
+        }
     }
 
 }

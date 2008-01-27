@@ -41,7 +41,7 @@ public class EnumMap_<K extends Enum<K>, V> extends TreeMap<K, V> {
 
     private static final long serialVersionUID = 3267103726949236459L;
 
-    private final Class<K> keyType;
+    private Class<K> keyType;
 
     public EnumMap_(Class<K> keyType) {
         super(new EnumComparator());

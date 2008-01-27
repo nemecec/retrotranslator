@@ -32,12 +32,12 @@
 package net.sf.retrotranslator.runtime.java.util.regex;
 
 import java.util.regex.*;
-import net.sf.retrotranslator.tests.BaseTestCase;
+import net.sf.retrotranslator.tests.TestCaseBase;
 
 /**
  * @author Taras Puchko
  */
-public class _MatchResultTestCase extends BaseTestCase {
+public class _MatchResultTestCase extends TestCaseBase {
 
     public void testGroupCount() throws Exception {
         Matcher matcher = Pattern.compile("a(b)").matcher("abc");

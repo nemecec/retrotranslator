@@ -33,7 +33,8 @@ package net.sf.retrotranslator.runtime.java.lang;
 
 import static java.lang.Thread.UncaughtExceptionHandler;
 import java.util.*;
-import net.sf.retrotranslator.runtime.impl.*;
+import net.sf.retrotranslator.registry.Advanced;
+import net.sf.retrotranslator.runtime.impl.WeakIdentityTable;
 
 /**
  * @author Taras Puchko

@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
+ *
  * Copyright (c) 2005 - 2008 Taras Puchko
  * All rights reserved.
  *
@@ -32,7 +32,6 @@
 package net.sf.retrotranslator.runtime.java.util.regex;
 
 import java.util.regex.*;
-import net.sf.retrotranslator.runtime.impl.MatchResultImpl;
 
 /**
  * @author Taras Puchko
@@ -66,6 +65,56 @@ public class _Matcher {
             available = false;
         }
         return new MatchResultImpl(available, groupCount, starts, ends, groups);
+    }
+
+    private static class MatchResultImpl implements MatchResult {
+
+        private final boolean available;
+        private final int groupCount;
+        private final int[] starts;
+        private final int[] ends;
+        private final String[] groups;
+
+        public MatchResultImpl(boolean available, int groupCount,
+                               int[] starts, int[] ends, String[] groups) {
+            this.available = available;
+            this.groupCount = groupCount;
+            this.starts = starts;
+            this.ends = ends;
+            this.groups = groups;
+        }
+
+        public int start() {
+            return start(0);
+        }
+
+        public int start(int group) {
+            if (!available) throw new IllegalStateException();
+            return starts[group];
+        }
+
+        public int end() {
+            return end(0);
+        }
+
+        public int end(int group) {
+            if (!available) throw new IllegalStateException();
+            return ends[group];
+        }
+
+        public String group() {
+            return group(0);
+        }
+
+        public String group(int group) {
+            if (!available) throw new IllegalStateException();
+            return groups[group];
+        }
+
+        public int groupCount() {
+            return groupCount;
+        }
+
     }
 
 }

@@ -31,12 +31,12 @@
  */
 package net.sf.retrotranslator.runtime.format;
 
-import net.sf.retrotranslator.tests.BaseTestCase;
+import net.sf.retrotranslator.tests.TestCaseBase;
 
 /**
  * @author Taras Puchko
  */
-public class LineSeparatorConversionTestCase extends BaseTestCase {
+public class LineSeparatorConversionTestCase extends TestCaseBase {
 
     public void testFormat() throws Exception {
         assertFormat("A" + System.getProperty("line.separator") + "BxC", "A%nB%sC", "x");

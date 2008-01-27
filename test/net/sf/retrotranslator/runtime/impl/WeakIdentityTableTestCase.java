@@ -33,13 +33,12 @@ package net.sf.retrotranslator.runtime.impl;
 
 import java.util.*;
 import java.util.concurrent.*;
-import junit.framework.TestCase;
-import net.sf.retrotranslator.tests.BaseTestCase;
+import net.sf.retrotranslator.tests.TestCaseBase;
 
 /**
  * @author Taras Puchko
  */
-public class WeakIdentityTableTestCase extends BaseTestCase {
+public class WeakIdentityTableTestCase extends TestCaseBase {
 
     private static class StringWeakIdentityTable extends WeakIdentityTable<String, String> {
         protected String initialValue() {

@@ -36,7 +36,7 @@ package net.sf.retrotranslator.transformer.smart;
  */
 public class FullDerivedClass extends BackportedClass {
 
-    public static Object FIELD = "Bye";
+    public static volatile Object FIELD = "Unchanged";
 
     public static int add(int a, int b) {
         return (a + b) * 3;

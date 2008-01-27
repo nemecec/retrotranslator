@@ -31,16 +31,16 @@
  */
 package net.sf.retrotranslator.runtime.impl;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.*;
 import net.sf.retrotranslator.runtime.asm.AnnotationVisitor;
 import net.sf.retrotranslator.runtime.asm.signature.*;
-import net.sf.retrotranslator.runtime.java.lang.annotation.Annotation_;
 
 /**
  * @author Taras Puchko
  */
-public class MethodDescriptor extends GenericDeclarationDescriptor implements MemberDescriptor {
+public class MethodDescriptor extends GenericDeclarationDescriptor {
 
     private String name;
     private String desc;
@@ -52,7 +52,7 @@ public class MethodDescriptor extends GenericDeclarationDescriptor implements Me
     private LazyValue<TypeDescriptor, Type> genericReturnType;
     private LazyList<TypeDescriptor,Type> genericParameterTypes;
     private LazyList<TypeDescriptor,Type> genericExceptionTypes;
-    private LazyList<List<AnnotationValue>, Annotation_[]> parameterAnnotations;
+    private LazyList<List<AnnotationValue>, Annotation[]> parameterAnnotations;
 
     public MethodDescriptor(ClassDescriptor classDescriptor, int access, final String name, final String desc, String signature) {
         this.classDescriptor = classDescriptor;
@@ -163,18 +163,18 @@ public class MethodDescriptor extends GenericDeclarationDescriptor implements Me
         return variable != null ? variable : classDescriptor.findTypeVariable(name);
     }
 
-    public Annotation_[][] getParameterAnnotations() {
+    public Annotation[][] getParameterAnnotations() {
         return parameterAnnotations.getClone();
     }
 
-    private LazyList<List<AnnotationValue>, Annotation_[]> createParameterAnnotations() {
-        return new LazyList<List<AnnotationValue>, Annotation_[]>() {
-            protected Annotation_[] resolve(List<AnnotationValue> input) {
+    private LazyList<List<AnnotationValue>, Annotation[]> createParameterAnnotations() {
+        return new LazyList<List<AnnotationValue>, Annotation[]>() {
+            protected Annotation[] resolve(List<AnnotationValue> input) {
                 return createAnnotations(input);
             }
 
-            protected Annotation_[][] newArray(int size) {
-                return new Annotation_[net.sf.retrotranslator.runtime.asm.Type.getArgumentTypes(desc).length][];
+            protected Annotation[][] newArray(int size) {
+                return new Annotation[net.sf.retrotranslator.runtime.asm.Type.getArgumentTypes(desc).length][];
             }
         };
     }
@@ -191,7 +191,7 @@ public class MethodDescriptor extends GenericDeclarationDescriptor implements Me
         return genericExceptionTypes == null ? null : genericExceptionTypes.getClone();
     }
 
-    protected Annotation_[] createAnnotations(Annotation_[] declaredAnnotations) {
+    protected Annotation[] createAnnotations(Annotation[] declaredAnnotations) {
         return declaredAnnotations;
     }
 

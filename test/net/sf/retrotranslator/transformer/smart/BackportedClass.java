@@ -36,7 +36,7 @@ package net.sf.retrotranslator.transformer.smart;
  */
 public class BackportedClass {
 
-    public static Object FIELD = "Hello";
+    public static volatile Object FIELD;
 
     public int factor = 10;
 

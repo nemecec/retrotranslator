@@ -31,8 +31,8 @@
  */
 package net.sf.retrotranslator.runtime.java.util;
 
-import net.sf.retrotranslator.runtime.impl.Advanced;
-import edu.emory.mathcs.backport.java.util.concurrent.*;
+import java.util.concurrent.*;
+import net.sf.retrotranslator.registry.Advanced;
 
 /**
  * @author Taras Puchko

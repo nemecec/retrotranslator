@@ -31,8 +31,8 @@
  */
 package net.sf.retrotranslator.runtime.java.util;
 
-import java.util.*;
 import edu.emory.mathcs.backport.java.util.Deque;
+import java.util.*;
 
 /**
  * @author Taras Puchko

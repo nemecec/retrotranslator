@@ -33,12 +33,12 @@ package net.sf.retrotranslator.runtime.format;
 
 import java.math.BigDecimal;
 import java.util.*;
-import net.sf.retrotranslator.tests.BaseTestCase;
+import net.sf.retrotranslator.tests.TestCaseBase;
 
 /**
  * @author Taras Puchko
  */
-public class FloatingPointConversionTestCase extends BaseTestCase {
+public class FloatingPointConversionTestCase extends TestCaseBase {
 
     public void testFormat_ComputerizedScientific() throws Exception {
         assertFormat("0.000000e+00", "%e", 0.0);
@@ -125,7 +125,9 @@ public class FloatingPointConversionTestCase extends BaseTestCase {
         assertFormat("27670116110564327421,000000", "%f",
                 BigDecimal.valueOf(Long.MAX_VALUE).multiply(BigDecimal.valueOf(3)));
 
-        assertFormat(HINDI, "\u0967,\u0968\u0969\u096a,\u096b\u096c\u096d.\u096e", "%,1.1f", 1234567.8f);
+        if (isJava14AtLeast()) {
+            assertFormat(HINDI, "\u0967,\u0968\u0969\u096a,\u096b\u096c\u096d.\u096e", "%,1.1f", 1234567.8f);
+        }
 
         assertFormat("NaN            ", "%-15.2f", Double.NaN);
         assertFormat("Infinity       ", "%-15.2f", Double.POSITIVE_INFINITY);
@@ -149,7 +151,9 @@ public class FloatingPointConversionTestCase extends BaseTestCase {
         assertFormat("12.3450", "%g", 12.345d);
         assertFormat("12,3450", "%g", BigDecimal.valueOf(12.345d));
         assertFormat(HINDI, "12.3450", "%g", 12.345d);
-        assertFormat(HINDI, "\u0967\u0968.\u0969\u096a\u096b\u0966", "%g", BigDecimal.valueOf(12.345d));
+        if (isJava14AtLeast()) {
+            assertFormat(HINDI, "\u0967\u0968.\u0969\u096a\u096b\u0966", "%g", BigDecimal.valueOf(12.345d));
+        }
 
         assertFormat("1", "%1.0g", 1.2345f);
         assertFormat("1e+01", "%1.0g", 12.345f);

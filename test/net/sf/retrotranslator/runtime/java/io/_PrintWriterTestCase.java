@@ -33,12 +33,12 @@ package net.sf.retrotranslator.runtime.java.io;
 
 import java.io.*;
 import java.util.Locale;
-import net.sf.retrotranslator.tests.BaseTestCase;
+import net.sf.retrotranslator.tests.TestCaseBase;
 
 /**
  * @author Taras Puchko
  */
-public class _PrintWriterTestCase extends BaseTestCase {
+public class _PrintWriterTestCase extends TestCaseBase {
 
     public void testConstructors() throws Exception {
         File file = File.createTempFile("_PrintWriterTestCase", ".tmp");

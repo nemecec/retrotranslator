@@ -32,12 +32,12 @@
 package net.sf.retrotranslator.runtime.java.util.regex;
 
 import java.util.regex.Pattern;
-import net.sf.retrotranslator.tests.BaseTestCase;
+import net.sf.retrotranslator.tests.TestCaseBase;
 
 /**
  * @author Taras Puchko
  */
-public class _PatternTestCase extends BaseTestCase {
+public class _PatternTestCase extends TestCaseBase {
 
     public void testQuote() {
         assertEquals("\\Qabc\\E", Pattern.quote("abc"));

@@ -35,11 +35,10 @@ import java.io.*;
 import java.util.*;
 import javax.xml.parsers.*;
 import javax.xml.transform.*;
-import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.dom.DOMSource;
-import org.xml.sax.*;
+import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.*;
-import net.sf.retrotranslator.runtime.impl.StrictErrorHandler;
+import org.xml.sax.*;
 
 /**
  * @author Taras Puchko
@@ -55,6 +54,19 @@ public class _Properties {
             "<!ELEMENT entry (#PCDATA) >" +
             "<!ATTLIST entry key CDATA #REQUIRED>";
 
+    private static final ErrorHandler STRICT_ERROR_HANDLER = new ErrorHandler() {
+        public void warning(SAXParseException exception) throws SAXException {
+            throw exception;
+        }
+
+        public void error(SAXParseException exception) throws SAXException {
+            throw exception;
+        }
+
+        public void fatalError(SAXParseException exception) throws SAXException {
+            throw exception;
+        }
+    };
 
     public static void loadFromXML(Properties properties, InputStream stream) throws IOException {
         if (stream == null) {
@@ -133,7 +145,7 @@ public class _Properties {
                 return null;
             }
         });
-        builder.setErrorHandler(new StrictErrorHandler());
+        builder.setErrorHandler(STRICT_ERROR_HANDLER);
         try {
             return builder.parse(stream);
         } catch (SAXException e) {

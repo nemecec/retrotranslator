@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
+ *
  * Copyright (c) 2005 - 2008 Taras Puchko
  * All rights reserved.
  *
@@ -31,11 +31,12 @@
  */
 package net.sf.retrotranslator.runtime.java.lang;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.Arrays;
+import net.sf.retrotranslator.registry.Advanced;
 import net.sf.retrotranslator.runtime.asm.Opcodes;
 import net.sf.retrotranslator.runtime.impl.*;
-import net.sf.retrotranslator.runtime.java.lang.annotation.Annotation_;
 
 /**
  * @author Taras Puchko
@@ -52,11 +53,11 @@ public class _Class {
         throw new ClassCastException(aClass.toString());
     }
 
-    public static Annotation_ getAnnotation(Class aClass, Class annotationType) {
+    public static Annotation getAnnotation(Class aClass, Class annotationType) {
         return ClassDescriptor.getInstance(aClass).getAnnotation(annotationType);
     }
 
-    public static Annotation_[] getAnnotations(final Class aClass) {
+    public static Annotation[] getAnnotations(Class aClass) {
         return ClassDescriptor.getInstance(aClass).getAnnotations();
     }
 
@@ -71,7 +72,7 @@ public class _Class {
                 : getCanonicalName(declaringClass) + "." + getSimpleName(aClass);
     }
 
-    public static Annotation_[] getDeclaredAnnotations(Class aClass) {
+    public static Annotation[] getDeclaredAnnotations(Class aClass) {
         return ClassDescriptor.getInstance(aClass).getDeclaredAnnotations();
     }
 
@@ -102,13 +103,13 @@ public class _Class {
     }
 
     public static Type[] getGenericInterfaces(Class aClass) {
-        Type[] interfaces = ClassDescriptor.getInstance(aClass).getGenericInterfaces();
-        return interfaces != null ? interfaces : aClass.getInterfaces();
+        return RuntimeTools.getTypes(aClass.getInterfaces(),
+                ClassDescriptor.getInstance(aClass).getGenericInterfaces());
     }
 
     public static Type getGenericSuperclass(Class aClass) {
-        Type genericSuperclass = ClassDescriptor.getInstance(aClass).getGenericSuperclass();
-        return genericSuperclass != null ? genericSuperclass : aClass.getSuperclass();
+        return RuntimeTools.getType(aClass.getSuperclass(),
+                ClassDescriptor.getInstance(aClass).getGenericSuperclass());
     }
 
     @Advanced("Class.getMethod")
@@ -176,4 +177,5 @@ public class _Class {
         }
         return result;
     }
+
 }

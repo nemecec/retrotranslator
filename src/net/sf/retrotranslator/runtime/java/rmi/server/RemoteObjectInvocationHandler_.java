@@ -37,12 +37,22 @@ import java.rmi.*;
 import java.rmi.server.*;
 import java.security.*;
 import net.sf.retrotranslator.runtime.asm.Type;
-import net.sf.retrotranslator.runtime.impl.NullOutputStream;
 
 /**
  * @author Taras Puchko
  */
 public class RemoteObjectInvocationHandler_ extends RemoteObject implements InvocationHandler {
+
+    private static final OutputStream NULL_OUTPUT_STREAM = new OutputStream() {
+        public void write(int b) throws IOException {
+        }
+
+        public void write(byte b[]) throws IOException {
+        }
+
+        public void write(byte b[], int off, int len) throws IOException {
+        }
+    };
 
     public RemoteObjectInvocationHandler_(RemoteRef ref) {
         super(ref);
@@ -98,7 +108,7 @@ public class RemoteObjectInvocationHandler_ extends RemoteObject implements Invo
     private static long getOperationNumber(Method method) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA");
-            DataOutputStream stream = new DataOutputStream(new DigestOutputStream(NullOutputStream.INSTANCE, digest));
+            DataOutputStream stream = new DataOutputStream(new DigestOutputStream(NULL_OUTPUT_STREAM, digest));
             stream.writeUTF(method.getName() + Type.getMethodDescriptor(method));
             byte[] bytes = digest.digest();
             long result = 0;

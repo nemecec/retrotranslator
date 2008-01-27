@@ -196,10 +196,6 @@ public class _CharacterTestCase extends TestCase {
         assertEquals(-1, Character.digit((int) 'z', 10));
     }
 
-    public void testGetDirectionality() throws Exception {
-        assertEquals(Character.DIRECTIONALITY_EUROPEAN_NUMBER, Character.getDirectionality((int) '5'));
-    }
-
     public void testGetNumericValue() throws Exception {
         assertEquals(5, Character.getNumericValue((int) '5'));
     }
@@ -263,11 +259,6 @@ public class _CharacterTestCase extends TestCase {
         assertTrue(Character.isLowSurrogate('\uDD1E'));
         assertFalse(Character.isLowSurrogate('\uD834'));
         assertFalse(Character.isLowSurrogate('a'));
-    }
-
-    public void testIsMirrored() throws Exception {
-        assertTrue(Character.isMirrored((int) '{'));
-        assertFalse(Character.isMirrored((int) 'z'));
     }
 
     public void testIsSpaceChar() throws Exception {

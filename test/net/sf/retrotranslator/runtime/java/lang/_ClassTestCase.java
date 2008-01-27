@@ -34,63 +34,18 @@ package net.sf.retrotranslator.runtime.java.lang;
 import java.io.Serializable;
 import java.lang.reflect.*;
 import java.util.*;
-import net.sf.retrotranslator.tests.BaseTestCase;
+import net.sf.retrotranslator.tests.TestCaseBase;
 
 /**
  * @author Taras Puchko
  */
 @MyFormatter(tabPositions = {}, numbers = {1})
-public class _ClassTestCase extends BaseTestCase {
+public class _ClassTestCase extends TestCaseBase {
 
     private static final Class<?> PROXY_CLASS = Proxy.getProxyClass(
             _ClassTestCase.class.getClassLoader(), Comparable.class);
 
-    private static Class[] CLASSES_14 = {
-            java.util.Collection.class,
-            java.util.Set.class,
-            java.util.List.class,
-            java.util.Queue.class,
-            java.util.Map.class,
-            java.util.SortedSet.class,
-            java.util.SortedMap.class,
-            java.util.concurrent.BlockingQueue.class,
-            java.util.concurrent.ConcurrentMap.class,
-            java.util.HashSet.class,
-            java.util.TreeSet.class,
-            java.util.LinkedHashSet.class,
-            java.util.ArrayList.class,
-            java.util.LinkedList.class,
-            java.util.PriorityQueue.class,
-            java.util.HashMap.class,
-            java.util.TreeMap.class,
-            java.util.LinkedHashMap.class,
-            java.util.Vector.class,
-            java.util.Hashtable.class,
-            java.util.WeakHashMap.class,
-            java.util.IdentityHashMap.class,
-            java.util.concurrent.CopyOnWriteArrayList.class,
-            java.util.concurrent.CopyOnWriteArraySet.class,
-            java.util.EnumSet.class,
-            java.util.EnumMap.class,
-            java.util.concurrent.ConcurrentLinkedQueue.class,
-            java.util.concurrent.LinkedBlockingQueue.class,
-            java.util.concurrent.ArrayBlockingQueue.class,
-            java.util.concurrent.PriorityBlockingQueue.class,
-            java.util.concurrent.DelayQueue.class,
-            java.util.concurrent.SynchronousQueue.class,
-            java.util.concurrent.ConcurrentHashMap.class,
-            java.util.AbstractCollection.class,
-            java.util.AbstractSet.class,
-            java.util.AbstractList.class,
-            java.util.AbstractSequentialList.class,
-            java.util.AbstractQueue.class,
-            java.util.AbstractMap.class,
-            java.util.Enumeration.class,
-            java.util.Iterator.class,
-            java.util.ListIterator.class,
-            java.lang.Comparable.class,
-            java.util.Comparator.class
-    };
+    private final Class<_ClassTestCase> thisClass = _ClassTestCase.class;
 
     @MyStyle("bold")
     @MyFormatter(lang = "uk")
@@ -102,6 +57,51 @@ public class _ClassTestCase extends BaseTestCase {
 
     @MyStyle("italic")
     private static class C extends A {
+    }
+
+    protected List<Class<?>> getClasses() {
+        return Arrays.asList(
+            Collection.class,
+            Set.class,
+            List.class,
+            Queue.class,
+            Map.class,
+            SortedSet.class,
+            SortedMap.class,
+            java.util.concurrent.BlockingQueue.class,
+            java.util.concurrent.ConcurrentMap.class,
+            HashSet.class,
+            TreeSet.class,
+            ArrayList.class,
+            LinkedList.class,
+            PriorityQueue.class,
+            HashMap.class,
+            TreeMap.class,
+            Vector.class,
+            Hashtable.class,
+            WeakHashMap.class,
+            java.util.concurrent.CopyOnWriteArrayList.class,
+            java.util.concurrent.CopyOnWriteArraySet.class,
+            EnumSet.class,
+            EnumMap.class,
+            java.util.concurrent.ConcurrentLinkedQueue.class,
+            java.util.concurrent.LinkedBlockingQueue.class,
+            java.util.concurrent.ArrayBlockingQueue.class,
+            java.util.concurrent.PriorityBlockingQueue.class,
+            java.util.concurrent.DelayQueue.class,
+            java.util.concurrent.SynchronousQueue.class,
+            java.util.concurrent.ConcurrentHashMap.class,
+            AbstractCollection.class,
+            AbstractSet.class,
+            AbstractList.class,
+            AbstractSequentialList.class,
+            AbstractQueue.class,
+            AbstractMap.class,
+            Enumeration.class,
+            Iterator.class,
+            ListIterator.class,
+            Comparable.class,
+            Comparator.class);
     }
 
     public void testAsSubclass() throws Exception {
@@ -172,8 +172,8 @@ public class _ClassTestCase extends BaseTestCase {
         }
         Serializable anonymous = new Serializable() {
         };
-        assertEquals(this.getClass().getName(), this.getClass().getCanonicalName());
-        assertEquals(this.getClass().getName() + ".A", A.class.getCanonicalName());
+        assertEquals(thisClass.getName(), thisClass.getCanonicalName());
+        assertEquals(thisClass.getName() + ".A", A.class.getCanonicalName());
         assertNull(Test.class.getCanonicalName());
         assertNull(anonymous.getClass().getCanonicalName());
         assertEquals("java.lang.String[]", String[].class.getCanonicalName());
@@ -219,13 +219,13 @@ public class _ClassTestCase extends BaseTestCase {
             class Inner {
             }
         }
-        assertEquals(this.getClass(), Test.class.getEnclosingClass());
+        assertEquals(thisClass, Test.class.getEnclosingClass());
         assertEquals(Test.class, Test.Inner.class.getEnclosingClass());
-        assertEquals(this.getClass(), TestGetEnclosingClass.class.getEnclosingClass());
+        assertEquals(thisClass, TestGetEnclosingClass.class.getEnclosingClass());
         assertEquals(TestGetEnclosingClass.class, TestGetEnclosingClass.Inner.class.getEnclosingClass());
 
         Object anonymous = new Object() {};
-        assertEquals(this.getClass(), anonymous.getClass().getEnclosingClass());
+        assertEquals(thisClass, anonymous.getClass().getEnclosingClass());
         assertNull(void.class.getEnclosingClass());
         assertNull(int[][].class.getEnclosingClass());
         assertNull(PROXY_CLASS.getEnclosingClass());
@@ -285,7 +285,7 @@ public class _ClassTestCase extends BaseTestCase {
     }
 
     public void testGetGenericInterfaces_Classes14() throws Exception {
-        for (Class aClass : CLASSES_14) {
+        for (Class aClass : getClasses()) {
             Class[] interfaces = aClass.getInterfaces();
             Type[] genericInterfaces = aClass.getGenericInterfaces();
             assertEquals(aClass.getName(), interfaces.length, genericInterfaces.length);
@@ -296,7 +296,7 @@ public class _ClassTestCase extends BaseTestCase {
     }
 
     public void testGetGenericSuperclass_Classes14() throws Exception {
-        for (Class aClass : CLASSES_14) {
+        for (Class aClass : getClasses()) {
             Class superclass = aClass.getSuperclass();
             Type genericSuperclass = aClass.getGenericSuperclass();
             if (superclass != null || genericSuperclass != null) {
@@ -311,9 +311,14 @@ public class _ClassTestCase extends BaseTestCase {
             assertSame(owner.getName(), rawClass, rawType);
         } else {
             assertSame(owner.getName(), rawClass, genericType);
-            assertTrue(rawClass.getName(), rawClass == Object.class || rawClass == Cloneable.class ||
-                    rawClass == Serializable.class || rawClass == RandomAccess.class);
+            assertTrue(owner.getName() + " has raw " + rawClass.getName(), isAllowed(owner, rawClass));
         }
+    }
+
+    private boolean isAllowed(Class owner, Class rawClass) {
+        return rawClass == Object.class || rawClass == Cloneable.class || rawClass == Serializable.class ||
+                rawClass.getName().equals("java.util.RandomAccess") || (!isJava14AtLeast() &&
+                owner == PriorityQueue.class && rawClass.getName().endsWith("java.util.Queue"));
     }
 
     public void testGetGenericSuperclass_FullyParameterized() throws Exception {
@@ -360,7 +365,7 @@ public class _ClassTestCase extends BaseTestCase {
         class Test {
         }
         Serializable anonymous = new Serializable() { };
-        assertEquals("_ClassTestCase", this.getClass().getSimpleName());
+        assertEquals("_ClassTestCase", thisClass.getSimpleName());
         assertEquals("A", A.class.getSimpleName());
         assertEquals("Test", Test.class.getSimpleName());
         assertEquals("", anonymous.getClass().getSimpleName());

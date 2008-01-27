@@ -32,12 +32,12 @@
 package net.sf.retrotranslator.runtime.format;
 
 import java.util.*;
-import net.sf.retrotranslator.tests.BaseTestCase;
+import net.sf.retrotranslator.tests.TestCaseBase;
 
 /**
  * @author Taras Puchko
  */
-public class GeneralConversionTestCase extends BaseTestCase {
+public class GeneralConversionTestCase extends TestCaseBase {
 
     public void testFormat_Boolean() throws Exception {
         assertFormat("     false", "%10b", null, null);

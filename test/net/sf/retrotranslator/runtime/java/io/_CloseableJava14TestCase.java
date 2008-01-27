@@ -29,40 +29,23 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.transformer.smart;
+package net.sf.retrotranslator.runtime.java.io;
+
+import junit.framework.TestCase;
+import java.io.*;
+import java.util.*;
 
 /**
  * @author Taras Puchko
  */
-public class _RuntimeException {
+public class _CloseableJava14TestCase extends TestCase {
 
-    public static class ExceptionBuilder {
-
-        private final String message;
-
-        protected ExceptionBuilder(String message) {
-            this.message = message;
-        }
-
-        public String argument1() {
-            return message;
-        }
-    }
-
-    public static String convertConstructorArguments() {
-        return "empty";
-    }
-
-    public static String convertConstructorArguments(Throwable cause) {
-        return "cause";
-    }
-
-    public static ExceptionBuilder createInstanceBuilder(String message) {
-        return new ExceptionBuilder("message");
-    }
-
-    public static ExceptionBuilder createInstanceBuilder(String message, Throwable cause) {
-        return new ExceptionBuilder("message and cause");
+    public void testClose() throws Exception {
+        File tempFile = File.createTempFile("closeable", "test");
+        tempFile.deleteOnExit();
+        RandomAccessFile randomAccessFile = new RandomAccessFile(tempFile, "r");
+        Closeable closeable = randomAccessFile.getChannel();
+        closeable.close();
     }
 
 }

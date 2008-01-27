@@ -33,12 +33,12 @@ package net.sf.retrotranslator.runtime.format;
 
 import java.text.*;
 import java.util.*;
-import net.sf.retrotranslator.tests.BaseTestCase;
+import net.sf.retrotranslator.tests.TestCaseBase;
 
 /**
  * @author Taras Puchko
  */
-public class DateTimeConversionTestCase extends BaseTestCase {
+public class DateTimeConversionTestCase extends TestCaseBase {
 
     public void testFormat_Flags() throws Exception {
         assertFormat("   null null", "%7tH %1tT", null, null);

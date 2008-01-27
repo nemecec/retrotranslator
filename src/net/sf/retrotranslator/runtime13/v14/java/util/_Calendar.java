@@ -29,15 +29,21 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.runtime.impl;
+package net.sf.retrotranslator.runtime13.v14.java.util;
+
+import java.util.*;
 
 /**
  * @author Taras Puchko
  */
-public interface MemberDescriptor {
+public class _Calendar {
 
-    String getName();
+    public static long getTimeInMillis(Calendar calendar) {
+        return calendar.getTime().getTime();
+    }
 
-    String getDesc();
+    public static void setTimeInMillis(Calendar calendar, long millis) {
+        calendar.setTime(new Date(millis));
+    }
 
 }

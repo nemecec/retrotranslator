@@ -31,9 +31,10 @@
  */
 package net.sf.retrotranslator.runtime.java.net;
 
-import java.net.URLConnection;
 import java.lang.reflect.InvocationTargetException;
-import net.sf.retrotranslator.runtime.impl.*;
+import java.net.URLConnection;
+import net.sf.retrotranslator.registry.Advanced;
+import net.sf.retrotranslator.runtime.impl.RuntimeTools;
 
 /**
  * @author Taras Puchko

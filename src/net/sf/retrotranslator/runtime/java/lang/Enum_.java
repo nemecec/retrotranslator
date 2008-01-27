@@ -36,7 +36,7 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.*;
 import java.security.*;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 import net.sf.retrotranslator.runtime.impl.WeakIdentityTable;
 
 /**
@@ -44,21 +44,23 @@ import net.sf.retrotranslator.runtime.impl.WeakIdentityTable;
  */
 public abstract class Enum_<E extends Enum_<E>> implements Comparable<E>, Serializable {
 
-    private static final WeakIdentityTable<Class, Map<String, WeakReference<Enum_>>> table =
-            new WeakIdentityTable<Class, Map<String, WeakReference<Enum_>>>() {
-                protected Map<String, WeakReference<Enum_>> initialValue() {
+    private static final WeakIdentityTable<Class, ConcurrentMap<String, WeakReference<Enum_>>> table =
+            new WeakIdentityTable<Class, ConcurrentMap<String, WeakReference<Enum_>>>() {
+                protected ConcurrentMap<String, WeakReference<Enum_>> initialValue() {
                     return new ConcurrentHashMap<String, WeakReference<Enum_>>();
                 }
             };
 
-    private final String name;
+    private String name;
 
-    private final int ordinal;
+    private int ordinal;
 
     protected Enum_(String name, int ordinal) {
         this.name = name;
         this.ordinal = ordinal;
-        table.obtain(getDeclaringClass()).put(name, new WeakReference<Enum_>(this));
+        if (name != null) {
+            table.obtain(getDeclaringClass()).putIfAbsent(name, new WeakReference<Enum_>(this));
+        }
     }
 
     public final String name() {

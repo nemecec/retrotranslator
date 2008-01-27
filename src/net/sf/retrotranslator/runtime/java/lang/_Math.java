@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
+ *
  * Copyright (c) 2005 - 2008 Taras Puchko
  * All rights reserved.
  *
@@ -29,59 +29,66 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.runtime.impl;
-
-import java.util.regex.MatchResult;
+package net.sf.retrotranslator.runtime.java.lang;
 
 /**
  * @author Taras Puchko
  */
-public class MatchResultImpl implements MatchResult {
+public class _Math {
 
-    private final boolean available;
-    private final int groupCount;
-    private final int[] starts;
-    private final int[] ends;
-    private final String[] groups;
+    private static final double LOG10 = Math.log(10);
 
-    public MatchResultImpl(boolean available, int groupCount,
-                           int[] starts, int[] ends, String[] groups) {
-        this.available = available;
-        this.groupCount = groupCount;
-        this.starts = starts;
-        this.ends = ends;
-        this.groups = groups;
+    public static double cbrt(double a) {
+        if (a > 0) {
+            return Math.pow(a, 1.0/3);
+        }
+        if (a < 0) {
+            return -Math.pow(Math.abs(a), 1.0/3);
+        }
+        return a; 
     }
 
-    public int start() {
-        return start(0);
+    public static double cosh(double x) {
+        return (Math.exp(x) + Math.exp(-x)) / 2;
     }
 
-    public int start(int group) {
-        if (!available) throw new IllegalStateException();
-        return starts[group];
+    public static double expm1(double x) {
+        return x == 0 ? x : Math.exp(x) - 1;
     }
 
-    public int end() {
-        return end(0);
+    public static double log10(double a) {
+        return Math.log(a) / LOG10;
     }
 
-    public int end(int group) {
-        if (!available) throw new IllegalStateException();
-        return ends[group];
+    public static double log1p(double x) {
+        return x == 0 ? x : Math.log(1.0 + x);
     }
 
-    public String group() {
-        return group(0);
+    public static double signum(double d) {
+        return d > 0 ? 1 : d < 0 ? -1 : d == 0 ? d : Double.NaN;
     }
 
-    public String group(int group) {
-        if (!available) throw new IllegalStateException();
-        return groups[group];
+    public static float signum(float f) {
+        return f > 0 ? 1 : f < 0 ? -1 : f == 0 ? f : Float.NaN;
     }
 
-    public int groupCount() {
-        return groupCount;
+    public static double sinh(double x) {
+        return x == 0 ? x : (Math.exp(x) - Math.exp(-x)) / 2;
+    }
+
+    public static double tanh(double x) {
+        if (x == 0) {
+            return x;
+        }
+        if (x == Double.POSITIVE_INFINITY) {
+            return 1;
+        }
+        if (x == Double.NEGATIVE_INFINITY) {
+            return -1;
+        }
+        double p = Math.exp(x);
+        double q = Math.exp(-x);
+        return (p - q) / (p + q);
     }
 
 }

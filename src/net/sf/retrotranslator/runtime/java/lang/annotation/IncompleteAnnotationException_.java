@@ -31,21 +31,23 @@
  */
 package net.sf.retrotranslator.runtime.java.lang.annotation;
 
+import java.lang.annotation.Annotation;
+
 /**
  * @author Taras Puchko
  */
 public class IncompleteAnnotationException_ extends RuntimeException {
 
-    private Class<? extends Annotation_> annotationType;
+    private Class<? extends Annotation> annotationType;
     private String elementName;
 
-    public IncompleteAnnotationException_(Class<? extends Annotation_> annotationType, String elementName) {
+    public IncompleteAnnotationException_(Class<? extends Annotation> annotationType, String elementName) {
         super(annotationType.getName() + " missing element " + elementName);
         this.annotationType = annotationType;
         this.elementName = elementName;
     }
 
-    public Class<? extends Annotation_> annotationType() {
+    public Class<? extends Annotation> annotationType() {
         return annotationType;
     }
 

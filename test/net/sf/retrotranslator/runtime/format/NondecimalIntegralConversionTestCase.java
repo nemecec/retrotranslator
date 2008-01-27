@@ -33,12 +33,12 @@ package net.sf.retrotranslator.runtime.format;
 
 import java.math.BigInteger;
 import java.util.*;
-import net.sf.retrotranslator.tests.BaseTestCase;
+import net.sf.retrotranslator.tests.TestCaseBase;
 
 /**
  * @author Taras Puchko
  */
-public class NondecimalIntegralConversionTestCase extends BaseTestCase {
+public class NondecimalIntegralConversionTestCase extends TestCaseBase {
 
     public void testFormat_Hex() throws Exception {
         assertFormat("64", "%x", 100);

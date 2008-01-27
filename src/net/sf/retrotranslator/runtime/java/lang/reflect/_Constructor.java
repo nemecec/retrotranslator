@@ -31,39 +31,39 @@
  */
 package net.sf.retrotranslator.runtime.java.lang.reflect;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import net.sf.retrotranslator.runtime.asm.Opcodes;
 import net.sf.retrotranslator.runtime.impl.*;
-import net.sf.retrotranslator.runtime.java.lang.annotation.Annotation_;
 
 /**
  * @author Taras Puchko
  */
 public class _Constructor {
 
-    public static Annotation_ getAnnotation(Constructor constructor, Class annotationType) {
+    public static Annotation getAnnotation(Constructor constructor, Class annotationType) {
         return MethodDescriptor.getInstance(constructor).getAnnotation(annotationType);
     }
 
-    public static Annotation_[] getAnnotations(Constructor constructor) {
+    public static Annotation[] getAnnotations(Constructor constructor) {
         return MethodDescriptor.getInstance(constructor).getAnnotations();
     }
 
-    public static Annotation_[] getDeclaredAnnotations(Constructor constructor) {
+    public static Annotation[] getDeclaredAnnotations(Constructor constructor) {
         return MethodDescriptor.getInstance(constructor).getDeclaredAnnotations();
     }
 
     public static Type[] getGenericExceptionTypes(Constructor constructor) {
-        Type[] types = MethodDescriptor.getInstance(constructor).getGenericExceptionTypes();
-        return types != null ? types : constructor.getExceptionTypes();
+        return RuntimeTools.getTypes(constructor.getExceptionTypes(),
+                MethodDescriptor.getInstance(constructor).getGenericExceptionTypes());
     }
 
     public static Type[] getGenericParameterTypes(Constructor constructor) {
-        Type[] types = MethodDescriptor.getInstance(constructor).getGenericParameterTypes();
-        return types != null ? types : constructor.getParameterTypes();
+        return RuntimeTools.getTypes(constructor.getParameterTypes(),
+                MethodDescriptor.getInstance(constructor).getGenericParameterTypes());
     }
 
-    public static Annotation_[][] getParameterAnnotations(Constructor constructor) {
+    public static Annotation[][] getParameterAnnotations(Constructor constructor) {
         return MethodDescriptor.getInstance(constructor).getParameterAnnotations();
     }
 

@@ -29,25 +29,51 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.runtime.impl;
+package net.sf.retrotranslator.runtime13.v14.java.lang;
 
-import org.xml.sax.*;
+import junit.framework.TestCase;
 
 /**
  * @author Taras Puchko
  */
-public class StrictErrorHandler implements ErrorHandler {
+public class StackTraceElement_TestCase extends TestCase {
 
-    public void warning(SAXParseException exception) throws SAXException {
-        throw exception;
+    private StackTraceElement element1 = new StackTraceElement("theClass", "theMethod", "theFile", 123);
+    private StackTraceElement element2 = new StackTraceElement("theClass", "theMethod", "theFile", 123);
+    private StackTraceElement element3 = new StackTraceElement("otherClass", "otherMethod", "otherFile", -2);
+
+    public void testGetClassName() throws Exception {
+        assertEquals("theClass", element1.getClassName());
     }
 
-    public void error(SAXParseException exception) throws SAXException {
-        throw exception;
+    public void testGetFileName() throws Exception {
+        assertEquals("theFile", element1.getFileName());
     }
 
-    public void fatalError(SAXParseException exception) throws SAXException {
-        throw exception;
+    public void testGetLineNumber() throws Exception {
+        assertEquals(123, element1.getLineNumber());
+    }
+
+    public void testGetMethodName() throws Exception {
+        assertEquals("theMethod", element1.getMethodName());
+    }
+
+    public void testIsNativeMethod() throws Exception {
+        assertFalse(element1.isNativeMethod());
+        assertTrue(element3.isNativeMethod());
+    }
+
+    public void testToString() throws Exception {
+        assertFalse(element1.toString().equals(element3.toString()));
+    }
+
+    public void testEquals() throws Exception {
+        assertEquals(element1, element2);
+        assertFalse(element1.equals(element3));
+    }
+
+    public void testHashCode() throws Exception {
+        assertEquals(element1.hashCode(), element2.hashCode());
     }
 
 }

@@ -32,12 +32,12 @@
 package net.sf.retrotranslator.runtime.java.lang.reflect;
 
 import java.lang.reflect.*;
-import net.sf.retrotranslator.tests.BaseTestCase;
+import net.sf.retrotranslator.tests.TestCaseBase;
 
 /**
  * @author Taras Puchko
  */
-public class _FieldNonGenericTestCase extends BaseTestCase {
+public class _FieldNonGenericTestCase extends TestCaseBase {
 
     class MemberOuterNonGeneric {
         class MemberInnerGeneric<T> {

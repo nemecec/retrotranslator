@@ -33,12 +33,12 @@ package net.sf.retrotranslator.runtime.format;
 
 import java.math.BigInteger;
 import java.util.*;
-import net.sf.retrotranslator.tests.BaseTestCase;
+import net.sf.retrotranslator.tests.TestCaseBase;
 
 /**
  * @author Taras Puchko
  */
-public class DecimalIntegralConversionTestCase extends BaseTestCase {
+public class DecimalIntegralConversionTestCase extends TestCaseBase {
 
     public void testFormat() throws Exception {
         assertFormat("5", "%d", 5);
@@ -60,7 +60,9 @@ public class DecimalIntegralConversionTestCase extends BaseTestCase {
         assertFormat("1234567890", "%d", 1234567890);
         assertFormat("1\u00a0234\u00a0567\u00a0890", "%,d", 1234567890);
 
-        assertFormat(HINDI, "\u0967,\u0968\u0969\u096a,\u096b\u096c\u096d,\u096e\u096f\u0966", "%,d", 1234567890);
+        if (isJava14AtLeast()) {
+            assertFormat(HINDI, "\u0967,\u0968\u0969\u096a,\u096b\u096c\u096d,\u096e\u096f\u0966", "%,d", 1234567890);
+        }
 
         assertFormat("1\u00a0234", "%,d", BigInteger.valueOf(1234));
         assertFormat(" null", "%5d", (Object) null);
