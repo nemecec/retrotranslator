@@ -167,10 +167,12 @@ public class DateTimeConversionTestCase extends TestCaseBase {
     public void testFormat_TimeZone() throws Exception {
         TimeZone defaultTimeZone = TimeZone.getDefault();
         try {
-            assertTimeZone("Asia/Katmandu", "+0545", "NPT", "NPT");
+            if (isJava14AtLeast()) {
+                assertTimeZone("Asia/Katmandu", "+0545", "NPT", "NPT");
+                assertTimeZone("Europe/Helsinki", "+0200", "EET", "EEST");
+                assertTimeZone("Africa/Casablanca", "+0000", "WET", "WET");
+            }
             assertTimeZone("GMT+02:00", "+0200", "GMT+02:00", "GMT+02:00");
-            assertTimeZone("Europe/Helsinki", "+0200", "EET", "EEST");
-            assertTimeZone("Africa/Casablanca", "+0000", "WET", "WET");
             assertTimeZone("America/Los_Angeles", "-0800", "PST", "PDT");
             assertTimeZone("America/New_York", "-0500", "EST", "EDT");
             TimeZone.setDefault(TimeZone.getTimeZone("Europe/London"));
