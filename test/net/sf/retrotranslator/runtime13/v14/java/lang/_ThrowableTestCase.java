@@ -71,7 +71,7 @@ public class _ThrowableTestCase extends TestCase {
         IOException exception = new IOException("123");
         assertSame(exception, new Throwable(exception).getCause());
         NamingException namingException = new NamingException();
-        namingException.setRootCause(exception);
+        namingException.initCause(exception);
         assertSame(exception, ((Throwable) namingException).getCause());
         for (Throwable throwable : getSpecialThrowables(exception)) {
             assertSame(exception, throwable.getCause());
@@ -123,6 +123,9 @@ public class _ThrowableTestCase extends TestCase {
         StackTraceElement[] elements = new Throwable().getStackTrace();
         assertTrue(elements.length > 1);
         StackTraceElement element = elements[0];
+        if (element.getClassName().equals(Throwable.class.getName())) {
+            element = elements[1];
+        }
         assertEquals(getClass().getName(), element.getClassName());
         assertEquals(getClass().getSimpleName() + ".java", element.getFileName());
         assertTrue(element.getLineNumber() > 0);
