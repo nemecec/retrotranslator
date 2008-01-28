@@ -31,14 +31,16 @@
  */
 package net.sf.retrotranslator.runtime.java.util;
 
-import java.util.*;
+import net.sf.retrotranslator.tests.TestCaseBase;
+
 import java.lang.ref.WeakReference;
-import junit.framework.TestCase;
+import java.util.*;
+import java.util.concurrent.Callable;
 
 /**
  * @author Taras Puchko
  */
-public class Timer_TestCase extends TestCase {
+public class Timer_TestCase extends TestCaseBase {
 
     class MyTimerTask extends TimerTask {
         public volatile int count;
@@ -108,11 +110,13 @@ public class Timer_TestCase extends TestCase {
         timer.schedule(secondTask, 200, 200);
         timer.schedule(thirdTask, 0, 200);
         firstTask.cancel();
-        WeakReference<TimerTask> firstReference = new WeakReference<TimerTask>(firstTask);
+        final WeakReference<TimerTask> firstReference = new WeakReference<TimerTask>(firstTask);
         firstTask = null;
-        Thread.sleep(10);
-        System.gc();
-        Thread.sleep(10);
+        this.gc(new Callable<Boolean>() {
+          public Boolean call() throws Exception {
+            return firstReference.get() != null;
+          }
+        });
         assertNull(firstReference.get());
         secondTask.cancel();
         thirdTask.cancel();
@@ -125,7 +129,7 @@ public class Timer_TestCase extends TestCase {
         timer.schedule(task, 200);
         Thread.sleep(100);
         assertEquals(0, task.count);
-        Thread.sleep(200);
+        Thread.sleep(300);
         assertEquals(1, task.count);
         assertFalse(task.cancel());
     }
@@ -324,7 +328,7 @@ public class Timer_TestCase extends TestCase {
         MyTimerTask task = new MyTimerTask();
         timer.schedule(new HalfSecondTimerTask(), 0);
         timer.schedule(task, new Date(System.currentTimeMillis() + 200), 200);
-        Thread.sleep(450);
+        Thread.sleep(400);
         assertEquals(0, task.count);
         Thread.sleep(200);
         assertEquals(1, task.count);

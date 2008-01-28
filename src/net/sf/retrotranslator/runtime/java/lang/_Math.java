@@ -57,7 +57,10 @@ public class _Math {
     }
 
     public static double log10(double a) {
-        return Math.log(a) / LOG10;
+        double exactResult = Math.log(a) / LOG10;
+        double fixedResult = Math.ceil(exactResult);
+        double fixedArgument = Math.pow(10, fixedResult);
+        return fixedArgument <= a ? fixedResult : exactResult;
     }
 
     public static double log1p(double x) {

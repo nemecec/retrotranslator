@@ -85,7 +85,9 @@ public class _MathTestCase extends TestCase {
         assertEquals(Double.NaN, Math.log10(-0.1));
         assertEquals(0.0, Math.log10(1));
         assertEquals(Double.NaN, Math.log10(-1));
-        assertEquals(1.0, Math.log10(10), 1E-15);
+        assertEquals(1.0, Math.log10(10));
+        assertEquals(3.0, Math.log10(1000));
+        assertTrue(Math.log10(100) <= Math.log10(100.00001));
         assertEquals(Double.NaN, Math.log10(-10));
         assertEquals(4.091491094267951, Math.log10(12345), 1E-15);
         assertEquals(Double.NaN, Math.log10(Double.NaN));
