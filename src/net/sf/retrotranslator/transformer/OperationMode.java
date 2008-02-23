@@ -42,6 +42,7 @@ class OperationMode {
     private final boolean smart;
     private final Set<String> features = Collections.synchronizedSet(new HashSet<String>());
     private final ClassVersion target;
+    private final boolean fixHyphen;
 
     public OperationMode(boolean advanced, String support, boolean smart, ClassVersion target) {
         this.advanced = advanced;
@@ -56,6 +57,7 @@ class OperationMode {
                 features.add(tokenizer.nextToken());
             }
         }
+        fixHyphen = isSupportedFeature("Retrotranslator.fixHyphen");
     }
 
     public boolean isSupportedFeature(String feature) {
@@ -68,6 +70,10 @@ class OperationMode {
 
     public ClassVersion getTarget() {
         return target;
+    }
+
+    public String fixName(String className) {
+        return fixHyphen ? className.replace('-', '$') : className;
     }
 
 }

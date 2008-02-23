@@ -367,12 +367,12 @@ class ReplacementLocator {
 
     public String getUniqueTypeName(String className) {
         ClassReplacement replacement = getReplacement(className);
-        return replacement != null ? replacement.getUniqueTypeName() : className;
+        return replacement != null ? replacement.getUniqueTypeName() : mode.fixName(className);
     }
 
     public String getReferenceTypeName(String className) {
         ClassReplacement replacement = getReplacement(className);
-        return replacement != null ? replacement.getReferenceTypeName() : className;
+        return replacement != null ? replacement.getReferenceTypeName() : mode.fixName(className);
     }
 
     private static <K, V> void putIfAbsent(Map<K, V> map, K key, V value) {

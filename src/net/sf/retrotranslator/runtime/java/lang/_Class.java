@@ -178,4 +178,9 @@ public class _Class {
         return result;
     }
 
+    // Referenced from translated bytecode
+    public static void setEncodedMetadata(Class aClass, String metadata) {
+        ClassDescriptor.setEncodedMetadata(aClass, metadata);
+    }
+
 }

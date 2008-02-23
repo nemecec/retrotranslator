@@ -29,42 +29,29 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.runtime.java.lang;
-
-import java.lang.annotation.Annotation;
-import junit.framework.TestCase;
+package net.sf.retrotranslator.transformer;
 
 /**
  * @author Taras Puchko
  */
-public class _PackageTestCase extends TestCase {
+class ReflectionMode {
 
-    private Package aPackage = _PackageTestCase.class.getPackage();
+    public static ReflectionMode NORMAL = new ReflectionMode("normal");
+    public static ReflectionMode SAFE = new ReflectionMode("safe");
 
-    public void testIsAnnotationPresent() throws Exception {
-        assertTrue(aPackage.isAnnotationPresent(MyStyle.class));
-        assertFalse(aPackage.isAnnotationPresent(MyFormatter.class));
+    private final String name;
+
+    private ReflectionMode(String name) {
+        this.name = name;
     }
 
-    public void testGetAnnotation() throws Exception {
-        assertEquals("bold", aPackage.getAnnotation(MyStyle.class).value());
-        assertNull(aPackage.getAnnotation(MyFormatter.class));
+    public static ReflectionMode valueOf(String name) {
+        for (ReflectionMode mode : new ReflectionMode[]{NORMAL, SAFE}) {
+            if (mode.name.equals(name)) {
+                return mode;
+            }
+        }
+        throw new IllegalArgumentException("Unsupported reflection mode: " + name);
     }
 
-    public void testGetAnnotations() throws Exception {
-        Annotation[] annotations = aPackage.getAnnotations();
-        assertEquals(1, annotations.length);
-        assertEquals("bold", ((MyStyle) annotations[0]).value());
-    }
-
-    public void testGetDeclaredAnnotations() throws Exception {
-        Annotation[] annotations = aPackage.getDeclaredAnnotations();
-        assertEquals(1, annotations.length);
-        assertEquals("bold", ((MyStyle) annotations[0]).value());
-    }
-
-    public static void main(String[] args) throws ClassNotFoundException {
-        Class<?> aClass = Class.forName("net.sf.retrotranslator.runtime.java.lang.package-info");
-        System.out.println("aClass = " + aClass);
-    }
 }

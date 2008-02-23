@@ -43,15 +43,18 @@ class ClassTransformer implements BytecodeTransformer {
     private boolean lazy;
     private boolean stripsign;
     private boolean retainflags;
+    private ReflectionMode reflectionMode;
     private EmbeddingConverter converter;
     private SystemLogger logger;
     private ReplacementLocatorFactory factory;
 
-    public ClassTransformer(boolean lazy, boolean stripsign, boolean retainflags, SystemLogger logger,
+    public ClassTransformer(boolean lazy, boolean stripsign, boolean retainflags,
+                            ReflectionMode reflectionMode, SystemLogger logger,
                             EmbeddingConverter converter, ReplacementLocatorFactory factory) {
         this.lazy = lazy;
         this.stripsign = stripsign;
         this.retainflags = retainflags;
+        this.reflectionMode = reflectionMode;
         this.converter = converter;
         this.logger = logger;
         this.factory = factory;
@@ -107,6 +110,17 @@ class ClassTransformer implements BytecodeTransformer {
             byte[] bytecode = classWriter.toByteArray();
             classWriter = new ClassWriter(true);
             new ClassReader(bytecode).accept(new PrefixingVisitor(classWriter, converter), false);
+        }
+        if (reflectionMode == ReflectionMode.SAFE) {
+            MemberReplacement replacement = ReflectionInitVisitor.getMethodReplacement(locator);
+            if (replacement != null) {
+                byte[] bytecode = classWriter.toByteArray();
+                ReflectionDataVisitor dataVisitor = new ReflectionDataVisitor();
+                new ClassReader(bytecode).accept(dataVisitor, true);
+                classWriter = new ClassWriter(true);
+                new ClassReader(bytecode).accept(new ReflectionInitVisitor(
+                        classWriter, replacement, dataVisitor.toByteArray()), false);
+            }
         }
         return classWriter.toByteArray(target.isBefore(ClassVersion.VERSION_15) && !retainflags);
     }

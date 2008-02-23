@@ -31,12 +31,11 @@
  */
 package net.sf.retrotranslator.runtime.java.lang;
 
-import net.sf.retrotranslator.tests.TestCaseBase;
-import net.sf.retrotranslator.runtime.impl.RuntimeTools;
+import java.io.*;
+import java.lang.ref.WeakReference;
 import java.util.EnumSet;
 import java.util.concurrent.Callable;
-import java.lang.ref.WeakReference;
-import java.io.*;
+import net.sf.retrotranslator.tests.TestCaseBase;
 
 /**
  * @author Taras Puchko
@@ -166,7 +165,7 @@ public class Enum_TestCase extends TestCaseBase {
     public void testGarbageCollector() throws Exception {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         byte[] buffer = new byte[0x1000];
-        InputStream inputStream = MyColor.class.getResourceAsStream(MyColor.class.getSimpleName() + ".class");
+        InputStream inputStream = MyColor.class.getResource(MyColor.class.getSimpleName() + ".class").openStream();
         int count;
         while ((count = inputStream.read(buffer)) > 0) {
             outputStream.write(buffer, 0, count);

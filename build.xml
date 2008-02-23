@@ -261,6 +261,7 @@
                 <exclude name="**/ProxySelector_TestCase*"/>
                 <exclude name="**/Proxy_TestCase*"/>
                 <exclude name="**/_URLTestCase*"/>
+                <exclude name="**/ReflectionAntLauncher*"/>
             </fileset>
         </copy>
         <retrotranslator srcdir="build/test-classes13" target="1.3" smart="true" 
@@ -368,6 +369,39 @@
             <batchtest>
                 <fileset dir="build/test-classes15" includes="**/*TestCase.class"
                          excludes="**/TextFileTransformerTestCase.class" />
+            </batchtest>
+        </junit>
+        <fail if="test.failed"/>
+    </target>
+
+    <target name="test-reflection" depends="compile-tests">
+        <mkdir dir="build/test-reflection"/>
+        <mkdir dir="build/run-reflection"/>
+        <retrotranslator srcdir="build/test-classes15" destdir="build/test-reflection"
+                         advanced="true" verify="true" srcmask="*.class;*.properties"
+                         reflection="safe">
+            <classpath path="${java14_rt_jar}"/>
+            <classpath location="build/retrotranslator-runtime-${version}.jar"/>
+            <classpath refid="classpath"/>
+        </retrotranslator>
+        <move todir="build/run-reflection">
+            <fileset dir="build/test-reflection" includes="**/ReflectionAntLauncher*"/>
+        </move>
+        <java classname="net.sf.retrotranslator.transformer.ReflectionAntLauncher"
+              failonerror="true" fork="true" jvm="${java14_home}/bin/java" classpathref="classpath">
+            <classpath location="build/run-reflection"/>
+            <classpath location="build/retrotranslator-runtime-${version}.jar"/>
+            <arg value="${java.class.path}"/>
+            <arg value="build/test-reflection"/>
+        </java>
+    </target>
+
+    <target name="subtest-reflection">
+        <echo message="Running classes in test-reflection on ${java.home}"/>
+        <junit printsummary="withOutAndErr" fork="no" reloading="false" failureproperty="test.failed">
+            <formatter type="brief" usefile="false"/>
+            <batchtest>
+                <fileset dir="build/test-reflection" includes="**/*TestCase.class" />
             </batchtest>
         </junit>
         <fail if="test.failed"/>
@@ -601,7 +635,7 @@
     </target>
 
     <target name="test" depends="test-java14, test-java13, test-java12, test-java11, test-jit, test-embedded,
-    test-retainapi, test-support, test-smart, test-custom, test-duplicates, test-incompatible"/>
+    test-retainapi, test-support, test-smart, test-custom, test-duplicates, test-incompatible, test-reflection"/>
 
     <target name="dist-bin" depends="test">
         <mkdir dir="dist"/>

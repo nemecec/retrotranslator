@@ -29,42 +29,44 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.runtime.java.lang;
+package net.sf.retrotranslator.transformer;
 
-import java.lang.annotation.Annotation;
-import junit.framework.TestCase;
+import java.io.File;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Taras Puchko
  */
-public class _PackageTestCase extends TestCase {
+public class ReflectionAntLauncher extends URLClassLoader {
 
-    private Package aPackage = _PackageTestCase.class.getPackage();
-
-    public void testIsAnnotationPresent() throws Exception {
-        assertTrue(aPackage.isAnnotationPresent(MyStyle.class));
-        assertFalse(aPackage.isAnnotationPresent(MyFormatter.class));
+    public ReflectionAntLauncher(URL[] urls) {
+        super(urls);
     }
 
-    public void testGetAnnotation() throws Exception {
-        assertEquals("bold", aPackage.getAnnotation(MyStyle.class).value());
-        assertNull(aPackage.getAnnotation(MyFormatter.class));
+    public InputStream getResourceAsStream(String name) {
+        if (name.endsWith(".class")) {
+            return null;
+        }
+        return super.getResourceAsStream(name);
     }
 
-    public void testGetAnnotations() throws Exception {
-        Annotation[] annotations = aPackage.getAnnotations();
-        assertEquals(1, annotations.length);
-        assertEquals("bold", ((MyStyle) annotations[0]).value());
+    public static void main(String[] args) throws Exception {
+        List<URL> urls = new ArrayList<URL>();
+        for (String arg : args) {
+            for (String s : arg.split(File.pathSeparator)) {
+                File file = new File(s);
+                if (file.exists()) {
+                    urls.add(file.toURI().toURL());
+                }
+            }
+        }
+        ReflectionAntLauncher launcher = new ReflectionAntLauncher(urls.toArray(new URL[urls.size()]));
+        Class mainClass = Class.forName("org.apache.tools.ant.Main", true, launcher);
+        mainClass.getMethod("main", String[].class).invoke(null, (Object) new String[]{"subtest-reflection"});
     }
 
-    public void testGetDeclaredAnnotations() throws Exception {
-        Annotation[] annotations = aPackage.getDeclaredAnnotations();
-        assertEquals(1, annotations.length);
-        assertEquals("bold", ((MyStyle) annotations[0]).value());
-    }
-
-    public static void main(String[] args) throws ClassNotFoundException {
-        Class<?> aClass = Class.forName("net.sf.retrotranslator.runtime.java.lang.package-info");
-        System.out.println("aClass = " + aClass);
-    }
 }

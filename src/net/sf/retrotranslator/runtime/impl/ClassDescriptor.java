@@ -44,6 +44,7 @@ import net.sf.retrotranslator.runtime.asm.signature.*;
  */
 public class ClassDescriptor extends GenericDeclarationDescriptor {
 
+    private static final WeakIdentityTable<Class, String> metadataTable = new WeakIdentityTable<Class,String>();
     private static SoftReference<Map<Class, ClassDescriptor>> cache;
     private static BytecodeTransformer bytecodeTransformer;
 
@@ -74,9 +75,34 @@ public class ClassDescriptor extends GenericDeclarationDescriptor {
         Map<Class, ClassDescriptor> map = getMap();
         ClassDescriptor descriptor = map.get(target);
         if (descriptor != null) return descriptor;
-        descriptor = new ClassDescriptor(target, RuntimeTools.getBytecode(target));
+        descriptor = new ClassDescriptor(target, getBytecode(target));
         map.put(target, descriptor);
         return descriptor;
+    }
+
+    private static byte[] getBytecode(Class target) {
+        byte[] bytecode = RuntimeTools.getBytecode(target);
+        if (bytecode != null) {
+            return bytecode;
+        }
+        try {
+            Class.forName(target.getName(), true, target.getClassLoader());
+        } catch (ClassNotFoundException e) {
+            // ignore
+        }
+        String s = metadataTable.lookup(target);
+        if (s == null) {
+            return null;
+        }
+        bytecode = new byte[s.length()];
+        for (int i = 0; i < bytecode.length; i++) {
+            bytecode[i] = (byte) (127 - s.charAt(i));
+        }
+        return bytecode;
+    }
+
+    public static void setEncodedMetadata(Class aClass, String metadata) {
+        metadataTable.putIfAbsent(aClass, metadata);
     }
 
     private static synchronized Map<Class, ClassDescriptor> getMap() {

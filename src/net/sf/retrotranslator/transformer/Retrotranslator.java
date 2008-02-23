@@ -50,6 +50,7 @@ public class Retrotranslator {
     private boolean verify;
     private boolean uptodatecheck;
     private boolean smart;
+    private ReflectionMode reflectionMode = ReflectionMode.NORMAL;
     private List<File> classpath = new ArrayList<File>();
     private MessageLogger logger;
     private SourceMask sourceMask = new SourceMask(null);
@@ -140,6 +141,10 @@ public class Retrotranslator {
         sourceMask = new SourceMask(srcmask);
     }
 
+    public void setReflection(String reflection) {
+        reflectionMode = ReflectionMode.valueOf(reflection);
+    }
+
     public void setEmbed(String embed) {
         this.embed = embed;
     }
@@ -181,10 +186,10 @@ public class Retrotranslator {
         OperationMode mode = new OperationMode(advanced, support, smart, target);
         ReplacementLocatorFactory factory = new ReplacementLocatorFactory(mode, retainapi, backport, environment);
         ClassTransformer classTransformer = new ClassTransformer(
-                lazy, stripsign, retainflags, systemLogger, converter, factory);
+                lazy, stripsign, retainflags, reflectionMode, systemLogger, converter, factory);
         TextFileTransformer fileTransformer = new TextFileTransformer(factory, converter);
         FileTranslator translator = new FileTranslator(
-                classTransformer, fileTransformer, converter, systemLogger, sourceMask, uptodatecheck);
+                classTransformer, fileTransformer, converter, systemLogger, sourceMask, uptodatecheck, mode);
         boolean modified = false;
         for (FileContainer container : src) {
             modified |= translator.transform(container, dest != null ? dest : container);
@@ -314,6 +319,8 @@ public class Retrotranslator {
                 setBackport(args[i++]);
             } else if (string.equals("-target") && i < args.length) {
                 setTarget(args[i++]);
+            } else if (string.equals("-reflection") && i < args.length) {
+                setReflection(args[i++]);
             } else {
                 throw new IllegalArgumentException("Unknown option: " + string);
             }
@@ -324,10 +331,11 @@ public class Retrotranslator {
     private static void printUsage() {
         String version = Retrotranslator.class.getPackage().getImplementationVersion();
         String suffix = (version == null) ? "" : "-" + version;
-        System.out.println("Usage: java -jar retrotranslator-transformer" + suffix + ".jar" +
-                " [-srcdir <path> | -srcjar <file>] [-destdir <path> | -destjar <file>] [-support <features>] [-lazy]" +
+        System.out.println(
+                "Usage: java -jar retrotranslator-transformer" + suffix + ".jar [-srcdir <path> | -srcjar <file>]" +
+                " [-destdir <path> | -destjar <file>] [-support <features>] [-lazy] [-reflection <mode>] [-smart]" +
                 " [-stripsign] [-advanced] [-retainapi] [-retainflags] [-verify] [-uptodatecheck] [-target <version>]" +
-                " [-classpath <path>] [-srcmask <mask>] [-embed <package>] [-backport <packages>] [-verbose] [-smart]");
+                " [-classpath <path>] [-srcmask <mask>] [-embed <package>] [-backport <packages>] [-verbose]");
     }
 
     public static void main(String[] args) {

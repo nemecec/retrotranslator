@@ -42,16 +42,19 @@ class FileTranslator {
     private final SystemLogger logger;
     private final SourceMask mask;
     private final boolean uptodatecheck;
+    private final OperationMode mode;
     private int countTransformed;
 
     public FileTranslator(ClassTransformer classTransformer, TextFileTransformer fileTransformer,
-                          EmbeddingConverter converter, SystemLogger logger, SourceMask mask, boolean uptodatecheck) {
+                          EmbeddingConverter converter, SystemLogger logger, SourceMask mask,
+                          boolean uptodatecheck, OperationMode mode) {
         this.classTransformer = classTransformer;
         this.fileTransformer = fileTransformer;
         this.converter = converter;
         this.logger = logger;
         this.mask = mask;
         this.uptodatecheck = uptodatecheck;
+        this.mode = mode;
     }
 
     public boolean transform(FileContainer source, FileContainer destination) {
@@ -72,7 +75,7 @@ class FileTranslator {
 
     private void transform(FileEntry entry, FileContainer source, FileContainer destination) {
         String name = entry.getName();
-        String fixedName = converter == null ? name : converter.convertFileName(name);
+        String fixedName = mode.fixName(converter == null ? name : converter.convertFileName(name));
         if (uptodatecheck && destination.containsUpToDate(fixedName, entry.lastModified())) {
             logger.logForFile(Level.VERBOSE, "Up to date");
             return;

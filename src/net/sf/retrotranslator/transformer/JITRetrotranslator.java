@@ -74,7 +74,7 @@ public class JITRetrotranslator {
                 //do nothing
             }
         }, false);
-        transformer = new ClassTransformer(true, false, false, logger, null, locatorFactory);
+        transformer = new ClassTransformer(true, false, false, ReflectionMode.NORMAL, logger, null, locatorFactory);
         ClassDescriptor.setBytecodeTransformer(transformer);
         SunJITRetrotranslator.install(transformer);
         if (isJava5Supported()) return true;

@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
+ *
  * Copyright (c) 2005 - 2008 Taras Puchko
  * All rights reserved.
  *
@@ -57,29 +57,50 @@ public class _Package {
     }
 
     private static ClassDescriptor getPackageInfo(Package aPackage) {
+        ClassDescriptor packageInfo = createPackageInfo(_Package.class, aPackage);
+        return packageInfo != null ? packageInfo : getPrivilegedInfo(aPackage);
+    }
+
+    private static ClassDescriptor createPackageInfo(Class loader, Package aPackage) {
+        for (String simpleName : new String[]{"package$info", "package-info"}) {
+            Class infoClass = getClass(loader, aPackage, simpleName);
+            if (infoClass != null) {
+                return ClassDescriptor.getInstance(infoClass);
+            }
+        }
+        byte[] bytecode = getBytecode(loader, aPackage);
+        if (bytecode != null) {
+            return new ClassDescriptor(loader, bytecode);
+        }
+        return null;
+    }
+
+    private static Class getClass(Class loader, Package aPackage, String simpleName) {
+        try {
+            return Class.forName(aPackage.getName() + "." + simpleName, true, loader.getClassLoader());
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private static byte[] getBytecode(Class loader, Package aPackage) {
         String resourceName = "/" + aPackage.getName().replace('.', '/') + "/package-info.class";
-        ClassDescriptor packageInfo = createPackageInfo(_Package.class, resourceName);
-        return packageInfo != null ? packageInfo : getPrivilegedInfo(resourceName);
+        return RuntimeTools.readResourceToByteArray(loader, resourceName);
     }
 
-    private static ClassDescriptor createPackageInfo(Class loader, String resourceName) {
-        byte[] bytecode = RuntimeTools.readResourceToByteArray(loader, resourceName);
-        return bytecode == null ? null : new ClassDescriptor(loader, bytecode);
-    }
-
-    private static ClassDescriptor getPrivilegedInfo(final String resourceName) {
+    private static ClassDescriptor getPrivilegedInfo(final Package aPackage) {
         return AccessController.doPrivileged(new PrivilegedAction<ClassDescriptor>() {
             public ClassDescriptor run() {
-                return getContextInfo(resourceName);
+                return getContextInfo(aPackage);
             }
         });
     }
 
-    private static ClassDescriptor getContextInfo(String resourceName) {
+    private static ClassDescriptor getContextInfo(Package aPackage) {
         try {
             for (Class contextClass : new ExecutionContext().getClassContext()) {
                 try {
-                    ClassDescriptor packageInfo = createPackageInfo(contextClass, resourceName);
+                    ClassDescriptor packageInfo = createPackageInfo(contextClass, aPackage);
                     if (packageInfo != null) return packageInfo;
                 } catch (Throwable e) {
                     //continue;

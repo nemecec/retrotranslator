@@ -63,6 +63,7 @@ public class RetrotranslatorTask extends Task {
     private String support;
     private String backport;
     private String target;
+    private String reflection;
     private Path classpath;
 
     public RetrotranslatorTask() {
@@ -156,6 +157,10 @@ public class RetrotranslatorTask extends Task {
         this.target = target;
     }
 
+    public void setReflection(String reflection) {
+        this.reflection = reflection;
+    }
+
     public void setClasspathref(Reference classpathref) {
         createClasspath().setRefid(classpathref);
     }
@@ -210,7 +215,12 @@ public class RetrotranslatorTask extends Task {
             retrotranslator.setEmbed(embed);
             retrotranslator.setSupport(support);
             retrotranslator.setBackport(backport);
-            if (target != null) retrotranslator.setTarget(target);
+            if (target != null) {
+                retrotranslator.setTarget(target);
+            }
+            if (reflection != null) {
+                retrotranslator.setReflection(reflection);
+            }
             for (String fileName : getClasspath().list()) {
                 retrotranslator.addClasspathElement(getProject().resolveFile(fileName));
             }
