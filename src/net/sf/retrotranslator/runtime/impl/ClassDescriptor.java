@@ -44,12 +44,13 @@ import net.sf.retrotranslator.runtime.asm.signature.*;
  */
 public class ClassDescriptor extends GenericDeclarationDescriptor {
 
-    private static final WeakIdentityTable<Class, String> metadataTable = new WeakIdentityTable<Class,String>();
+    private static final WeakIdentityTable<Class, String> metadataTable = new WeakIdentityTable<Class, String>();
     private static SoftReference<Map<Class, ClassDescriptor>> cache;
     private static BytecodeTransformer bytecodeTransformer;
 
     private String name;
     private Class target;
+    private String declaringClass;
     private String enclosingClass;
     private String enclosingMethod;
     private LazyList<TypeDescriptor, Type> genericInterfaces;
@@ -64,6 +65,9 @@ public class ClassDescriptor extends GenericDeclarationDescriptor {
                 bytecode = bytecodeTransformer.transform(bytecode, 0, bytecode.length);
             }
             new ClassReader(bytecode).accept(this, true);
+        } else {
+            visit(0, target.getModifiers(),
+                    net.sf.retrotranslator.runtime.asm.Type.getInternalName(target), null, null, null);
         }
     }
 
@@ -81,20 +85,20 @@ public class ClassDescriptor extends GenericDeclarationDescriptor {
     }
 
     private static byte[] getBytecode(Class target) {
-        byte[] bytecode = RuntimeTools.getBytecode(target);
-        if (bytecode != null) {
-            return bytecode;
-        }
         try {
             Class.forName(target.getName(), true, target.getClassLoader());
         } catch (ClassNotFoundException e) {
             // ignore
         }
         String s = metadataTable.lookup(target);
-        if (s == null) {
-            return null;
+        if (s != null) {
+            return decode(s);
         }
-        bytecode = new byte[s.length()];
+        return RuntimeTools.getBytecode(target);
+    }
+
+    private static byte[] decode(String s) {
+        byte[] bytecode = new byte[s.length()];
         for (int i = 0; i < bytecode.length; i++) {
             bytecode[i] = (byte) (127 - s.charAt(i));
         }
@@ -102,7 +106,9 @@ public class ClassDescriptor extends GenericDeclarationDescriptor {
     }
 
     public static void setEncodedMetadata(Class aClass, String metadata) {
-        metadataTable.putIfAbsent(aClass, metadata);
+        if (metadataTable != null) {
+            metadataTable.putIfAbsent(aClass, metadata);
+        }
     }
 
     private static synchronized Map<Class, ClassDescriptor> getMap() {
@@ -151,6 +157,10 @@ public class ClassDescriptor extends GenericDeclarationDescriptor {
     public MethodDescriptor getEnclosingMethodDescriptor() {
         return enclosingMethod == null ? null
                 : getInstance(getClassByInternalName(enclosingClass)).getMethodDescriptor(enclosingMethod);
+    }
+
+    public Class getDeclaringClass() {
+        return declaringClass == null ? null : getClassByInternalName(declaringClass);
     }
 
     public boolean isLocalOrAnonymous() {
@@ -220,7 +230,10 @@ public class ClassDescriptor extends GenericDeclarationDescriptor {
     }
 
     public void visitInnerClass(String name, String outerName, String innerName, int access) {
-        if (name.equals(this.name)) this.access |= access;
+        if (name.equals(this.name)) {
+            this.access |= access;
+            declaringClass = outerName;
+        }
     }
 
     public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {

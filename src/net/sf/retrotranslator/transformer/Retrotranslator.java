@@ -42,6 +42,7 @@ public class Retrotranslator {
     private LinkedList<FileContainer> src = new LinkedList<FileContainer>();
     private FileContainer dest;
     private boolean stripsign;
+    private boolean stripannot;
     private boolean retainapi;
     private boolean retainflags;
     private boolean verbose;
@@ -92,6 +93,10 @@ public class Retrotranslator {
 
     public void setStripsign(boolean stripsign) {
         this.stripsign = stripsign;
+    }
+
+    public void setStripannot(boolean stripannot) {
+        this.stripannot = stripannot;
     }
 
     public void setRetainapi(boolean retainapi) {
@@ -186,7 +191,7 @@ public class Retrotranslator {
         OperationMode mode = new OperationMode(advanced, support, smart, target);
         ReplacementLocatorFactory factory = new ReplacementLocatorFactory(mode, retainapi, backport, environment);
         ClassTransformer classTransformer = new ClassTransformer(
-                lazy, stripsign, retainflags, reflectionMode, systemLogger, converter, factory);
+                lazy, stripsign, stripannot, retainflags, reflectionMode, systemLogger, converter, factory);
         TextFileTransformer fileTransformer = new TextFileTransformer(factory, converter);
         FileTranslator translator = new FileTranslator(
                 classTransformer, fileTransformer, converter, systemLogger, sourceMask, uptodatecheck, mode);
@@ -201,13 +206,14 @@ public class Retrotranslator {
             dest.flush(systemLogger);
         }
         if (!verify) {
-            return true;
+            return systemLogger.isReliable();
         }
         if (!modified) {
             logger.log(new Message(Level.INFO, "Skipped verification of up-to-date file(s)."));
-            return true;
+            return systemLogger.isReliable();
         }
-        return verify(systemLogger);
+        verify(systemLogger);
+        return systemLogger.isReliable();
     }
 
     private TargetEnvironment createEnvironment(FileContainer destination, SystemLogger logger) {
@@ -240,7 +246,7 @@ public class Retrotranslator {
         };
     }
 
-    private boolean verify(SystemLogger systemLogger) {
+    private void verify(SystemLogger systemLogger) {
         TargetEnvironment environment = createEnvironment(dest, systemLogger);
         try {
             if (dest != null) {
@@ -250,7 +256,6 @@ public class Retrotranslator {
                     verify(environment, container, systemLogger);
                 }
             }
-            return systemLogger.isReliable();
         } finally {
             environment.close();
         }
@@ -291,6 +296,8 @@ public class Retrotranslator {
                 setDestjar(new File(args[i++]));
             } else if (string.equals("-stripsign")) {
                 setStripsign(true);
+            } else if (string.equals("-stripannot")) {
+                setStripannot(true);
             } else if (string.equals("-retainapi")) {
                 setRetainapi(true);
             } else if (string.equals("-retainflags")) {
@@ -333,9 +340,9 @@ public class Retrotranslator {
         String suffix = (version == null) ? "" : "-" + version;
         System.out.println(
                 "Usage: java -jar retrotranslator-transformer" + suffix + ".jar [-srcdir <path> | -srcjar <file>]" +
-                " [-destdir <path> | -destjar <file>] [-support <features>] [-lazy] [-reflection <mode>] [-smart]" +
+                " [-destdir <path> | -destjar <file>] [-support <features>] [-lazy] [-reflection <mode>] [-stripannot]" +
                 " [-stripsign] [-advanced] [-retainapi] [-retainflags] [-verify] [-uptodatecheck] [-target <version>]" +
-                " [-classpath <path>] [-srcmask <mask>] [-embed <package>] [-backport <packages>] [-verbose]");
+                " [-classpath <path>] [-srcmask <mask>] [-embed <package>] [-backport <packages>] [-verbose] [-smart]");
     }
 
     public static void main(String[] args) {

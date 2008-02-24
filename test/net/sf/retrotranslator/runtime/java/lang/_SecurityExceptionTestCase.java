@@ -31,8 +31,7 @@
  */
 package net.sf.retrotranslator.runtime.java.lang;
 
-import junit.framework.*;
-import net.sf.retrotranslator.runtime.java.lang._SecurityException;
+import junit.framework.TestCase;
 
 /**
  * @author Taras Puchko

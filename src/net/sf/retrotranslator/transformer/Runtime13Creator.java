@@ -32,108 +32,35 @@
 package net.sf.retrotranslator.transformer;
 
 import java.io.*;
-import net.sf.retrotranslator.runtime.asm.*;
 
 /**
  * @author Taras Puchko
  */
-public class Runtime13Creator {
+public class Runtime13Creator extends RuntimeCreator {
 
-    private static final String RUNTIME_FOLDER = "net/sf/retrotranslator/runtime/";
-    private static final String RUNTIME13_FOLDER = "net/sf/retrotranslator/runtime13/";
-
-    private final File root;
-
-    private class Runtime13ClassVisitor extends GenericClassVisitor {
-        public String className;
-
-        public Runtime13ClassVisitor(ClassVisitor visitor) {
-            super(visitor);
-        }
-
-        protected String typeName(String s) {
-            if (s == null || !s.startsWith(RUNTIME_FOLDER)) {
-                return s;
-            }
-            String name = s.substring(RUNTIME_FOLDER.length());
-            StringBuilder builder = new StringBuilder(RUNTIME13_FOLDER);
-            if (name.startsWith("java")) {
-                builder.append("v15/");
-            }
-            return builder.append(name).toString();
-        }
-
-        public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-            super.visit(version, access, name, signature, superName, interfaces);
-            className = typeName(name);
-        }
-
-
-        public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-            if (isClass("v15/java/lang/_Character") && (name.equals("getDirectionality") || name.equals("isMirrored"))) {
-                return null;
-            }
-            if (isClass("v15/java/io/_PrintStream") && name.equals("createInstanceBuilder")) {
-                return null;
-            }
-            if (isClass("v15/java/lang/_Thread$AdvancedThreadBuilder") && name.equals("argument4")) {
-                return null;
-            }
-            return super.visitMethod(access, name, desc, signature, exceptions);
-        }
-
-        private boolean isClass(String name) {
-            return className.equals(RUNTIME13_FOLDER + name);
-        }
-
-        public void visitInnerClass(String name, String outerName, String innerName, int access) {
-            if (isClass("v15/java/io/_PrintStream") && innerName.equals("PrintStreamBuilder")) {
-                return;
-            }
-            super.visitInnerClass(name, outerName, innerName, access);
-        }
-    }
-
-    public Runtime13Creator(File root) {
-        this.root = root;
+    public Runtime13Creator(File rootFolder, String targetPackage, String infix) {
+        super(rootFolder, targetPackage, infix);
     }
 
     public static void main(String[] args) throws IOException {
-        if (args.length != 1) {
-            throw new IllegalArgumentException();
-        }
-        File root = new File(args[0]);
-        new Runtime13Creator(root).traverse(new File(root, RUNTIME13_FOLDER));
-        new Runtime13Creator(root).traverse(new File(root, RUNTIME_FOLDER));
+        new Runtime13Creator(new File(args[0]), "net/sf/retrotranslator/runtime13/", "v15/").execute();
     }
 
-    private void traverse(File sourceFolder) throws IOException {
-        for (File file : sourceFolder.listFiles()) {
-            if (file.isDirectory()) {
-                traverse(file);
-            } else if (file.getPath().endsWith(".class")) {
-                copy(file);
-            }
+    protected boolean isRightMethod(String name) {
+        if (isClass("java/lang/_Character") && (name.equals("getDirectionality") || name.equals("isMirrored"))) {
+            return false;
         }
+        if (isClass("java/io/_PrintStream") && name.equals("createInstanceBuilder")) {
+            return false;
+        }
+        if (isClass("java/lang/_Thread$AdvancedThreadBuilder") && name.equals("argument4")) {
+            return false;
+        }
+        return true;
     }
 
-    private void copy(File source) throws IOException {
-        ClassWriter classWriter = new ClassWriter(true);
-        Runtime13ClassVisitor visitor = new Runtime13ClassVisitor(classWriter);
-        FileInputStream inputStream = new FileInputStream(source);
-        try {
-            new ClassReader(inputStream).accept(visitor, false);
-        } finally {
-            inputStream.close();
-        }
-        File target = new File(root, visitor.className + ".class");
-        target.getParentFile().mkdirs();
-        FileOutputStream outputStream = new FileOutputStream(target);
-        try {
-            outputStream.write(classWriter.toByteArray(false));
-        } finally {
-            outputStream.close();
-        }
+    protected boolean isRightInnerClass(String innerName) {
+        return !isClass("java/io/_PrintStream") || !innerName.equals("PrintStreamBuilder");
     }
 
 }

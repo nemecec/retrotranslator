@@ -39,24 +39,31 @@ import net.sf.retrotranslator.runtime.java.lang.MyStyle;
 /**
  * @author Taras Puchko
  */
+@MyStyle("abc")
 public class _AccessibleObjectTestCase extends TestCase {
 
+    @MyStyle("abc")
     private Class aClass = getClass();
 
-    protected void methodWithParameter(String s) {
+    @MyStyle("abc")
+    public _AccessibleObjectTestCase() {
+    }
+
+    @MyStyle("abc")
+    protected void methodWithoutParameters() {
         //empty
     }
 
     public void test() throws Exception {
         List<AccessibleObject> objects = new ArrayList<AccessibleObject>();
         objects.add(aClass.getConstructors()[0]);
-        objects.add(aClass.getDeclaredFields()[0]);
-        objects.add(aClass.getMethods()[0]);
+        objects.add(aClass.getDeclaredField("aClass"));
+        objects.add(aClass.getDeclaredMethod("methodWithoutParameters"));
         for (AccessibleObject object : objects) {
-            assertFalse(object.isAnnotationPresent(MyStyle.class));
-            assertNull(object.getAnnotation(MyStyle.class));
-            assertEquals(0, object.getAnnotations().length);
-            assertEquals(0, object.getDeclaredAnnotations().length);
+            assertTrue(object.toString(), object.isAnnotationPresent(MyStyle.class));
+            assertNotNull(object.toString(), object.getAnnotation(MyStyle.class));
+            assertEquals(object.toString(), 1, object.getAnnotations().length);
+            assertEquals(object.toString(), 1, object.getDeclaredAnnotations().length);
         }
     }
 

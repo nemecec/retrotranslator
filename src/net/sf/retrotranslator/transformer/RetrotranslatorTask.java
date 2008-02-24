@@ -50,6 +50,7 @@ public class RetrotranslatorTask extends Task {
     private List<DirSet> dirSets = new ArrayList<DirSet>();
     private boolean verbose;
     private boolean stripsign;
+    private boolean stripannot;
     private boolean retainapi;
     private boolean retainflags;
     private boolean lazy;
@@ -103,6 +104,10 @@ public class RetrotranslatorTask extends Task {
 
     public void setStripsign(boolean stripsign) {
         this.stripsign = stripsign;
+    }
+
+    public void setStripannot(boolean stripannot) {
+        this.stripannot = stripannot;
     }
 
     public void setRetainapi(boolean retainapi) {
@@ -204,6 +209,7 @@ public class RetrotranslatorTask extends Task {
             }
             retrotranslator.setVerbose(verbose);
             retrotranslator.setStripsign(stripsign);
+            retrotranslator.setStripannot(stripannot);
             retrotranslator.setRetainapi(retainapi);
             retrotranslator.setRetainflags(retainflags);
             retrotranslator.setLazy(lazy);

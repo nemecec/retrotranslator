@@ -63,8 +63,4 @@ public class _PackageTestCase extends TestCase {
         assertEquals("bold", ((MyStyle) annotations[0]).value());
     }
 
-    public static void main(String[] args) throws ClassNotFoundException {
-        Class<?> aClass = Class.forName("net.sf.retrotranslator.runtime.java.lang.package-info");
-        System.out.println("aClass = " + aClass);
-    }
 }

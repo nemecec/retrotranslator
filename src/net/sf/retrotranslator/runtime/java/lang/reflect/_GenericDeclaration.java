@@ -59,7 +59,7 @@ public class _GenericDeclaration {
         return (GenericDeclaration_) object;
     }
 
-    public static TypeVariable[] getTypeParameters(Object object) {
+    public static TypeVariable[] getTypeParameters(GenericDeclaration object) {
         if (object instanceof Class) {
             return _Class.getTypeParameters((Class) object);
         }

@@ -68,13 +68,13 @@ public class JITRetrotranslator {
         if (isJava5Supported()) return true;
         OperationMode mode = new OperationMode(advanced, support, smart, ClassVersion.VERSION_14);
         TargetEnvironment environment = new TargetEnvironment(TransformerTools.getDefaultClassLoader(), null, true);
-        ReplacementLocatorFactory locatorFactory = new ReplacementLocatorFactory(mode, false, backport, environment);
+        ReplacementLocatorFactory factory = new ReplacementLocatorFactory(mode, false, backport, environment);
         SystemLogger logger = new SystemLogger(new MessageLogger() {
             public void log(Message message) {
                 //do nothing
             }
         }, false);
-        transformer = new ClassTransformer(true, false, false, ReflectionMode.NORMAL, logger, null, locatorFactory);
+        transformer = new ClassTransformer(true, false, false, false, ReflectionMode.NORMAL, logger, null, factory);
         ClassDescriptor.setBytecodeTransformer(transformer);
         SunJITRetrotranslator.install(transformer);
         if (isJava5Supported()) return true;

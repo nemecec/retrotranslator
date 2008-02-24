@@ -121,7 +121,8 @@ public class MethodDescriptor extends GenericDeclarationDescriptor {
         String desc = net.sf.retrotranslator.runtime.asm.Type.getMethodDescriptor(method);
         MethodDescriptor methodDescriptor = classDescriptor.getMethodDescriptor(method.getName() + desc);
         if (methodDescriptor == null) {
-            methodDescriptor = new MethodDescriptor(classDescriptor, method.getModifiers(), method.getName(), desc, null);
+            methodDescriptor = new MethodDescriptor(classDescriptor,
+                    method.getModifiers(), method.getName(), desc, null);
         }
         methodDescriptor.method.provide(method);
         return methodDescriptor;
@@ -132,7 +133,8 @@ public class MethodDescriptor extends GenericDeclarationDescriptor {
         String desc = RuntimeTools.getConstructorDescriptor(constructor);
         MethodDescriptor methodDescriptor = classDescriptor.getMethodDescriptor(RuntimeTools.CONSTRUCTOR_NAME + desc);
         if (methodDescriptor == null) {
-            methodDescriptor = new MethodDescriptor(classDescriptor, constructor.getModifiers(), constructor.getName(), desc, null);
+            methodDescriptor = new MethodDescriptor(classDescriptor,
+                    constructor.getModifiers(), RuntimeTools.CONSTRUCTOR_NAME, desc, null);
         }
         methodDescriptor.constructor.provide(constructor);
         return methodDescriptor;

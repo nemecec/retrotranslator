@@ -44,13 +44,16 @@ class ReflectionInitVisitor extends ClassAdapter {
     private static final MemberKey SET_ENCODED_METADATA_KEY = new MemberKey(
             true, "setEncodedMetadata", TransformerTools.descriptor(void.class, Class.class, String.class));
 
+    private final EmbeddingConverter converter;
     private final byte[] metadata;
     private MemberReplacement replacement;
     private boolean initialized;
     private String className;
 
-    public ReflectionInitVisitor(ClassVisitor visitor, MemberReplacement replacement, byte[] metadata) {
+    public ReflectionInitVisitor(ClassVisitor visitor, MemberReplacement replacement,
+                                 EmbeddingConverter converter, byte[] metadata) {
         super(visitor);
+        this.converter = converter;
         this.metadata = metadata;
         this.replacement = replacement;
     }
@@ -109,7 +112,11 @@ class ReflectionInitVisitor extends ClassAdapter {
             mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(Class.class),
                     "getComponentType", TransformerTools.descriptor(Class.class));
             mv.visitLdcInsn(getEncodedMetadata());
-            mv.visitMethodInsn(INVOKESTATIC, replacement.getOwner(), replacement.getName(), replacement.getDesc());
+            String owner = replacement.getOwner();
+            if (converter != null) {
+                owner = converter.convertClassName(owner);
+            }
+            mv.visitMethodInsn(INVOKESTATIC, owner, replacement.getName(), replacement.getDesc());
         }
 
     }

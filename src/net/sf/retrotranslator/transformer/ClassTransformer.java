@@ -40,19 +40,21 @@ import net.sf.retrotranslator.runtime.impl.BytecodeTransformer;
  */
 class ClassTransformer implements BytecodeTransformer {
 
-    private boolean lazy;
-    private boolean stripsign;
-    private boolean retainflags;
-    private ReflectionMode reflectionMode;
-    private EmbeddingConverter converter;
-    private SystemLogger logger;
-    private ReplacementLocatorFactory factory;
+    private final boolean lazy;
+    private final boolean stripsign;
+    private final boolean stripannot;
+    private final boolean retainflags;
+    private final ReflectionMode reflectionMode;
+    private final EmbeddingConverter converter;
+    private final SystemLogger logger;
+    private final ReplacementLocatorFactory factory;
 
-    public ClassTransformer(boolean lazy, boolean stripsign, boolean retainflags,
+    public ClassTransformer(boolean lazy, boolean stripsign, boolean stripannot, boolean retainflags,
                             ReflectionMode reflectionMode, SystemLogger logger,
                             EmbeddingConverter converter, ReplacementLocatorFactory factory) {
         this.lazy = lazy;
         this.stripsign = stripsign;
+        this.stripannot = stripannot;
         this.retainflags = retainflags;
         this.reflectionMode = reflectionMode;
         this.converter = converter;
@@ -90,9 +92,6 @@ class ClassTransformer implements BytecodeTransformer {
             visitor = new SpecificReplacementVisitor(visitor, target, locator, factory.getMode());
         }
         visitor = new GeneralReplacementVisitor(visitor, locator);
-        if (stripsign) {
-            visitor = new SignatureStrippingVisitor(visitor);
-        }
         new ClassReader(bytes, offset, length).accept(visitor, false);
         if (counter.containsDuplicates()) {
             byte[] bytecode = classWriter.toByteArray();
@@ -118,9 +117,21 @@ class ClassTransformer implements BytecodeTransformer {
                 ReflectionDataVisitor dataVisitor = new ReflectionDataVisitor();
                 new ClassReader(bytecode).accept(dataVisitor, true);
                 classWriter = new ClassWriter(true);
-                new ClassReader(bytecode).accept(new ReflectionInitVisitor(
-                        classWriter, replacement, dataVisitor.toByteArray()), false);
+                visitor = new ReflectionInitVisitor(classWriter, replacement, converter, dataVisitor.toByteArray());
+                new ClassReader(bytecode).accept(visitor, false);
             }
+        }
+        if (stripsign || stripannot) {
+            byte[] bytecode = classWriter.toByteArray();
+            classWriter = new ClassWriter(true);
+            ClassVisitor stripVisitor = classWriter;
+            if (stripsign) {
+                stripVisitor = new SignatureStrippingVisitor(stripVisitor);
+            }
+            if (stripannot) {
+                stripVisitor = new AnnotationStrippingVisitor(stripVisitor);
+            }
+            new ClassReader(bytecode).accept(stripVisitor, false);
         }
         return classWriter.toByteArray(target.isBefore(ClassVersion.VERSION_15) && !retainflags);
     }

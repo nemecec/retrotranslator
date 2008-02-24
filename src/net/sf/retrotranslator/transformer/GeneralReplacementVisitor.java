@@ -87,12 +87,12 @@ class GeneralReplacementVisitor extends GenericClassVisitor {
         if (opcode == CHECKCAST || opcode == INSTANCEOF) {
             ClassReplacement classReplacement = locator.getReplacement(desc);
             if (classReplacement != null) {
-                MemberReplacement memberReplacement = opcode == CHECKCAST ?
+                MemberReplacement method = opcode == CHECKCAST ?
                         classReplacement.getCheckCastReplacement() :
                         classReplacement.getInstanceOfReplacement();
-                if (memberReplacement != null) {
-                    visitor.visitMethodInsn(INVOKESTATIC, memberReplacement.getOwner(),
-                            memberReplacement.getName(), memberReplacement.getDesc());
+                if (method != null && !method.getOwner().equals(currentClassName)) {
+                    visitor.visitMethodInsn(INVOKESTATIC, method.getOwner(),
+                            method.getName(), method.getDesc());
                     return;
                 }
             }
