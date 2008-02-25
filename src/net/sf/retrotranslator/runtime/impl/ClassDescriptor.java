@@ -85,16 +85,17 @@ public class ClassDescriptor extends GenericDeclarationDescriptor {
     }
 
     private static byte[] getBytecode(Class target) {
+        byte[] bytecode = RuntimeTools.getBytecode(target);
+        if (bytecode != null) {
+            return bytecode;
+        }
         try {
             Class.forName(target.getName(), true, target.getClassLoader());
         } catch (ClassNotFoundException e) {
             // ignore
         }
         String s = metadataTable.lookup(target);
-        if (s != null) {
-            return decode(s);
-        }
-        return RuntimeTools.getBytecode(target);
+        return s != null ? decode(s) : null;
     }
 
     private static byte[] decode(String s) {

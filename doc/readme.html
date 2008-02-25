@@ -24,9 +24,10 @@
     <li><a href="#what">What is Retrotranslator?</a></li>
     <li><a href="#features">What Java 5.0 features are supported?</a></li>
     <li><a href="#commandline">How to use Retrotranslator from the command line?</a></li>
-    <li><a href="#jarfile">How to produce a jar file compatible with Java 1.4?</a></li>
     <li><a href="#ant">How to use Retrotranslator from Apache Ant or Maven?</a></li>
     <li><a href="#idea">How to use Retrotranslator from IntelliJ IDEA?</a></li>
+    <li><a href="#jarfile">How to produce a jar file compatible with Java 1.4?</a></li>
+    <li><a href="#android">How to use annotations and generics at runtime on Android?</a></li>
     <li><a href="#jit">How to use Just-in-Time Retrotranslator?</a></li>
     <li><a href="#supported">What API is supported on Java 1.4 and Java 1.3?</a></li>
     <li><a href="#extension">How to write an extension?</a></li>
@@ -196,7 +197,12 @@
 </tr>
 <tr>
     <td nowrap><code>-stripsign</code></td>
-    <td>Asks the translator to strip signature (generics) information.</td>
+    <td>Whether to remove signature (generics) information.</td>
+    <td><code>false</code></td>
+</tr>
+<tr>
+    <td nowrap><code>-stripannot</code></td>
+    <td>Whether to remove annotations and related attributes.</td>
     <td><code>false</code></td>
 </tr>
 <tr>
@@ -216,7 +222,7 @@
 </tr>
 <tr>
     <td nowrap><code>-retainflags</code></td>
-    <td>Asks the translator to keep Java 5.0 specific access modifiers.</td>
+    <td>Whether to keep Java 5.0 specific access modifiers.</td>
     <td><code>false</code></td>
 </tr>
 <tr>
@@ -224,25 +230,13 @@
     <td>Asks the translator to skip processing of files if the destination files are newer.</td>
     <td><code>false</code></td>
 </tr>
+<tr>
+    <td nowrap><code>-reflection &lt;mode&gt;</code></td>
+    <td>Setting this option to <code>safe</code> makes the translator embed metadata into classes,
+        so the reflection will work even if the compiled classes are unavailable as resources.</td>
+    <td><code>normal</code></td>
+</tr>
 </table>
-<h4><a name="jarfile">How to produce a jar file compatible with Java 1.4?</a></h4>
-
-<p>
-    If you have a <code>myapplication5.jar</code> file built with Java 5.0 you can use the following command to produce
-    <code>myapplication4.jar</code>. It will be compatible with Java 1.4 and independent of Retrotranslator because
-    backport classes are added to the translated application with a different package name:
-</p>
-
-<p>
-    <code>java -jar retrotranslator-transformer-<i>n.n.n</i>.jar
-        -srcjar myapplication5.jar -destjar myapplication4.jar -embed com.mycompany.internal</code><br>
-</p>
-
-<p>
-    Also it is recommended to specify the <a href="#option_classpath">classpath</a>,
-    <a href="#option_verify">verify</a>, and <a href="#option_smart">smart</a> options.
-    In case of verification failure try the <a href="#option_support">support</a> option.
-</p>
 <h4><a name="ant">How to use Retrotranslator from Apache Ant or Maven?</a></h4>
 
 <p>The distribution contains an <a href="http://ant.apache.org/">Apache Ant</a> task
@@ -294,6 +288,47 @@
     classes compiled by <a href="http://www.jetbrains.com/idea/">IntelliJ IDEA</a>, so you can develop in Java 5.0 but
     run and debug on Java 1.4.
 </p>
+<h4><a name="jarfile">How to produce a jar file compatible with Java 1.4?</a></h4>
+
+<p>
+    If you have a <code>myapplication5.jar</code> file built with Java 5.0 you can use the following command to produce
+    <code>myapplication4.jar</code>. It will be compatible with Java 1.4 and independent of Retrotranslator because
+    backport classes are added to the translated application with a different package name:
+</p>
+
+<p>
+    <code>java -jar retrotranslator-transformer-<i>n.n.n</i>.jar
+        -srcjar myapplication5.jar -destjar myapplication4.jar -embed com.mycompany.internal</code><br>
+</p>
+
+<p>
+    Also it is recommended to specify the <a href="#option_classpath">classpath</a>,
+    <a href="#option_verify">verify</a>, and <a href="#option_smart">smart</a> options.
+    In case of verification failure try the <a href="#option_support">support</a> option.
+</p>
+<h4><a name="android">How to use annotations and generics at runtime on Android?</a></h4>
+
+<p>The <a href="http://code.google.com/android/">Android</a> SDK m5-rc14
+    <a href="http://code.google.com/p/android/issues/detail?id=29">does not support</a> annotations and generics
+    at runtime. To fix this issue just add the following target to the <code>build.xml</code> file created by the
+    <code>activityCreator</code> script and make the <code>dex</code> target depend on it.
+</p>
+<pre>
+    &lt;target name="translate" depends="compile"&gt;
+        &lt;property name="original-classes" value="${outdir}/original-classes"/&gt;
+        &lt;move todir="${original-classes}"&gt;
+            &lt;fileset dir="${outdir-classes}"/&gt;
+        &lt;/move&gt;
+        &lt;mkdir dir="${outdir-classes}"/&gt;
+        &lt;taskdef name="retrotranslator" classname="net.sf.retrotranslator.transformer.RetrotranslatorTask"&gt;
+            &lt;classpath&gt;
+                &lt;fileset dir="../Retrotranslator-n.n.n-bin" includes="*.jar" /&gt;
+            &lt;/classpath&gt;
+        &lt;/taskdef&gt;
+        &lt;retrotranslator target="1.5" embed="support" reflection="safe" stripannot="true"
+                         srcdir="${original-classes}" destdir="${outdir-classes}" /&gt;
+    &lt;/target&gt;
+</pre>
 <h4><a name="jit">How to use Just-in-Time Retrotranslator?</a></h4>
 <p>
     In order to run a Java 5.0 application on Java 1.4 start it with JIT Retrotranslator:

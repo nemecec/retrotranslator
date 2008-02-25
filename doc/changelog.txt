@@ -1,6 +1,11 @@
 Retrotranslator Changelog
 =================================
 
+1.2.5 (2008-02-26)
+---------------------------------
+  - Added support for generics and annotations on the Android platform.
+  - Added options -reflection and -stripannot.
+
 1.2.4 (2008-01-28)
 ---------------------------------
   - Added support for Java 5.0 API on J2SE 1.3.
