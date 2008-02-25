@@ -31,7 +31,7 @@
  */
 package net.sf.retrotranslator.runtime.java.lang;
 
-import java.io.Serializable;
+import java.io.*;
 import java.lang.reflect.*;
 import java.util.*;
 import net.sf.retrotranslator.tests.TestCaseBase;
@@ -45,6 +45,8 @@ public class _ClassTestCase extends TestCaseBase {
     private static final Class<?> PROXY_CLASS = Proxy.getProxyClass(
             _ClassTestCase.class.getClassLoader(), Comparable.class);
 
+    private static boolean initialized;
+
     private final Class<_ClassTestCase> thisClass = _ClassTestCase.class;
 
     @MyStyle("bold")
@@ -57,51 +59,54 @@ public class _ClassTestCase extends TestCaseBase {
 
     @MyStyle("italic")
     private static class C extends A {
+        static {
+            initialized = true;
+        }
     }
 
     protected List<Class<?>> getClasses() {
         return Arrays.asList(
-            Collection.class,
-            Set.class,
-            List.class,
-            Queue.class,
-            Map.class,
-            SortedSet.class,
-            SortedMap.class,
-            java.util.concurrent.BlockingQueue.class,
-            java.util.concurrent.ConcurrentMap.class,
-            HashSet.class,
-            TreeSet.class,
-            ArrayList.class,
-            LinkedList.class,
-            PriorityQueue.class,
-            HashMap.class,
-            TreeMap.class,
-            Vector.class,
-            Hashtable.class,
-            WeakHashMap.class,
-            java.util.concurrent.CopyOnWriteArrayList.class,
-            java.util.concurrent.CopyOnWriteArraySet.class,
-            EnumSet.class,
-            EnumMap.class,
-            java.util.concurrent.ConcurrentLinkedQueue.class,
-            java.util.concurrent.LinkedBlockingQueue.class,
-            java.util.concurrent.ArrayBlockingQueue.class,
-            java.util.concurrent.PriorityBlockingQueue.class,
-            java.util.concurrent.DelayQueue.class,
-            java.util.concurrent.SynchronousQueue.class,
-            java.util.concurrent.ConcurrentHashMap.class,
-            AbstractCollection.class,
-            AbstractSet.class,
-            AbstractList.class,
-            AbstractSequentialList.class,
-            AbstractQueue.class,
-            AbstractMap.class,
-            Enumeration.class,
-            Iterator.class,
-            ListIterator.class,
-            Comparable.class,
-            Comparator.class);
+                Collection.class,
+                Set.class,
+                List.class,
+                Queue.class,
+                Map.class,
+                SortedSet.class,
+                SortedMap.class,
+                java.util.concurrent.BlockingQueue.class,
+                java.util.concurrent.ConcurrentMap.class,
+                HashSet.class,
+                TreeSet.class,
+                ArrayList.class,
+                LinkedList.class,
+                PriorityQueue.class,
+                HashMap.class,
+                TreeMap.class,
+                Vector.class,
+                Hashtable.class,
+                WeakHashMap.class,
+                java.util.concurrent.CopyOnWriteArrayList.class,
+                java.util.concurrent.CopyOnWriteArraySet.class,
+                EnumSet.class,
+                EnumMap.class,
+                java.util.concurrent.ConcurrentLinkedQueue.class,
+                java.util.concurrent.LinkedBlockingQueue.class,
+                java.util.concurrent.ArrayBlockingQueue.class,
+                java.util.concurrent.PriorityBlockingQueue.class,
+                java.util.concurrent.DelayQueue.class,
+                java.util.concurrent.SynchronousQueue.class,
+                java.util.concurrent.ConcurrentHashMap.class,
+                AbstractCollection.class,
+                AbstractSet.class,
+                AbstractList.class,
+                AbstractSequentialList.class,
+                AbstractQueue.class,
+                AbstractMap.class,
+                Enumeration.class,
+                Iterator.class,
+                ListIterator.class,
+                Comparable.class,
+                Comparator.class);
     }
 
     public void testAsSubclass() throws Exception {
@@ -143,6 +148,7 @@ public class _ClassTestCase extends TestCaseBase {
     }
 
     public void testGetAnnotation() throws Exception {
+        assertNotInitialized();
         assertEquals(0, _ClassTestCase.class.getAnnotation(MyFormatter.class).tabPositions().length);
 
         assertEquals("bold", A.class.getAnnotation(MyStyle.class).value());
@@ -156,7 +162,18 @@ public class _ClassTestCase extends TestCaseBase {
         assertNull(int.class.getAnnotation(MyFormatter.class));
         assertNull(boolean[].class.getAnnotation(MyFormatter.class));
         assertNull(String[][].class.getAnnotation(MyFormatter.class));
+
         assertNull(PROXY_CLASS.getAnnotation(MyFormatter.class));
+        assertNotInitialized();
+    }
+
+    private void assertNotInitialized() throws Exception {
+        InputStream stream = getClass().getResourceAsStream(getClass().getSimpleName() + ".class");
+        if (stream == null) {
+            return;
+        }
+        stream.close();
+        assertFalse(initialized);
     }
 
     public void testGetAnnotations() throws Exception {
@@ -214,6 +231,7 @@ public class _ClassTestCase extends TestCaseBase {
         class Inner {
         }
     }
+
     public void testGetEnclosingClass() throws Exception {
         class Test {
             class Inner {
@@ -224,7 +242,8 @@ public class _ClassTestCase extends TestCaseBase {
         assertEquals(thisClass, TestGetEnclosingClass.class.getEnclosingClass());
         assertEquals(TestGetEnclosingClass.class, TestGetEnclosingClass.Inner.class.getEnclosingClass());
 
-        Object anonymous = new Object() {};
+        Object anonymous = new Object() {
+        };
         assertEquals(thisClass, anonymous.getClass().getEnclosingClass());
         assertNull(void.class.getEnclosingClass());
         assertNull(int[][].class.getEnclosingClass());
@@ -245,9 +264,11 @@ public class _ClassTestCase extends TestCaseBase {
     }
 
     public void testGetEnclosingMethod() throws Exception {
-        class Inner {}
+        class Inner {
+        }
         assertEquals("testGetEnclosingMethod", Inner.class.getEnclosingMethod().getName());
-        Object anonymous = new Object() {};
+        Object anonymous = new Object() {
+        };
         assertEquals("testGetEnclosingMethod", anonymous.getClass().getEnclosingMethod().getName());
         assertNull(double.class.getEnclosingMethod());
         assertNull(PROXY_CLASS.getEnclosingMethod());
@@ -364,7 +385,8 @@ public class _ClassTestCase extends TestCaseBase {
     public void testGetSimpleName() throws Exception {
         class Test {
         }
-        Serializable anonymous = new Serializable() { };
+        Serializable anonymous = new Serializable() {
+        };
         assertEquals("_ClassTestCase", thisClass.getSimpleName());
         assertEquals("A", A.class.getSimpleName());
         assertEquals("Test", Test.class.getSimpleName());
@@ -376,7 +398,7 @@ public class _ClassTestCase extends TestCaseBase {
     }
 
     public void testGetTypeParameters() throws Exception {
-        class Test <A, B extends String & Comparable<String>> {
+        class Test<A, B extends String & Comparable<String>> {
         }
         TypeVariable<Class<Test>>[] parameters = Test.class.getTypeParameters();
         assertEquals(2, parameters.length);
@@ -432,7 +454,8 @@ public class _ClassTestCase extends TestCaseBase {
     public void testIsAnonymousClass() throws Exception {
         class Test {
         }
-        Serializable anonymous = new Serializable() { };
+        Serializable anonymous = new Serializable() {
+        };
         assertTrue(anonymous.getClass().isAnonymousClass());
         assertFalse(Test.class.isAnonymousClass());
         assertFalse(A.class.isAnonymousClass());
@@ -453,8 +476,10 @@ public class _ClassTestCase extends TestCaseBase {
                 return this.name().toLowerCase();
             }
         };
+
         abstract String toCase();
     }
+
     public void testIsEnum() throws Exception {
         assertTrue(MyColor.class.isEnum());
         assertTrue(MyColor.BLUE.getClass().isEnum());
@@ -469,7 +494,8 @@ public class _ClassTestCase extends TestCaseBase {
     public void testIsLocalClass() throws Exception {
         class Test {
         }
-        Serializable anonymous = new Serializable() { };
+        Serializable anonymous = new Serializable() {
+        };
         assertTrue(Test.class.isLocalClass());
         assertFalse(anonymous.getClass().isLocalClass());
         assertFalse(A.class.isLocalClass());
@@ -482,7 +508,8 @@ public class _ClassTestCase extends TestCaseBase {
     public void testIsMemberClass() throws Exception {
         class Test {
         }
-        Serializable anonymous = new Serializable() { };
+        Serializable anonymous = new Serializable() {
+        };
         assertTrue(A.class.isMemberClass());
         assertFalse(Test.class.isMemberClass());
         assertFalse(anonymous.getClass().isMemberClass());
