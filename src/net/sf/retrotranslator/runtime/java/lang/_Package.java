@@ -62,15 +62,15 @@ public class _Package {
     }
 
     private static ClassDescriptor createPackageInfo(Class loader, Package aPackage) {
+        byte[] bytecode = getBytecode(loader, aPackage);
+        if (bytecode != null) {
+            return new ClassDescriptor(loader, bytecode);
+        }
         for (String simpleName : new String[]{"package$info", "package-info"}) {
             Class infoClass = getClass(loader, aPackage, simpleName);
             if (infoClass != null) {
                 return ClassDescriptor.getInstance(infoClass);
             }
-        }
-        byte[] bytecode = getBytecode(loader, aPackage);
-        if (bytecode != null) {
-            return new ClassDescriptor(loader, bytecode);
         }
         return null;
     }
