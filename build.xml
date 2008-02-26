@@ -391,7 +391,8 @@
         </java>
     </target>
 
-    <target name="test-jit" depends="compile-tests">
+    <target name="test-jit" depends="compile-tests" unless="skip_jit">
+        <echo message="Starting JIT..."/>
         <java classname="net.sf.retrotranslator.transformer.JITRetrotranslator" failonerror="true"
               fork="true" jvm="${java14_home}/bin/java"
               classpath="${java.class.path}" classpathref="classpath">

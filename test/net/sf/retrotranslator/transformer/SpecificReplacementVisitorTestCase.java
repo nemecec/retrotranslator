@@ -31,14 +31,16 @@
  */
 package net.sf.retrotranslator.transformer;
 
+import net.sf.retrotranslator.tests.TestCaseBase;
+
 import java.lang.ref.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.locks.*;
-import junit.framework.TestCase;
 
 /**
  * @author Taras Puchko
  */
-public class SpecificReplacementVisitorTestCase extends TestCase {
+public class SpecificReplacementVisitorTestCase extends TestCaseBase {
 
     public void testNanotime() throws Exception {
         long n = System.nanoTime();
@@ -69,20 +71,24 @@ public class SpecificReplacementVisitorTestCase extends TestCase {
         }
         new WeakReference<String>("a", null);
         new MyReference<String>("b", null);
-        ReferenceQueue<String> queue1 = new ReferenceQueue<String>();
-        ReferenceQueue<String> queue2 = new ReferenceQueue<String>();
+        final ReferenceQueue<String> queue1 = new ReferenceQueue<String>();
+        final ReferenceQueue<String> queue2 = new ReferenceQueue<String>();
         Reference<String> reference1 = new MyReference<String>(new String("c"), queue1);
         Reference<String> reference2 = new WeakReference<String>(new String("d"), queue2);
-        gc();
-        assertSame(reference1, queue1.poll());
-        assertSame(reference2, queue2.poll());
-    }
-
-    private static void gc() throws InterruptedException {
-        for (int i = 0; i < 10; i++) {
-            System.gc();
-            Thread.sleep(100);
-        }
+        final Reference[] references = new Reference[2];
+        gc(new Callable<Boolean>() {
+            public Boolean call() throws Exception {
+                if (references[0] == null) {
+                    references[0] = queue1.poll();
+                }
+                if (references[1] == null) {
+                    references[1] = queue2.poll();
+                }
+                return references[0] == null || references[1] == null;
+            }
+        });
+        assertSame(reference1, references[0]);
+        assertSame(reference2, references[1]);
     }
 
     public void testReentrantReadWriteLock() throws Exception {

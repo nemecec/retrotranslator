@@ -145,6 +145,10 @@ public final class StackTraceElement_ implements Serializable {
                 }
             }
         }
+        int index = methodName.indexOf('(');
+        if (index >= 0) {
+            methodName = methodName.substring(0, index);
+        }
         return new StackTraceElement_(declaringClass, methodName, fileName, lineNumber);
     }
 

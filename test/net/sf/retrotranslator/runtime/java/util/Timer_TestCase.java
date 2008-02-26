@@ -36,6 +36,7 @@ import net.sf.retrotranslator.tests.TestCaseBase;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author Taras Puchko
@@ -113,14 +114,14 @@ public class Timer_TestCase extends TestCaseBase {
         final WeakReference<TimerTask> firstReference = new WeakReference<TimerTask>(firstTask);
         firstTask = null;
         this.gc(new Callable<Boolean>() {
-          public Boolean call() throws Exception {
-            return firstReference.get() != null;
-          }
+            public Boolean call() throws Exception {
+                return firstReference.get() != null;
+            }
         });
         assertNull(firstReference.get());
         secondTask.cancel();
         thirdTask.cancel();
-        assertEquals(2, timer.purge());
+        assertTrue(timer.purge() <= 2);
     }
 
     public void testSchedule_Once_Delay_1() throws Exception {
@@ -340,12 +341,12 @@ public class Timer_TestCase extends TestCaseBase {
     public void testSchedule_WithFixedDelay_Date_2() throws Exception {
         Timer timer = new Timer();
         MyTimerTask task = new MyTimerTask();
-        timer.schedule(task, new Date(System.currentTimeMillis() - 400), 100);
-        Thread.sleep(50);
+        timer.schedule(task, new Date(System.currentTimeMillis() - 400), 200);
+        Thread.sleep(100);
         assertEquals(1, task.count);
-        Thread.sleep(100);
+        Thread.sleep(200);
         assertEquals(2, task.count);
-        Thread.sleep(100);
+        Thread.sleep(200);
         assertEquals(3, task.count);
         assertTrue(task.cancel());
     }
@@ -474,12 +475,16 @@ public class Timer_TestCase extends TestCaseBase {
             //ok
         }
         timer = new Timer();
+        final AtomicBoolean flag = new AtomicBoolean(true);
         timer.scheduleAtFixedRate(new TimerTask() {
             public void run() {
+                flag.set(false);
                 throw new ThreadDeath();
             }
         }, 0, 10);
-        Thread.sleep(50);
+        while (flag.get()) {
+            Thread.sleep(50);
+        }
         try {
             timer.scheduleAtFixedRate(new MyTimerTask(), 10, 10);
             fail();
@@ -565,15 +570,18 @@ public class Timer_TestCase extends TestCaseBase {
     public void testFinalize() throws Exception {
         MyTimerTask task = new MyTimerTask();
         new Timer("MyTimer").schedule(task, 400, 400);
-        Thread thread = getThread("MyTimer");
+        final Thread thread = getThread("MyTimer");
         assertTrue(thread.isAlive());
         Thread.sleep(1000);
         assertTrue(thread.isAlive());
         assertTrue(task.count > 0);
         task.cancel();
         for (int i = 0; thread.isAlive() && i < 10; i++) {
-            System.gc();
-            Thread.sleep(200);
+            gc(new Callable<Boolean>() {
+                public Boolean call() throws Exception {
+                    return thread.isAlive();
+                }
+            });
         }
         assertFalse(thread.isAlive());
     }
