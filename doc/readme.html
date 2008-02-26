@@ -232,8 +232,8 @@
 </tr>
 <tr>
     <td nowrap><code>-reflection &lt;mode&gt;</code></td>
-    <td>Setting this option to <code>safe</code> makes the translator embed metadata into classes,
-        so the reflection will work even if the compiled classes are unavailable as resources.</td>
+    <td>Setting this option to <code>safe</code> makes the translator include additional metadata into classes,
+        so reflection works even if the classes are unavailable as resources.</td>
     <td><code>normal</code></td>
 </tr>
 </table>
@@ -310,8 +310,8 @@
 
 <p>The <a href="http://code.google.com/android/">Android</a> SDK m5-rc14
     <a href="http://code.google.com/p/android/issues/detail?id=29">does not support</a> annotations and generics
-    at runtime. To fix this issue just add the following target to the <code>build.xml</code> file created by the
-    <code>activityCreator</code> script and make the <code>dex</code> target depend on it.
+    at runtime. To fix this issue add a target like the following one to the <code>build.xml</code> file created
+    by the <code>activityCreator</code> script and make the <code>dex</code> target depend on it.
 </p>
 <pre>
     &lt;target name="translate" depends="compile"&gt;
