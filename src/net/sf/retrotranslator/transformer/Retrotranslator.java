@@ -180,9 +180,6 @@ public class Retrotranslator {
         TargetEnvironment environment = createEnvironment(null, systemLogger);
         EmbeddingConverter converter = null;
         if (embed != null) {
-            if (dest == null) {
-                throw new IllegalArgumentException("Destination required for embedding.");
-            }
             if (lazy) {
                 throw new IllegalArgumentException("Embedding cannot be lazy.");
             }
@@ -199,7 +196,7 @@ public class Retrotranslator {
         for (FileContainer container : src) {
             modified |= translator.transform(container, dest != null ? dest : container);
         }
-        if (converter != null && modified) {
+        if (converter != null && dest != null) {
             converter.embed(dest, classTransformer);
         }
         if (dest != null) {

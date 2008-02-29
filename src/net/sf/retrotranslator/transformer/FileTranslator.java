@@ -68,14 +68,17 @@ class FileTranslator {
         for (FileEntry entry : source.getEntries()) {
             transform(entry, source, destination);
         }
-        source.flush(logger);
         logger.log(new Message(Level.INFO, "Transformed " + countTransformed + " file(s)."));
+        if (converter != null && source == destination) {
+            converter.embed(source, classTransformer);
+        }
+        source.flush(logger);
         return true;
     }
 
     private void transform(FileEntry entry, FileContainer source, FileContainer destination) {
         String name = entry.getName();
-        String fixedName = mode.fixName(converter == null ? name : converter.convertFileName(name));
+        String fixedName = mode.fixFileName(converter == null ? name : converter.convertFileName(name), entry);
         if (uptodatecheck && destination.containsUpToDate(fixedName, entry.lastModified())) {
             logger.logForFile(Level.VERBOSE, "Up to date");
             return;

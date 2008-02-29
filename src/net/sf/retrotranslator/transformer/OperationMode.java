@@ -76,4 +76,10 @@ class OperationMode {
         return fixHyphen ? className.replace('-', '$') : className;
     }
 
+    public String fixFileName(String fileName, FileEntry entry) {
+        return fixHyphen && fileName.indexOf('-') >= 0 &&
+                TransformerTools.isClassFile(entry.getContent()) ?
+                fileName.replace('-', '$') : fileName;
+    }
+
 }

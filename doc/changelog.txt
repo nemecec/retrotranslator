@@ -1,6 +1,12 @@
 Retrotranslator Changelog
 =================================
 
+1.2.6 (2008-02-29)
+---------------------------------
+  - The -embed option does not require the -destjar or -destdir options.
+  - Fixed a bug introduced in 1.2.5. All hyphens in file and directory names were replaced with
+    dollar signs in advanced mode or when the Retrotranslator.fixHyphen option was specified.
+
 1.2.5 (2008-02-26)
 ---------------------------------
   - Added support for generics and annotations on the Android platform.

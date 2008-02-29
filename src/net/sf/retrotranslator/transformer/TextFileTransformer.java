@@ -40,7 +40,7 @@ import net.sf.retrotranslator.runtime.impl.RuntimeTools;
  */
 class TextFileTransformer {
 
-    private static Pattern pattern = Pattern.compile("([A-Za-z0-9_$]+\\.)+[A-Za-z0-9_$]+");
+    private static Pattern pattern = Pattern.compile("([A-Za-z_$][A-Za-z0-9_$]*\\.)+[A-Za-z_$][A-Za-z0-9_$]*");
 
     private final ReplacementLocatorFactory factory;
     private final EmbeddingConverter converter;

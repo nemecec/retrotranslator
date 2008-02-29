@@ -56,7 +56,8 @@ class EmbeddingConverter {
     }
 
     private static String makePrefix(String packageName) {
-        return packageName.replace('.', '/') + '/';
+        return packageName.length() == 0 || packageName.equals(".")
+                ? "" : packageName.replace('.', '/') + '/';
     }
 
     public String convertFileName(String fileName) {
@@ -98,6 +99,7 @@ class EmbeddingConverter {
             }
         } while (modified);
         logger.log(new Message(Level.INFO, "Embedded " + countEmbedded + " class(es)."));
+        classNames.clear();
     }
 
     private boolean embed(Map.Entry<String, Boolean> entry, FileContainer destination, ClassTransformer transformer) {

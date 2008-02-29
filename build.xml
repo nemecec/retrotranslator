@@ -1,6 +1,6 @@
 <project name="retrotranslator" default="build" basedir=".">
 
-    <property name="version" value="1.2.5"/>
+    <property name="version" value="1.2.6"/>
 
     <property file="build.properties"/>
 
@@ -416,7 +416,7 @@
         <fail if="test.failed"/>
     </target>
 
-    <target name="test-reflection" depends="compile-tests">
+    <target name="test-reflection" depends="compile-tests" unless="skip_reflection">
         <mkdir dir="build/run-reflection"/>
         <mkdir dir="build/test-reflection"/>
         <retrotranslator destdir="build/run-reflection">

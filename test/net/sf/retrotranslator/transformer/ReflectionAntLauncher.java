@@ -55,11 +55,6 @@ public class ReflectionAntLauncher extends URLClassLoader {
     }
 
     public static void main(String[] args) throws Exception {
-        String vm = System.getProperty("java.vm.name");
-        if (vm != null && vm.indexOf("JRockit") >= 0 && vm.indexOf("1.4.2_0") >= 0) {
-            System.out.println("subtest-reflection skipped");
-            return;
-        }
         List<URL> urls = new ArrayList<URL>();
         for (String arg : args) {
             for (String s : arg.split(File.pathSeparator)) {
