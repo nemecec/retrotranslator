@@ -44,18 +44,23 @@ class ClassTransformer implements BytecodeTransformer {
     private final boolean stripsign;
     private final boolean stripannot;
     private final boolean retainflags;
+    private final boolean syncvolatile;
+    private final boolean syncfinal;
     private final ReflectionMode reflectionMode;
     private final EmbeddingConverter converter;
     private final SystemLogger logger;
     private final ReplacementLocatorFactory factory;
 
     public ClassTransformer(boolean lazy, boolean stripsign, boolean stripannot, boolean retainflags,
+                            boolean syncvolatile, boolean syncfinal,
                             ReflectionMode reflectionMode, SystemLogger logger,
                             EmbeddingConverter converter, ReplacementLocatorFactory factory) {
         this.lazy = lazy;
         this.stripsign = stripsign;
         this.stripannot = stripannot;
         this.retainflags = retainflags;
+        this.syncvolatile = syncvolatile;
+        this.syncfinal = syncfinal;
         this.reflectionMode = reflectionMode;
         this.converter = converter;
         this.logger = logger;
