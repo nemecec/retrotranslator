@@ -213,6 +213,9 @@ public abstract class AnnotatedElementDescriptor extends EmptyVisitor {
         Map<String, Object> values = new HashMap<String, Object>();
         boolean isFirst = true;
         for (MethodDescriptor descriptor : ClassDescriptor.getInstance(annotationType).getMethodDescriptors()) {
+            if (descriptor.getName().equals(RuntimeTools.STATIC_NAME)) {
+                continue;
+            }
             if (isFirst) {
                 isFirst = false;
             } else {
