@@ -1,6 +1,8 @@
 Retrotranslator Changelog
 =================================
 
+  - Fixed a bug: cannot read annotations when using "-reflection safe".  
+
 1.2.6 (2008-02-29)
 ---------------------------------
   - The -embed option does not require the -destjar or -destdir options.
