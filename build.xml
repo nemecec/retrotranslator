@@ -254,6 +254,7 @@
         <antcall target="subtest-java14"/>
         <antcall target="subtest-junit14">
             <param name="java_home" value="${java15_home}"/>
+            <param name="test_classes" value="build/test-classes14"/>
         </antcall>
     </target>
 
@@ -265,22 +266,23 @@
         </retrotranslator>
         <antcall target="subtest-junit14">
             <param name="java_home" value="${java14_home}"/>
+            <param name="test_classes" value="build/test-classes14"/>
         </antcall>
     </target>
 
     <target name="subtest-junit14">
-        <echo message="Running classes in build/test-classes14 on ${java_home}"/>
+        <echo message="Running classes in ${test_classes} on ${java_home}"/>
         <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
                jvm="${java_home}/bin/java" failureproperty="test.failed">
             <jvmarg value="-Xfuture"/>
             <classpath>
                 <path refid="classpath"/>
-                <pathelement location="build/test-classes14"/>
+                <pathelement location="${test_classes}"/>
                 <pathelement location="build/retrotranslator-runtime-${version}.jar"/>
             </classpath>
             <formatter type="brief" usefile="false"/>
             <batchtest>
-                <fileset dir="build/test-classes14" includes="**/*TestCase.class" />
+                <fileset dir="${test_classes}" includes="**/*TestCase.class" />
             </batchtest>
         </junit>
         <fail if="test.failed"/>
@@ -447,6 +449,20 @@
             </batchtest>
         </junit>
         <fail if="test.failed"/>
+    </target>
+
+    <target name="test-safe" depends="compile-tests">
+        <mkdir dir="build/test-safe"/>
+        <retrotranslator srcdir="build/test-classes15" destdir="build/test-safe" reflection="safe"
+                         advanced="true" verify="true" srcmask="*.class;*.properties">
+            <classpath path="${java14_rt_jar}"/>
+            <classpath location="build/retrotranslator-runtime-${version}.jar"/>
+            <classpath refid="classpath"/>
+        </retrotranslator>
+        <antcall target="subtest-junit14">
+            <param name="java_home" value="${java14_home}"/>
+            <param name="test_classes" value="build/test-safe"/>
+        </antcall>
     </target>
 
     <target name="test-embedded" depends="compile-tests">
@@ -676,7 +692,7 @@
         </fail>
     </target>
 
-    <target name="test" depends="test-java14, test-java13, test-java12, test-java11, test-jit, test-embedded,
+    <target name="test" depends="test-java14, test-java13, test-java12, test-java11, test-jit, test-embedded, test-safe,
     test-retainapi, test-support, test-smart, test-custom, test-duplicates, test-incompatible, test-reflection"/>
 
     <target name="dist-bin" depends="test">

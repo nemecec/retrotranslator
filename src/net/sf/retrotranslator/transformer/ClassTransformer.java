@@ -97,6 +97,9 @@ class ClassTransformer implements BytecodeTransformer {
             visitor = new SpecificReplacementVisitor(visitor, target, locator, factory.getMode());
         }
         visitor = new GeneralReplacementVisitor(visitor, locator);
+        if (syncvolatile || syncfinal) {
+            visitor = new MemoryModelVisitor(visitor, locator.getEnvironment(), syncvolatile, syncfinal);
+        }
         new ClassReader(bytes, offset, length).accept(visitor, false);
         if (counter.containsDuplicates()) {
             byte[] bytecode = classWriter.toByteArray();
