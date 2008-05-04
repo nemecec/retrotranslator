@@ -498,6 +498,39 @@
         <fail if="test.failed"/>
     </target>
 
+    <target name="test-sync" depends="compile-tests">
+        <mkdir dir="build/test-syncfinal"/>
+        <mkdir dir="build/test-syncvolatile"/>
+        <copy todir="build/test-syncfinal">
+            <fileset dir="build/test-classes15" includes="**/MemoryModelVisitorTestCase*"/>
+        </copy>
+        <copy todir="build/test-syncvolatile">
+            <fileset dir="build/test-classes15" includes="**/MemoryModelVisitorTestCase*"/>
+        </copy>
+        <retrotranslator srcdir="build/test-syncfinal" syncfinal="true" />
+        <retrotranslator srcdir="build/test-syncvolatile" syncvolatile="true" />
+        <antcall target="subtest-sync">
+            <param name="syncmode" value="syncfinal"/>
+        </antcall>
+        <antcall target="subtest-sync">
+            <param name="syncmode" value="syncvolatile"/>
+        </antcall>
+    </target>
+
+    <target name="subtest-sync">
+        <echo message="Running classes in build/test-${syncmode} on ${java14_home}"/>
+        <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
+               jvm="${java14_home}/bin/java" failureproperty="test.failed">
+            <jvmarg value="-Xfuture"/>
+            <sysproperty key="net.sf.retrotranslator.tests.${syncmode}" value="true"/>
+            <classpath location="lib/junit.jar"/>
+            <classpath location="build/test-${syncmode}"/>
+            <formatter type="brief" usefile="false"/>
+            <test name="net.sf.retrotranslator.transformer.MemoryModelVisitorTestCase"/>
+        </junit>
+        <fail if="test.failed"/>
+    </target>
+
     <target name="test-retainapi" depends="compile-tests">
         <mkdir dir="build/test-retainapi"/>
         <retrotranslator destdir="build/test-retainapi" retainapi="true">
@@ -692,8 +725,9 @@
         </fail>
     </target>
 
-    <target name="test" depends="test-java14, test-java13, test-java12, test-java11, test-jit, test-embedded, test-safe,
-    test-retainapi, test-support, test-smart, test-custom, test-duplicates, test-incompatible, test-reflection"/>
+    <target name="test" depends="test-java14, test-java13, test-java12, test-java11, test-jit,
+    test-embedded, test-safe, test-retainapi, test-support, test-smart, test-custom, test-duplicates,
+    test-incompatible, test-reflection, test-sync"/>
 
     <target name="dist-bin" depends="test">
         <mkdir dir="dist"/>

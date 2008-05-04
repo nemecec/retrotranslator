@@ -153,12 +153,10 @@ public class MemoryModelVisitor extends ClassAdapter {
             Map<String, FieldInfo> result = new TreeMap<String, FieldInfo>();
             for (FieldInfo info : fields.values()) {
                 if (syncvolatile && isSet(info.access, ACC_VOLATILE) ||
-                        syncfinal && isSet(info.access, ACC_FINAL) &&
-                                !isSet(info.access, ACC_STATIC) &&
-                                !isSet(info.access, ACC_SYNTHETIC)) {
+                        syncfinal && isSet(info.access, ACC_FINAL) && !isSet(info.access, ACC_STATIC)) {
                     FieldInfo fieldInfo = getLock(info);
                     if (fieldInfo != null) {
-                        result.put(fieldInfo.name, fieldInfo);
+                        result.put(info.name, fieldInfo);
                     }
                 }
             }

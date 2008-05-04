@@ -1,6 +1,7 @@
 Retrotranslator Changelog
 =================================
 
+  - Added options -syncvolatile and -syncfinal to support Java 5.0 memory model.
   - Fixed a bug: cannot read annotations when using "-reflection safe".  
 
 1.2.6 (2008-02-29)

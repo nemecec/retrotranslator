@@ -173,6 +173,20 @@
     <td><code>false</code></td>
 </tr>
 <tr>
+    <td nowrap><code>-syncvolatile</code></td>
+    <td>Makes access to volatile fields of Java 5.0 classes compliant with Java 5.0 memory model
+        at the cost of decreased performance.
+    </td>
+    <td><code>false</code></td>
+</tr>
+<tr>
+    <td nowrap><code>-syncfinal</code></td>
+    <td>Makes access to final instance fields of Java 5.0 classes compliant with Java 5.0 memory model
+        at the cost of decreased performance.
+    </td>
+    <td><code>false</code></td>
+</tr>
+<tr>
     <td nowrap><a name="option_backport"><code>-backport &lt;names&gt;</code></a></td>
     <td>The <a href="#extension">backport</a> names separated with semicolons, e.g. <code>
         com.myco.all;java.util:com.myco.ju;javax.net.SocketFactory:com.myco.jsse.Factory</code>.
@@ -1067,7 +1081,6 @@
 
 <h4><a name="limitations">What are the limitations?</a></h4>
 <ul>
-    <li>Retrotranslator does not emulate the Java 5.0 memory model.</li>
     <li>Only the classes, methods, and fields listed <a href="#supported">above</a> should work
         and the other features, like formatted input, are not supported.
     </li>
