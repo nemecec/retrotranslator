@@ -29,48 +29,34 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.transformer;
+package net.sf.retrotranslator.runtime.java.lang;
 
-import java.io.*;
 import java.util.*;
+import junit.framework.TestCase;
 
 /**
  * @author Taras Puchko
  */
-public class Runtime13Creator extends RuntimeCreator {
+public class _StringJava14TestCase extends TestCase {
 
-    private static List<String> STRING_METHODS = Arrays.asList("matches", "replaceAll", "replaceFirst", "split");
-
-    public Runtime13Creator(File rootFolder, String targetPackage, String infix) {
-        super(rootFolder, targetPackage, infix);
+    public void testMatches() throws Exception {
+        assertTrue("a5c".matches("a\\p{javaDigit}c"));
+        assertFalse("abc".matches("a\\p{javaDigit}c"));
     }
 
-    public static void main(String[] args) throws IOException {
-        new Runtime13Creator(new File(args[0]), "net/sf/retrotranslator/runtime13/", "v15/").execute();
+    public void testReplaceAll() throws Exception {
+        assertEquals("*B*D", "aBcD".replaceAll("\\p{javaLowerCase}", "*"));
+        assertEquals("a*B#c*D#", "aBcD".replaceAll("\\p{javaUpperCase}", "*$0#"));
     }
 
-    protected boolean isRightField(String name) {
-        return true;
+    public void testReplaceFirst() throws Exception {
+        assertEquals("a_b c d", "a b c d".replaceFirst("\\p{javaSpaceChar}", "_"));
+        assertEquals("! b c d", "a b c d".replaceFirst("\\p{javaLetterOrDigit}", "!"));
     }
 
-    protected boolean isRightMethod(String name) {
-        if (isClass("java/lang/_String") && STRING_METHODS.contains(name)) {
-            return false;
-        }
-        if (isClass("java/lang/_Character") && (name.equals("getDirectionality") || name.equals("isMirrored"))) {
-            return false;
-        }
-        if (isClass("java/io/_PrintStream") && name.equals("createInstanceBuilder")) {
-            return false;
-        }
-        if (isClass("java/lang/_Thread$AdvancedThreadBuilder") && name.equals("argument4")) {
-            return false;
-        }
-        return true;
-    }
-
-    protected boolean isRightInnerClass(String innerName) {
-        return !isClass("java/io/_PrintStream") || !innerName.equals("PrintStreamBuilder");
+    public void testSplit() throws Exception {
+        assertEquals("[ab, cd, 12, 345]", Arrays.toString("ab\tcd\n12\f345".split("\\p{javaWhitespace}")));
+        assertEquals("[ab, cd\n12\f345]", Arrays.toString("ab\tcd\n12\f345".split("\\p{javaWhitespace}", 2)));
     }
 
 }

@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
+ *
  * Copyright (c) 2005 - 2008 Taras Puchko
  * All rights reserved.
  *
@@ -31,16 +31,43 @@
  */
 package net.sf.retrotranslator.runtime.java.lang;
 
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import net.sf.retrotranslator.registry.Advanced;
+
 /**
  * @author Taras Puchko
  */
 public class _System {
+
+    private static final Map<String, String> PROPERTIES = new ConcurrentHashMap<String, String>();
+
+    static {
+        PROPERTIES.put("java.version", "1.5.0");
+        PROPERTIES.put("java.specification.version", "1.5");
+        PROPERTIES.put("java.class.version", "49.0");
+    }
 
     public static String clearProperty(String key) {
         if (key.length() == 0) {
             throw new IllegalArgumentException();
         }
         return (String) System.getProperties().remove(key);
+    }
+
+    @Advanced("System.getProperty")
+    public static String getProperty(String key) {
+        return fix(key, System.getProperty(key));
+    }
+
+    @Advanced("System.getProperty")
+    public static String getProperty(String key, String def) {
+        return fix(key, System.getProperty(key, def));
+    }
+
+    private static String fix(String key, String value) {
+        String minValue = PROPERTIES.get(key);
+        return minValue != null && value != null && minValue.compareTo(value) > 0 ? minValue : value; 
     }
 
 }

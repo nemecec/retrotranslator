@@ -126,10 +126,10 @@ public abstract class TestCaseBase extends TestCase {
     }
 
     protected static boolean isJava14AtLeast() {
-        return System.getProperty("java.version").compareTo("1.4") >= 0;
+        return System.getProperties().getProperty("java.version").compareTo("1.4") >= 0;
     }
 
     protected static boolean isJava5AtLeast() {
-        return System.getProperty("java.version").compareTo("1.5") >= 0;
+        return System.getProperties().getProperty("java.version").compareTo("1.5") >= 0;
     }
 }

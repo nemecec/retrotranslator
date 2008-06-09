@@ -46,13 +46,14 @@ class ClassTransformer implements BytecodeTransformer {
     private final boolean retainflags;
     private final boolean syncvolatile;
     private final boolean syncfinal;
+    private final boolean keepclasslit;
     private final ReflectionMode reflectionMode;
     private final EmbeddingConverter converter;
     private final SystemLogger logger;
     private final ReplacementLocatorFactory factory;
 
     public ClassTransformer(boolean lazy, boolean stripsign, boolean stripannot, boolean retainflags,
-                            boolean syncvolatile, boolean syncfinal,
+                            boolean syncvolatile, boolean syncfinal, boolean keepclasslit,
                             ReflectionMode reflectionMode, SystemLogger logger,
                             EmbeddingConverter converter, ReplacementLocatorFactory factory) {
         this.lazy = lazy;
@@ -61,6 +62,7 @@ class ClassTransformer implements BytecodeTransformer {
         this.retainflags = retainflags;
         this.syncvolatile = syncvolatile;
         this.syncfinal = syncfinal;
+        this.keepclasslit = keepclasslit;
         this.reflectionMode = reflectionMode;
         this.converter = converter;
         this.logger = logger;
@@ -92,14 +94,14 @@ class ClassTransformer implements BytecodeTransformer {
         }
         if (target.isBefore(ClassVersion.VERSION_15)) {
             visitor = new ObjectMethodsVisitor(new ClassLiteralVisitor(visitor), locator);
+            if (syncvolatile || syncfinal) {
+                visitor = new MemoryModelVisitor(visitor, locator.getEnvironment(), syncvolatile, syncfinal);
+            }
         }
         if (!factory.isRetainapi()) {
             visitor = new SpecificReplacementVisitor(visitor, target, locator, factory.getMode());
         }
-        visitor = new GeneralReplacementVisitor(visitor, locator);
-        if (syncvolatile || syncfinal) {
-            visitor = new MemoryModelVisitor(visitor, locator.getEnvironment(), syncvolatile, syncfinal);
-        }
+        visitor = new GeneralReplacementVisitor(visitor, locator, keepclasslit);
         new ClassReader(bytes, offset, length).accept(visitor, false);
         if (counter.containsDuplicates()) {
             byte[] bytecode = classWriter.toByteArray();

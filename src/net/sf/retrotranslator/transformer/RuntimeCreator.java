@@ -52,6 +52,8 @@ public abstract class RuntimeCreator {
         this.infix = infix;
     }
 
+    protected abstract boolean isRightField(String name);
+
     protected abstract boolean isRightMethod(String name);
 
     protected abstract boolean isRightInnerClass(String innerName);
@@ -114,6 +116,10 @@ public abstract class RuntimeCreator {
         public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
             super.visit(version, access, name, signature, superName, interfaces);
             className = typeName(name);
+        }
+
+        public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
+            return isRightField(name) ? super.visitField(access, name, desc, signature, value) : null;
         }
 
         public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {

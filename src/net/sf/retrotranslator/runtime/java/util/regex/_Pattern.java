@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
+ *
  * Copyright (c) 2005 - 2008 Taras Puchko
  * All rights reserved.
  *
@@ -31,10 +31,62 @@
  */
 package net.sf.retrotranslator.runtime.java.util.regex;
 
+import java.util.regex.Pattern;
+import net.sf.retrotranslator.registry.Advanced;
+import net.sf.retrotranslator.runtime.java.lang._String;
+
 /**
  * @author Taras Puchko
  */
 public class _Pattern {
+
+    public static final int LITERAL = 0x10;
+
+    private static final String[][] REPLACEMENTS = {
+            {"\\p{javaDefined}", "\\P{Cn}"},
+            {"\\p{javaDigit}", "\\p{Nd}"},
+            {"\\p{javaIdentifierIgnorable}", "[\\u0000-\\u0008\\u000E-\\u001B\\u007F-\\u009F\\p{Cf}]"},
+            {"\\p{javaISOControl}", "\\p{Cc}"},
+            {"\\p{javaJavaIdentifierPart}", "[\\u0000-\\u0008\\u000E-\\u001B\\u007F-\\u009F" +
+                    "\\p{Cf}\\p{L}\\p{Sc}\\p{Pc}\\p{Nd}\\p{Nl}\\p{Mc}\\p{Mn}]"},
+            {"\\p{javaJavaIdentifierStart}", "[\\p{L}\\p{Sc}\\p{Pc}\\p{Nl}]"},
+            {"\\p{javaLetter}", "\\p{L}"},
+            {"\\p{javaLetterOrDigit}", "[\\p{L}\\p{Nd}]"},
+            {"\\p{javaLowerCase}", "\\p{Ll}"},
+            {"\\p{javaSpaceChar}", "\\p{Z}"},
+            {"\\p{javaTitleCase}", "\\p{Lt}"},
+            {"\\p{javaUnicodeIdentifierPart}",
+                    "[\\u0000-\\u0008\\u000E-\\u001B\\u007F-\\u009F\\p{Cf}\\p{L}\\p{Pc}\\p{Nd}\\p{Nl}\\p{Mc}\\p{Mn}]"},
+            {"\\p{javaUnicodeIdentifierStart}", "[\\p{L}\\p{Nl}]"},
+            {"\\p{javaUpperCase}", "\\p{Lu}"},
+            {"\\p{javaWhitespace}", "[\\u0009-\\u000D\\u001C-\\u001F\\p{Z}&&[^\\u00A0\\u2007\\u202F]]"}
+    };
+
+    @Advanced("Pattern.compile")
+    public static Pattern compile(String regex) {
+        return Pattern.compile(fix(regex));
+    }
+
+    @Advanced("Pattern.compile")
+    public static Pattern compile(String regex, int flags) {
+        if ((flags & LITERAL) == LITERAL) {
+            flags ^= LITERAL;
+            regex = quote(regex);
+        }
+        return Pattern.compile(fix(regex), flags);
+    }
+
+    @Advanced("Pattern.matches")
+    public static boolean matches(String regex, CharSequence input) {
+        return Pattern.matches(fix(regex), input);
+    }
+
+    private static String fix(String regex) {
+        for (String[] replacement : REPLACEMENTS) {
+            regex = _String.replace(regex, replacement[0], replacement[1]);
+        }
+        return regex;
+    }
 
     public static String quote(String s) {
         StringBuilder builder = new StringBuilder(s.length() + 4).append("\\Q");

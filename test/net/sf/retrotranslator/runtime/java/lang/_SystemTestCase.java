@@ -57,4 +57,29 @@ public class _SystemTestCase extends TestCaseBase {
             //ok
         }
     }
+
+    public void testGetProperty() throws Exception {
+        String javaVersion = findProperty("java.version");
+        String specVersion = findProperty("java.specification.version");
+        String classVersion = findProperty("java.class.version");
+        if (isJava5AtLeast()) {
+            assertTrue(javaVersion.compareTo("1.5.0") >= 0);
+            assertTrue(specVersion.compareTo("1.5") >= 0);
+            assertTrue(classVersion.compareTo("49.0") >= 0);
+        } else {
+            assertEquals("1.5.0", javaVersion);
+            assertEquals("1.5", specVersion);
+            assertEquals("49.0", classVersion);
+        }
+        assertNull(System.getProperty("does not exist"));
+        assertEquals("default value", System.getProperty("does not exist", "default value"));
+    }
+
+    private String findProperty(String key) {
+        String s1 = System.getProperty(key);
+        String s2 = System.getProperty(key, null);
+        assertEquals(s1, s2);
+        return s1;
+    }
+
 }

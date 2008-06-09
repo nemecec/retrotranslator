@@ -32,14 +32,27 @@
 package net.sf.retrotranslator.transformer;
 
 import java.io.*;
+import java.util.*;
+import net.sf.retrotranslator.runtime.impl.RuntimeTools;
 
 /**
  * @author Taras Puchko
  */
 public class AndroidCreator extends RuntimeCreator {
 
+    private static List<String> CLASS_METHODS = Arrays.asList(
+            RuntimeTools.STATIC_NAME, "forName", "getDeclaredMethod", "getEnumConstants", "getMethod",
+            "getPrefixes", "getCallerClassLoader", "findMethod", "findBackportedMethod", "findStaticMethod");
+
     public AndroidCreator(File rootFolder, String targetPackage, String infix) {
         super(rootFolder, targetPackage, infix);
+    }
+
+    protected boolean isRightField(String name) {
+        if (isClass("java/lang/_Class") && name.equals("RUNTIME_PREFIXES")) {
+            return false;
+        }
+        return true;
     }
 
     public static void main(String[] args) throws IOException {
@@ -47,11 +60,8 @@ public class AndroidCreator extends RuntimeCreator {
     }
 
     protected boolean isRightMethod(String name) {
-        if (isClass("java/lang/_Class")) {
-            if (name.equals("getEnumConstants") || name.equals("getDeclaredMethod") ||
-                    name.equals("getMethod") || name.equals("findMethod")) {
-                return false;
-            }
+        if (isClass("java/lang/_Class") && CLASS_METHODS.contains(name)) {
+            return false;
         }
         if (name.equals("executeInstanceOfInstruction") || name.equals("executeCheckCastInstruction")) {
             return false;

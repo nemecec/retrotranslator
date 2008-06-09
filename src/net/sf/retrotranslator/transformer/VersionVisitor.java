@@ -46,7 +46,13 @@ class VersionVisitor extends ClassAdapter {
     }
 
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-        super.visit(target.isBefore(version) ? target.getVersion() : version,
-                access, name, signature, superName, interfaces);
+        if (target.isBefore(version)) {
+            version = target.getVersion();
+        }
+        if ((access & Opcodes.ACC_INTERFACE) != 0) {
+            access = access & ~Opcodes.ACC_SYNTHETIC | Opcodes.ACC_ABSTRACT;
+        }
+        super.visit(version, access, name, signature, superName, interfaces);
     }
+    
 }

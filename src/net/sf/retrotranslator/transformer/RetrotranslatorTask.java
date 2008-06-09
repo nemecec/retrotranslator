@@ -60,6 +60,7 @@ public class RetrotranslatorTask extends Task {
     private boolean smart;
     private boolean syncvolatile;
     private boolean syncfinal;
+    private boolean keepclasslit;
     private boolean failonwarning = true;
     private String srcmask;
     private String embed;
@@ -148,6 +149,10 @@ public class RetrotranslatorTask extends Task {
         this.syncfinal = syncfinal;
     }
 
+    public void setKeepclasslit(boolean keepclasslit) {
+        this.keepclasslit = keepclasslit;
+    }
+
     public void setFailonwarning(boolean failonwarning) {
         this.failonwarning = failonwarning;
     }
@@ -229,6 +234,7 @@ public class RetrotranslatorTask extends Task {
             retrotranslator.setSmart(smart);
             retrotranslator.setSyncvolatile(syncvolatile);
             retrotranslator.setSyncfinal(syncfinal);
+            retrotranslator.setKeepclasslit(keepclasslit);
             retrotranslator.setSrcmask(srcmask);
             retrotranslator.setEmbed(embed);
             retrotranslator.setSupport(support);

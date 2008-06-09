@@ -35,6 +35,7 @@ import java.io.*;
 import java.lang.reflect.*;
 import java.security.*;
 import java.util.MissingResourceException;
+import java.util.concurrent.ConcurrentMap;
 import net.sf.retrotranslator.runtime.asm.Type;
 
 /**
@@ -45,6 +46,8 @@ public class RuntimeTools {
     public static final String CONSTRUCTOR_NAME = "<init>";
     public static final String STATIC_NAME = "<clinit>";
     public static final String CLASS_EXTENSION = ".class";
+    public static final String CONCURRENT_PREFIX = getPrefix(
+            "java.util.concurrent.ConcurrentMap", ConcurrentMap.class);
 
     public static Class getBaseClass(char type) {
         return getBaseClass(Type.getType(new String(new char[]{type})));
@@ -245,6 +248,11 @@ public class RuntimeTools {
         } else {
             return genericType != null;
         }
+    }
+
+    public static String getPrefix(String name, Class type) {
+        return type.getName().endsWith(name) ?
+                type.getName().substring(0, type.getName().length() - name.length()) : null;
     }
 
 }

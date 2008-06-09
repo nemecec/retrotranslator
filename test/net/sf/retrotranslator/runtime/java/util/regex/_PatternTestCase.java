@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
+ *
  * Copyright (c) 2005 - 2008 Taras Puchko
  * All rights reserved.
  *
@@ -32,6 +32,7 @@
 package net.sf.retrotranslator.runtime.java.util.regex;
 
 import java.util.regex.Pattern;
+import java.lang.reflect.Field;
 import net.sf.retrotranslator.tests.TestCaseBase;
 
 /**
@@ -45,4 +46,34 @@ public class _PatternTestCase extends TestCaseBase {
         assertEquals("\\Qa\\E\\\\E\\Qbc\\E", Pattern.quote("a\\Ebc"));
         assertEquals("\\Q\\Qa\\E\\\\E\\Qb\\Qc\\E\\\\E\\Q\\E", Pattern.quote("\\Qa\\Eb\\Qc\\E"));
     }
+
+    public void testCompile() throws Exception {
+        Pattern patternA = Pattern.compile("a\\p{javaJavaIdentifierStart}c");
+        assertTrue(patternA.matcher("abc").matches());
+        assertFalse(patternA.matcher("a?c").matches());
+        Pattern patternB = Pattern.compile("a\\wc", Pattern.LITERAL);
+        assertTrue(patternB.matcher("a\\wc").matches());
+        assertFalse(patternB.matcher("abc").matches());
+    }
+
+    public void testMatches() throws Exception {
+        assertTrue(Pattern.matches("a\\p{javaJavaIdentifierPart}c", "a2c"));
+        assertFalse(Pattern.matches("a\\p{javaJavaIdentifierPart}c", "a;c"));
+        Field field = _Pattern.class.getDeclaredField("REPLACEMENTS");
+        field.setAccessible(true);
+        for (String[] replacement : (String[][]) field.get(null)) {
+            assertEquals(replacement[0], count(replacement[0]), count(replacement[1]));
+        }
+    }
+
+    private static int count(String regex) {
+        int result = 0;
+        for (int i = 0; i <= Character.MAX_VALUE; i++) {
+            if (Pattern.matches(regex, String.valueOf((char) i))) {
+                result++;
+            }
+        }
+        return result;
+    }
+
 }

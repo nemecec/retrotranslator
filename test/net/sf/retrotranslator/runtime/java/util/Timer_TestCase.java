@@ -238,7 +238,7 @@ public class Timer_TestCase extends TestCaseBase {
         MyTimerTask task = new MyTimerTask();
         timer.schedule(new HalfSecondTimerTask(), 0);
         timer.schedule(task, 200, 200);
-        Thread.sleep(450);
+        Thread.sleep(400);
         assertEquals(0, task.count);
         Thread.sleep(200);
         assertEquals(1, task.count);

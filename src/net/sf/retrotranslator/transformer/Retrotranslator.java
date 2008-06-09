@@ -53,6 +53,7 @@ public class Retrotranslator {
     private boolean smart;
     private boolean syncvolatile;
     private boolean syncfinal;
+    private boolean keepclasslit;
     private ReflectionMode reflectionMode = ReflectionMode.NORMAL;
     private List<File> classpath = new ArrayList<File>();
     private MessageLogger logger;
@@ -141,6 +142,10 @@ public class Retrotranslator {
         this.syncfinal = syncfinal;
     }
 
+    public void setKeepclasslit(boolean keepclasslit) {
+        this.keepclasslit = keepclasslit;
+    }
+
     public void addClasspathElement(File classpathElement) {
         this.classpath.add(classpathElement);
     }
@@ -198,7 +203,7 @@ public class Retrotranslator {
         OperationMode mode = new OperationMode(advanced, support, smart, target);
         ReplacementLocatorFactory factory = new ReplacementLocatorFactory(mode, retainapi, backport, environment);
         ClassTransformer classTransformer = new ClassTransformer(lazy, stripsign, stripannot,
-                retainflags, syncvolatile, syncfinal, reflectionMode, systemLogger, converter, factory);
+                retainflags, syncvolatile, syncfinal, keepclasslit, reflectionMode, systemLogger, converter, factory);
         TextFileTransformer fileTransformer = new TextFileTransformer(factory, converter);
         FileTranslator translator = new FileTranslator(
                 classTransformer, fileTransformer, converter, systemLogger, sourceMask, uptodatecheck, mode);
@@ -325,6 +330,8 @@ public class Retrotranslator {
                 setSyncvolatile(true);
             } else if (string.equals("-syncfinal")) {
                 setSyncfinal(true);
+            } else if (string.equals("-keepclasslit")) {
+                setKeepclasslit(true);
             } else if (string.equals("-classpath") && i < args.length) {
                 addClasspath(args[i++]);
             } else if (string.equals("-srcmask") && i < args.length) {
@@ -352,8 +359,8 @@ public class Retrotranslator {
         System.out.println("Usage: java -jar retrotranslator-transformer" + suffix +
                 ".jar [-srcdir <path> | -srcjar <file>] [-destdir <path> | -destjar <file>] [-support <features>]" +
                 " [-lazy] [-reflection <mode>] [-stripannot] [-stripsign] [-advanced] [-retainapi] [-retainflags]" +
-                " [-verify] [-uptodatecheck] [-target <version>] [-classpath <path>] [-srcmask <mask>]" +
-                " [-embed <package>] [-backport <packages>] [-verbose] [-smart] [-syncvolatile] [-syncfinal]");
+                " [-verify] [-uptodatecheck] [-target <version>] [-classpath <path>] [-srcmask <mask>] [-verbose]" +
+                " [-embed <package>] [-backport <packages>] [-smart] [-syncvolatile] [-syncfinal] [-keepclasslit]");
     }
 
     public static void main(String[] args) {

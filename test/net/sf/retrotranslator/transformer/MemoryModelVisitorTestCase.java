@@ -172,22 +172,24 @@ public class MemoryModelVisitorTestCase extends TestCase {
 
     private static void checkSync(Object firstLock, Object secondLock,
                                   final Comparable first, final Comparable second) throws Exception {
-        final long[] time = new long[1];
+        Thread thread;
+        final boolean[] finished = new boolean[1];
         synchronized (firstLock) {
             synchronized (secondLock) {
-                new Thread() {
+                thread = new Thread() {
                     public void run() {
-                        long startTime = System.currentTimeMillis();
                         first.compareTo(second);
-                        time[0] = Math.max(1, System.currentTimeMillis() - startTime);
+                        finished[0] = true;
                     }
-                }.start();
+                };
+                thread.start();
                 Thread.sleep(DURATION);
             }
             Thread.sleep(DURATION);
+            assertFalse(finished[0]);
         }
-        Thread.sleep(DURATION);
-        assertEquals(2 * DURATION, time[0], DURATION / 5);
+        thread.join();
+        assertTrue(finished[0]);
     }
 
 }

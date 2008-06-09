@@ -31,7 +31,7 @@
  */
 package net.sf.retrotranslator.runtime.java.lang;
 
-import java.util.Locale;
+import java.util.*;
 import junit.framework.TestCase;
 
 /**

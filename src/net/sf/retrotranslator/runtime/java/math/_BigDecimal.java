@@ -132,6 +132,19 @@ public class _BigDecimal {
         return bigDecimal.movePointRight(newScale).setScale(0, roundingMode).movePointLeft(newScale);
     }
 
+    public static BigDecimal stripTrailingZeros(BigDecimal bigDecimal) {
+        long perfectScale = 0;
+        while (bigDecimal.scale() > perfectScale) {
+            long newScale = (bigDecimal.scale() + perfectScale) / 2;
+            try {
+                bigDecimal = bigDecimal.setScale((int) newScale);
+            } catch (ArithmeticException e) {
+                perfectScale = newScale + 1;
+            }
+        }
+        return bigDecimal;
+    }
+
     public static String toPlainString(BigDecimal bigDecimal) {
         return bigDecimal.toString();
     }
@@ -155,7 +168,7 @@ public class _BigDecimal {
     }
 
     private static BigDecimal getZero(long scale) {
-        return BigDecimal.valueOf(0, (int) Math.max(Integer.MIN_VALUE, Math.min(Integer.MAX_VALUE, scale)));
+        return BigDecimal.valueOf(0, (int) Math.max(0, Math.min(Integer.MAX_VALUE, scale)));
     }
 
     private static int log5(BigInteger x) {

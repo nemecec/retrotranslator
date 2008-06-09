@@ -42,8 +42,9 @@
     Retrotranslator is a tool that makes Java applications compatible with Java 1.4, Java 1.3 and other environments.
     It supports all Java 5.0 language features and a significant part of the Java 5.0 API on both J2SE 1.4 and J2SE 1.3.
     In other Java environments only the Java 5.0 features that don't depend on the new API are supported.
-    Retrotranslator is based on the <a href="http://asm.objectweb.org/">ASM</a> bytecode manipulation framework
-    and the <a href="http://backport-jsr166.sourceforge.net/">backport</a> of the Java 5.0 concurrency utilities.
+    Retrotranslator is a Java bytecode transformer based on the <a href="http://asm.objectweb.org/">ASM</a> bytecode 
+    manipulation framework and the <a href="http://backport-jsr166.sourceforge.net/">backport</a> of the Java 5.0
+    concurrency utilities.
 </p>
 <h4><a name="features">What Java 5.0 features are supported?</a></h4>
 <ul>
@@ -71,7 +72,9 @@
     </li>
     <li>
         Go to the unzipped directory and execute:<br>
-        <code>java -jar retrotranslator-transformer-<i>n.n.n</i>.jar -srcdir myclasses</code>
+        <code>java -jar retrotranslator-transformer-<i>n.n.n</i>.jar -srcdir myclasses</code><br>
+        Use appropriate options to verify the result and for troubleshooting, e.g. -<a href="#option_verify">verify</a>,
+        -<a href="#option_advanced">advanced</a>, and -<a href="#option_smart">smart</a>. 
     </li>
     <li>
         If you use the Java 5.0 API put <code>retrotranslator-runtime-<i>n.n.n</i>.jar</code> and
@@ -81,7 +84,7 @@
         Run or debug the application as usual on Java 1.4.
     </li>
 </ol>
-<p><a name="syntax">The command line syntax:</a><br>
+<p>The command line syntax:<br>
     <code>java -jar retrotranslator-transformer-<i>n.n.n</i>.jar &lt;options&gt;</code>
     <br>or<br>
     <code>java -cp retrotranslator-transformer-<i>n.n.n</i>.jar
@@ -173,14 +176,14 @@
     <td><code>false</code></td>
 </tr>
 <tr>
-    <td nowrap><code>-syncvolatile</code></td>
+    <td nowrap><a name="option_syncvolatile"><code>-syncvolatile</code></a></td>
     <td>Makes access to volatile fields of Java 5.0 classes compliant with Java 5.0 memory model
         at the cost of decreased performance.
     </td>
     <td><code>false</code></td>
 </tr>
 <tr>
-    <td nowrap><code>-syncfinal</code></td>
+    <td nowrap><a name="option_syncfinal"><code>-syncfinal</code></a></td>
     <td>Makes access to final instance fields of Java 5.0 classes compliant with Java 5.0 memory model
         at the cost of decreased performance.
     </td>
@@ -227,11 +230,17 @@
 <tr>
     <td nowrap><code>-retainapi</code></td>
     <td>Asks the translator to modify classes for JVM compatibility but keep use of API
-        unless the <a href="#option_backport">backport</a> option is specified.
+        unless overriden with the <a href="#option_backport">backport</a> option.
         Any references introduced by a compiler remain unchanged, like the use of
         <code>java.lang.StringBuilder</code> for string concatenation or
         the implicit <code>valueOf</code> method calls for autoboxing.
     </td>
+    <td><code>false</code></td>
+</tr>
+<tr>
+    <td nowrap><a name="option_keepclasslit"><code>-keepclasslit</code></a></td>
+    <td>Prevents replacement of certain types like <code>java.lang.Iterable</code> or <code>java.util.Queue</code>
+        with their base types in class literals.</td>
     <td><code>false</code></td>
 </tr>
 <tr>
@@ -261,9 +270,9 @@
     elements or the <code>classpathref</code> attribute.
     The source directories specified with <code>srcdir</code>, <code>dirset</code>,
     and the <code>dir</code> attribute of <code>fileset</code> should contain the root package of the classes.
-    In case of warnings the build fails unless the value of
-    the <code>failonwarning</code> attribute is set to <code>false</code>.
-    The following script may be used to make an application compatible with Java 1.3.
+    In case of warnings the build fails unless the value of the <code>failonwarning</code> attribute is set to
+    <code>false</code>. The following script may be used to build one jar compatible with Java 1.4 and
+    another one compatible with Java 1.3.
 </p>
 <pre>
     &lt;taskdef name="retrotranslator" classname="net.sf.retrotranslator.transformer.RetrotranslatorTask"&gt;
@@ -276,7 +285,21 @@
         &lt;/classpath&gt;
     &lt;/taskdef&gt;
     
-    &lt;retrotranslator target="1.3" destjar="build/application.jar"
+    &lt;retrotranslator target="1.4" destjar="build/application14.jar"
+                     smart="true" verify="true" failonwarning="false"&gt;
+        &lt;fileset dir="build/classes" includes="**/*.class" /&gt;
+        &lt;jarfileset dir="build/lib" includes="**/*.jar" /&gt;
+        &lt;classpath&gt;
+            &lt;fileset dir="../j2sdk1.4.2_17/jre/lib" includes="**/*.jar"/&gt;
+            &lt;fileset dir="../Retrotranslator-n.n.n-bin"&gt;
+                &lt;include name="retrotranslator-runtime-n.n.n.jar" /&gt;
+                &lt;include name="backport-util-concurrent-n.n.jar" /&gt;
+            &lt;/fileset&gt;
+            &lt;fileset dir="lib" includes="**/*.jar"/&gt;
+        &lt;/classpath&gt;
+    &lt;/retrotranslator&gt;
+
+    &lt;retrotranslator target="1.3" destjar="build/application13.jar"
                      smart="true" verify="true" failonwarning="false"&gt;
         &lt;fileset dir="build/classes" includes="**/*.class" /&gt;
         &lt;jarfileset dir="build/lib" includes="**/*.jar" /&gt;
@@ -323,7 +346,7 @@
 <h4><a name="android">How to use annotations and generics at runtime on Android?</a></h4>
 
 <p>
-    The <a href="http://code.google.com/android/">Android</a> SDK m5-rc14
+    The <a href="http://code.google.com/android/">Android</a> SDK m5-rc15
     <a href="http://code.google.com/p/android/issues/detail?id=29">does not support</a> generics and annotations
     at runtime. This issue can be fixed if both classes that read generics or annotations and classes containing them
     are processed with Retrotranslator. When using <a href="http://ant.apache.org/">Apache Ant</a> add a target like
@@ -352,8 +375,8 @@
   dependencies of your application may be translated manually before adding them to the Eclipse project.
 </p>
 <p>
-<code>java -jar retrotranslator-transformer-n.n.n.jar -srcjar mylibrary.jar -target 1.5 -reflection safe
-  -stripannot -classpath retrotranslator-android-n.n.n.jar</code>
+<code>java -jar retrotranslator-transformer-n.n.n.jar -srcjar mylibrary.jar -destjar mylibrary-android.jar
+    -target 1.5 -reflection safe -stripannot -classpath retrotranslator-android-n.n.n.jar</code>
 </p>
 <p>
     If any part of your application declares or analyzes annotations you may extract it into a separate library
@@ -378,11 +401,13 @@
 </ul>
 <p>
     The options include <code><a href="#option_support">support</a></code>,
-    <code><a href="#option_advanced">advanced</a></code>, <code><a href="#option_smart">smart</a></code>, and
-    <code><a href="#option_backport">backport</a></code>. When running on J2SE 5.0 JIT Retrotranslator simply calls
-    the application, but on J2SE 1.4 it also translates classes compiled for Java 5.0 or later. However this capability
-    depends on the current JVM and the application itself, so under certain conditions JIT Retrotranslator may be unable
-    to translate either a jar file or classes from the classpath or both.
+    <code><a href="#option_advanced">advanced</a></code>, <code><a href="#option_smart">smart</a></code>,
+    <code><a href="#option_backport">backport</a></code>, <code><a href="#option_syncvolatile">syncvolatile</a></code>,
+    <code><a href="#option_syncfinal">syncfinal</a></code>, and
+    <code><a href="#option_keepclasslit">keepclasslit</a></code>. When running on J2SE 5.0 JIT Retrotranslator simply
+    calls the application, but on J2SE 1.4 it also translates classes compiled for Java 5.0 or later. However this
+    capability depends on the current JVM and the application itself, so under certain conditions JIT Retrotranslator
+    may be unable to translate either a jar file or classes from the classpath or both.
 </p>
 
 <h4><a name="supported">What API is supported on Java 1.4 and Java 1.3?</a></h4>
@@ -397,7 +422,7 @@
     <td rowspan="6"><code>java.io</code></td>
     <td><code>Closeable<sup><a href="#2">2</a></sup></code>
     </td>
-    <td>* (all members introduced in Java 5.0)</td>
+    <td>* (all members introduced in Java&nbsp;5.0)</td>
     <td>&nbsp;</td>
 </tr>
 <tr>
@@ -473,8 +498,11 @@
     <td><code>Class</code></td>
     <td>* (21 new methods)</td>
     <td>
-        Enable features "<code>Class.getMethod</code>" and "<code>Class.getDeclaredMethod</code>" for more
-        uniform support of generics and covariant return types on different platforms<sup><a href="#3">3</a></sup>.
+        Enable feature "<code>Class.forName</code>" to use backported classes as a fallback when calling this
+        method<sup><a href="#3">3</a></sup>.<br>
+        Enable features "<code>Class.getMethod</code>" and "<code>Class.getDeclaredMethod</code>" to use backported
+        static methods as a fallback when calling these methods and for more uniform support of generics and covariant
+        return types on different platforms<sup><a href="#3">3</a></sup>.
     </td>
 </tr>
 <tr>
@@ -529,7 +557,7 @@
         log1p(double), signum(double),<br>
         signum(float), sinh(double),<br>
         tanh(double)</code></td>
-    <td>The quality of computation may be insufficient for certain applications.</td>
+    <td>The quality of computation may be insufficient for applications of certain types.</td>
 </tr>
 <tr>
     <td><code>Package</code></td>
@@ -559,7 +587,10 @@
     <td>* (10 new methods and constructors)<br><code>
         isEmpty()<sup><a href="#4">4</a></sup>
     </code></td>
-    <td>&nbsp;</td>
+    <td>Enable features "<code>String.matches</code>", "<code>String.replaceAll</code>",
+        "<code>String.replaceFirst</code>" and "<code>String.split</code>" to support
+        Java&nbsp;5.0 features in regular expressions when calling these methods<sup><a href="#3">3</a></sup>.
+    </td>
 </tr>
 <tr>
     <td><code>StringBuffer</code></td>
@@ -587,7 +618,9 @@
     <td>
         The <code>System.nanoTime()</code> method precision
         <a href="http://dcl.mathcs.emory.edu/util/backport-util-concurrent/doc/api/edu/emory/mathcs/backport/java/util/concurrent/helpers/Utils.html#nanoTime()">
-            may vary</a> on different platforms.
+        may vary</a> on different platforms.<br>
+        Enable feature "<code>System.getProperty</code>" to identify the current JVM as compatible
+        with Java&nbsp;5.0 when calling this method at runtime<sup><a href="#3">3</a></sup>.
     </td>
 </tr>
 <tr>
@@ -597,13 +630,11 @@
         The <code>Thread.getId()</code> method does not reflect the order in which threads are created.<br>
         The <code>Thread.getStackTrace()</code> and <code>Thread.getAllStackTraces()</code>
         methods return non-empty stack trace only for the current thread.<br>
-        Enable feature "<code>Thread.getState</code>" to support the <code>Thread.getState()</code> method, but it may
-        be able
-        to detect only <code>NEW</code>, <code>RUNNABLE</code> and <code>TERMINATED</code> states.<sup><a
-            href="#3">3</a></sup><br>
+        Enable feature "<code>Thread.getState</code>" to support this method, but it may be able to detect only
+        <code>NEW</code>, <code>RUNNABLE</code> and <code>TERMINATED</code> states.<sup><a href="#3">3</a></sup><br>
         Enable features "<code>Thread.setUncaughtExceptionHandler</code>" and
         "<code>Thread.setDefaultUncaughtExceptionHandler</code>" to support exception handlers for threads
-        created by translated code (in contrast to Java 5.0 the default <code>UncaughtExceptionHandler</code>
+        created by translated code (in contrast to Java&nbsp;5.0 the default <code>UncaughtExceptionHandler</code>
         takes precedence over <code>ThreadGroup</code>)<sup><a href="#3">3</a></sup>.
     </td>
 </tr>
@@ -779,12 +810,13 @@
             divideToIntegralValue(BigDecimal),<br>
             pow(int),<br>
             remainder(BigDecimal),<br>
+            stripTrailingZeros(),<br>
             toPlainString(),<br>
             valueOf(double),<br>
             valueOf(long)</code></td>
     <td>
-        Enable feature "<code>BigDecimal.setScale</code>" to support negative scales in method
-        <code>BigDecimal.setScale(int, int)</code><sup><a href="#3">3</a></sup>.
+        Enable feature "<code>BigDecimal.setScale</code>" to support negative scales in the
+        <code>BigDecimal.setScale(int, int)</code> method<sup><a href="#3">3</a></sup>.
     </td>
 </tr>
 <tr>
@@ -975,8 +1007,10 @@
 </tr>
 <tr>
     <td><code>Pattern</code></td>
-    <td><code>quote(String)</code></td>
-    <td>&nbsp;</td>
+    <td><code>LITERAL,<br>quote(String)</code></td>
+    <td>Enable features "<code>Pattern.compile</code>" and "<code>Pattern.matches</code>" to support
+        Java&nbsp;5.0 features in regular expressions when calling these methods<sup><a href="#3">3</a></sup>.
+    </td>
 </tr>
 <tr>
     <td><code>javax.net.ssl<sup><a href="#5">5</a></sup></code></td>
@@ -1084,11 +1118,10 @@
     <li>Only the classes, methods, and fields listed <a href="#supported">above</a> should work
         and the other features, like formatted input, are not supported.
     </li>
-    <li>The Java 5.0 reflection methods should be able to load compiled classes as resources,
-        so for dynamically generated classes they may return incomplete information.
-    </li>
     <li>The backported implementation of the Java 5.0 API is not interoperable with the original implementation.</li>
     <li>Reflection-based tools may be unable to discover the backported implementation of the Java 5.0 API.</li>
+    <li>The Java 5.0 reflection methods may return incomplete information for dynamically generated classes.</li>
+    <li>The Java 1.4 reflection methods and JDK tools may fail to work correctly with covariant return types.</li>
     <li>The constants inlined by a compiler and access modifiers are ignored during the verification.</li>
 </ul>
 <h4><a name="alternative">Alternative tools</a></h4>

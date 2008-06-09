@@ -82,7 +82,7 @@ abstract class GenericClassVisitor extends NameTranslator implements ClassVisito
     }
 
     protected void visitTypeInstruction(MethodVisitor visitor, int opcode, String desc) {
-        visitor.visitTypeInsn(opcode, typeNameOrTypeDescriptor(desc));
+        visitor.visitTypeInsn(opcode, typeNameOrDescriptor(desc));
     }
 
     protected void visitFieldInstruction(MethodVisitor visitor, int opcode, String owner, String name, String desc) {
@@ -90,7 +90,7 @@ abstract class GenericClassVisitor extends NameTranslator implements ClassVisito
     }
 
     protected void visitMethodInstruction(MethodVisitor visitor, int opcode, String owner, String name, String desc) {
-        visitor.visitMethodInsn(opcode, typeNameOrTypeDescriptor(owner), identifier(name), methodDescriptor(desc));
+        visitor.visitMethodInsn(opcode, typeNameOrDescriptor(owner), identifier(name), methodDescriptor(desc));
     }
 
     public void visitEnd() {
@@ -110,7 +110,7 @@ abstract class GenericClassVisitor extends NameTranslator implements ClassVisito
         }
 
         public void visit(String name, Object value) {
-            annotationVisitor.visit(identifier(name), typeOrValue(value));
+            annotationVisitor.visit(identifier(name), classLiteralTypeOrValue(value));
         }
 
         public void visitEnum(String name, String desc, String value) {
@@ -192,7 +192,7 @@ abstract class GenericClassVisitor extends NameTranslator implements ClassVisito
             if (deferredConstant != null && deferredConstant.indexOf('/') < 0 &&
                     opcode == Opcodes.INVOKESTATIC && name.equals("class$") &&
                     desc.equals(TransformerTools.descriptor(Class.class, String.class))) {
-                deferredConstant = typeNameOrTypeDescriptor(deferredConstant.replace('.', '/')).replace('/', '.');
+                deferredConstant = classLiteralNameOrDescriptor(deferredConstant.replace('.', '/')).replace('/', '.');
             }
             flush();
             visitMethodInstruction(mv, opcode, owner, name, desc);
@@ -203,7 +203,7 @@ abstract class GenericClassVisitor extends NameTranslator implements ClassVisito
             if (cst instanceof String) {
                 deferredConstant = (String) cst;
             } else {
-                mv.visitLdcInsn(typeOrValue(cst));
+                mv.visitLdcInsn(classLiteralTypeOrValue(cst));
             }
         }
 

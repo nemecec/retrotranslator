@@ -97,7 +97,7 @@ public class FloatingPointConversionTestCase extends TestCaseBase {
         assertFormat("-12,345000", "%f", BigDecimal.valueOf(-12.345));
         assertFormat("0,001230", "%f", BigDecimal.valueOf(0.00123));
 
-        if (System.getProperty("java.vm.version").startsWith("1.4")) {
+        if (isJava14AtLeast()) {
             assertFormat("1230000000000", "%1.0f", new BigDecimal("123e10"));
         }
         

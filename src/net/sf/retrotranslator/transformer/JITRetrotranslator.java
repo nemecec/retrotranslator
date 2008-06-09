@@ -45,6 +45,8 @@ public class JITRetrotranslator {
     private String backport;
     private boolean syncvolatile;
     private boolean syncfinal;
+    private boolean keepclasslit;
+
     private ClassTransformer transformer;
 
     public JITRetrotranslator() {
@@ -74,6 +76,10 @@ public class JITRetrotranslator {
         this.syncfinal = syncfinal;
     }
 
+    public void setKeepclasslit(boolean keepclasslit) {
+        this.keepclasslit = keepclasslit;
+    }
+
     public boolean run() {
         if (isJava5Supported()) return true;
         OperationMode mode = new OperationMode(advanced, support, smart, ClassVersion.VERSION_14);
@@ -85,7 +91,7 @@ public class JITRetrotranslator {
             }
         }, false);
         transformer = new ClassTransformer(true, false, false, false,
-                syncvolatile, syncfinal, ReflectionMode.NORMAL, logger, null, factory);
+                syncvolatile, syncfinal, keepclasslit, ReflectionMode.NORMAL, logger, null, factory);
         ClassDescriptor.setBytecodeTransformer(transformer);
         SunJITRetrotranslator.install(transformer);
         if (isJava5Supported()) return true;
@@ -123,6 +129,8 @@ public class JITRetrotranslator {
                 jit.setSyncvolatile(true);
             } else if (option.equals("-syncfinal")) {
                 jit.setSyncfinal(true);
+            } else if (option.equals("-keepclasslit")) {
+                jit.setKeepclasslit(true);
             } else if (option.equals("-support") && i + 1 < args.length) {
                 jit.setSupport(args[++i]);
             } else if (option.equals("-backport") && i + 1 < args.length) {
@@ -184,11 +192,11 @@ public class JITRetrotranslator {
         builder.append(".jar").append(File.pathSeparator);
         builder.append("<classpath> net.sf.retrotranslator.transformer.JITRetrotranslator" +
                 " [-advanced] [-support <features>] [-backport <packages>]" +
-                " [-smart] [-syncvolatile] [-syncfinal] <class> [<args...>]\n");
+                " [-smart] [-syncvolatile] [-syncfinal] [-keepclasslit] <class> [<args...>]\n");
         builder.append("   or  java -cp retrotranslator-transformer").append(suffix);
         builder.append(".jar net.sf.retrotranslator.transformer.JITRetrotranslator" +
                 " [-advanced] [-support <features>] [-backport <packages>]" +
-                " [-smart] [-syncvolatile] [-syncfinal] -jar <jarfile> [<args...>]");
+                " [-smart] [-syncvolatile] [-syncfinal] [-keepclasslit] -jar <jarfile> [<args...>]");
         System.out.println(builder);
         System.exit(1);
     }

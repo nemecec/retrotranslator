@@ -44,13 +44,16 @@ class GeneralReplacementVisitor extends GenericClassVisitor {
     private static final String DOUBLE_ARG_DESCRIPTOR = TransformerTools.descriptor(double.class);
 
     private final ReplacementLocator locator;
+    private final boolean keepclasslit;
     private final NameTranslator translator;
     private String currentClassName;
     private boolean threadLocalExcluded;
 
-    public GeneralReplacementVisitor(ClassVisitor classVisitor, final ReplacementLocator locator) {
+    public GeneralReplacementVisitor(ClassVisitor classVisitor,
+                                     final ReplacementLocator locator, boolean keepclasslit) {
         super(classVisitor);
         this.locator = locator;
+        this.keepclasslit = keepclasslit;
         translator = new NameTranslator() {
             protected String typeName(String s) {
                 if (isExcluded(s)) return s;
@@ -66,6 +69,18 @@ class GeneralReplacementVisitor extends GenericClassVisitor {
     protected String typeName(String s) {
         if (isExcluded(s)) return s;
         return locator.getReferenceTypeName(s);
+    }
+
+    protected Object classLiteralTypeOrValue(Object object) {
+        return keepclasslit ?
+                translator.classLiteralTypeOrValue(object) :
+                super.classLiteralTypeOrValue(object);
+    }
+
+    protected String classLiteralNameOrDescriptor(String s) {
+        return keepclasslit ?
+                translator.classLiteralNameOrDescriptor(s) :
+                super.classLiteralNameOrDescriptor(s);
     }
 
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
@@ -84,6 +99,10 @@ class GeneralReplacementVisitor extends GenericClassVisitor {
     }
 
     protected void visitTypeInstruction(MethodVisitor visitor, int opcode, String desc) {
+        if (opcode == NEW) {
+            visitor.visitTypeInsn(opcode, translator.typeNameOrDescriptor(desc));
+            return;
+        }
         if (opcode == CHECKCAST || opcode == INSTANCEOF) {
             ClassReplacement classReplacement = locator.getReplacement(desc);
             if (classReplacement != null) {
@@ -118,9 +137,9 @@ class GeneralReplacementVisitor extends GenericClassVisitor {
     protected void visitMethodInstruction(MethodVisitor visitor, int opcode, String owner, String name, String desc) {
         ClassReplacement replacement = locator.getReplacement(owner);
         if (replacement != null) {
-            owner = typeName(owner);
             desc = methodDescriptor(desc);
             if (opcode == INVOKESPECIAL && name.equals(CONSTRUCTOR_NAME)) {
+                owner = translator.typeName(owner);
                 if (visitConstructor(replacement, visitor, owner, desc)) {
                     return;
                 }
@@ -129,6 +148,7 @@ class GeneralReplacementVisitor extends GenericClassVisitor {
                     return;
                 }
             } else {
+                owner = typeName(owner);
                 MemberKey key = new MemberKey(opcode == INVOKESTATIC, name, desc);
                 MemberReplacement method = replacement.getMethodReplacements().get(key);
                 if (method == null) {

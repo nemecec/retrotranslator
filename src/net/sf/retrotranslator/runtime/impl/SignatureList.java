@@ -32,7 +32,6 @@
 package net.sf.retrotranslator.runtime.impl;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentMap;
 import net.sf.retrotranslator.runtime.asm.Type;
 
 
@@ -61,14 +60,13 @@ public class SignatureList {
     }
 
     private static Map<String, String> getMap() {
-        String originalName = "java/util/concurrent/ConcurrentMap";
         Map<String, String> map = new Hashtable<String, String>();
-        String actualName = ConcurrentMap.class.getName().replace('.', '/');
-        if (!actualName.endsWith(originalName)) {
+        String prefix = RuntimeTools.CONCURRENT_PREFIX;
+        if (prefix == null) {
             return map;
         }
+        prefix = prefix.replace('.', '/');
         String accessToken = getAccessToken();
-        String prefix = actualName.substring(0, actualName.length() - originalName.length());
         map.put("java/util/Collection",
                 "<E:Ljava/lang/Object;>Ljava/lang/Object;");
         map.put("java/util/Set",

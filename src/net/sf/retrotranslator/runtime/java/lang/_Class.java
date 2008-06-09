@@ -33,7 +33,8 @@ package net.sf.retrotranslator.runtime.java.lang;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
-import java.util.Arrays;
+import java.util.*;
+import java.security.*;
 import net.sf.retrotranslator.registry.Advanced;
 import net.sf.retrotranslator.runtime.asm.Opcodes;
 import net.sf.retrotranslator.runtime.impl.*;
@@ -43,6 +44,8 @@ import net.sf.retrotranslator.runtime.impl.*;
  */
 public class _Class {
 
+    private static final String[] RUNTIME_PREFIXES = getPrefixes();
+
     public static Class asSubclass(Class aClass, Class superclass) {
         if (superclass.isAssignableFrom(aClass)) return aClass;
         throw new ClassCastException(aClass.toString());
@@ -51,6 +54,35 @@ public class _Class {
     public static Object cast(Class aClass, Object obj) {
         if (obj == null || aClass.isInstance(obj)) return obj;
         throw new ClassCastException(aClass.toString());
+    }
+
+    @Advanced("Class.forName")
+    public static Class forName(String name) throws ClassNotFoundException {
+        return forName(name, true, getCallerClassLoader());
+    }
+
+    @Advanced("Class.forName")
+    public static Class forName(String name, boolean initialize, ClassLoader loader) throws ClassNotFoundException {
+        try {
+            return Class.forName(name, initialize, loader);
+        } catch (ClassNotFoundException e) {
+            for (String prefix : RUNTIME_PREFIXES) {
+                try {
+                    return Class.forName(prefix + name + "_", initialize, loader);
+                } catch (ClassNotFoundException ex) {
+                    // ignore
+                }
+            }
+            try {
+                return Class.forName(RuntimeTools.CONCURRENT_PREFIX + name, initialize, loader);
+            } catch (ClassNotFoundException ex) {
+                // ignore
+            }
+            if (name.equals("java.lang.StringBuilder")) {
+                return StringBuffer.class;
+            }
+            throw e;
+        }
     }
 
     public static Annotation getAnnotation(Class aClass, Class annotationType) {
@@ -80,7 +112,14 @@ public class _Class {
     public static Method getDeclaredMethod(Class aClass, String name, Class... parameterTypes)
             throws NoSuchMethodException, SecurityException {
         Method method = findMethod(aClass.getDeclaredMethods(), name, parameterTypes);
-        return method != null ? method : aClass.getDeclaredMethod(name, parameterTypes);
+        if (method != null) {
+            return method;
+        }
+        method = findBackportedMethod(aClass, name, parameterTypes);
+        if (method != null) {
+            return method;
+        }
+        return aClass.getDeclaredMethod(name, parameterTypes);
     }
 
     public static Class getEnclosingClass(Class aClass) {
@@ -116,7 +155,14 @@ public class _Class {
     public static Method getMethod(Class aClass, String name, Class... parameterTypes)
             throws NoSuchMethodException, SecurityException {
         Method method = findMethod(aClass.getMethods(), name, parameterTypes);
-        return method != null ? method : aClass.getMethod(name, parameterTypes);
+        if (method != null) {
+            return method;
+        }
+        method = findBackportedMethod(aClass, name, parameterTypes);
+        if (method != null) {
+            return method;
+        }
+        return aClass.getMethod(name, parameterTypes);
     }
 
     public static String getSimpleName(Class aClass) {
@@ -167,6 +213,49 @@ public class _Class {
         return ClassDescriptor.getInstance(aClass).isAccess(Opcodes.ACC_SYNTHETIC);
     }
 
+    // Referenced from translated bytecode
+    public static void setEncodedMetadata(Class aClass, String metadata) {
+        ClassDescriptor.setEncodedMetadata(aClass, metadata);
+    }
+
+    private static String[] getPrefixes() {
+        String p = RuntimeTools.getPrefix("java.lang.Iterable_", Iterable_.class);
+        if (p == null) {
+            return new String[0];
+        }
+        if (p.endsWith(".v15.")) {
+            return new String[] {p, p.substring(0, p.length() - 5) + ".v14."};
+        } else {
+            return new String[] {p};
+        }
+    }
+
+    private static ClassLoader getCallerClassLoader() {
+        final Class thisClass = _Class.class;
+        return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+            public ClassLoader run() {
+                try {
+                    Class[] context = new SecurityManager() {
+                        protected Class[] getClassContext() {
+                            return super.getClassContext();
+                        }
+                    }.getClassContext();
+                    boolean found = false;
+                    for (Class aClass : context) {
+                        if (aClass == thisClass) {
+                            found = true;
+                        } else if (found) {
+                            return aClass.getClassLoader();
+                        }
+                    }
+                } catch (Exception e) {
+                    // ignore
+                }
+                return thisClass.getClassLoader();
+            }
+        });
+    }
+
     private static Method findMethod(Method[] methods, String name, Class... parameterTypes) {
         Method result = null;
         for (Method method : methods) {
@@ -178,9 +267,29 @@ public class _Class {
         return result;
     }
 
-    // Referenced from translated bytecode
-    public static void setEncodedMetadata(Class aClass, String metadata) {
-        ClassDescriptor.setEncodedMetadata(aClass, metadata);
+    private static Method findBackportedMethod(Class aClass, String name, Class... parameterTypes) {
+        for (String prefix : RUNTIME_PREFIXES) {
+            String s = prefix + aClass.getName();
+            int index = s.lastIndexOf('.');
+            String className = s.substring(0, index + 1) + "_" + s.substring(index + 1);
+            Method method = findStaticMethod(className, name, parameterTypes);
+            if (method != null) {
+                return method;
+            }
+        }
+        return findStaticMethod(RuntimeTools.CONCURRENT_PREFIX + aClass.getName(), name, parameterTypes);
+    }
+
+    private static Method findStaticMethod(String className, String methodName, Class... parameterTypes) {
+        try {
+            Method method = Class.forName(className).getMethod(methodName, parameterTypes);
+            if (Modifier.isStatic(method.getModifiers())) {
+                return method;
+            }
+        } catch (Exception e) {
+            // ignore
+        }
+        return null;
     }
 
 }

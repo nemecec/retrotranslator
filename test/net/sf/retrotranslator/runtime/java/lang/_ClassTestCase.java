@@ -49,6 +49,39 @@ public class _ClassTestCase extends TestCaseBase {
 
     private final Class<_ClassTestCase> thisClass = _ClassTestCase.class;
 
+    public void testForName() throws Exception {
+        assertSame(String.class, Class.forName("java.lang.String"));
+        Class classStringBuilder = Class.forName("java.lang.StringBuilder");
+        assertTrue(classStringBuilder.getName().startsWith("java.lang.StringBu"));
+        assertTrue(Class.forName("java.io.Closeable").getName().contains("java.io.Closeable"));
+        assertTrue(Class.forName("java.lang.CharSequence").getName().contains("java.lang.CharSequence"));
+        assertSame(_ClassTestCase.class, Class.forName(_ClassTestCase.class.getName()));
+        try {
+            Class.forName("abc");
+            fail();
+        } catch (ClassNotFoundException e) {
+            // ok
+        }
+    }
+
+    public void testForName_withClassLoader() throws Exception {
+        assertSame(String.class, Class.forName("java.lang.String", true, null));
+        Class classStringBuilder = Class.forName("java.lang.StringBuilder", false, null);
+        assertTrue(classStringBuilder.getName().startsWith("java.lang.StringBu"));
+        Class classCloseable = Class.forName("java.io.Closeable", true, getClass().getClassLoader());
+        assertTrue(classCloseable.getName().contains("java.io.Closeable"));
+        Class classCharSequence = Class.forName("java.lang.CharSequence", false, getClass().getClassLoader());
+        assertTrue(classCharSequence.getName().contains("java.lang.CharSequence"));
+        Class thisClass = Class.forName(_ClassTestCase.class.getName(), true, getClass().getClassLoader());
+        assertSame(_ClassTestCase.class, thisClass);
+        try {
+            Class.forName(_ClassTestCase.class.getName(), true, null);
+            fail();
+        } catch (ClassNotFoundException e) {
+            // ok
+        }
+    }
+
     @MyStyle("bold")
     @MyFormatter(lang = "uk")
     private static class A<T> {
@@ -227,6 +260,20 @@ public class _ClassTestCase extends TestCaseBase {
         assertEquals(int.class, PROXY_CLASS.getDeclaredMethod("compareTo", Object.class).getReturnType());
     }
 
+    public void testGetDeclaredMethod_Reflection() throws Exception {
+        Method booleanValueOf = Boolean.class.getDeclaredMethod("valueOf", boolean.class);
+        assertTrue((Boolean) booleanValueOf.invoke(null, true));
+        Method integerToString = Integer.class.getDeclaredMethod("toString", int.class, int.class);
+        assertEquals("123", (String) integerToString.invoke(null, 123, 10));
+        Method integerValueOf = Integer.class.getDeclaredMethod("valueOf", int.class);
+        assertEquals(5, ((Integer) integerValueOf.invoke(null, 5)).intValue());
+        Method collectionAddAll = Collections.class.getDeclaredMethod("addAll", Collection.class, Object[].class);
+        List<String> list = new ArrayList<String>();
+        list.add("a");
+        collectionAddAll.invoke(null, list, new Object[] {"b", "c"});
+        assertEquals("[a, b, c]", list.toString());
+    }
+
     class TestGetEnclosingClass {
         class Inner {
         }
@@ -380,6 +427,16 @@ public class _ClassTestCase extends TestCaseBase {
         } catch (NoSuchMethodException e) {
             //ok
         }
+    }
+
+    public void testGetMethod_Reflection() throws Exception {
+        Method stringValueOf = String.class.getMethod("valueOf", int.class);
+        assertEquals("123", (String) stringValueOf.invoke(null, 123));
+        Method stringFormat = String.class.getMethod("format", String.class, Object[].class);
+        assertEquals("a2b", (String) stringFormat.invoke(null, "a%db", new Object[]{2}));
+        Method collectionFrequency = Collections.class.getDeclaredMethod("frequency", Collection.class, Object.class);
+        List<String> list = Arrays.asList("a", "b", "c", "b", "x");
+        assertEquals(2, ((Integer) collectionFrequency.invoke(null, list, "b")).intValue());
     }
 
     public void testGetSimpleName() throws Exception {

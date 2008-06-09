@@ -29,48 +29,32 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.sf.retrotranslator.transformer;
+package net.sf.retrotranslator.tests;
 
 import java.io.*;
+import java.lang.reflect.*;
 import java.util.*;
+import java.util.regex.MatchResult;
+import junit.framework.TestCase;
 
 /**
  * @author Taras Puchko
  */
-public class Runtime13Creator extends RuntimeCreator {
+public class ClassLiteralsJava6TestCase extends TestCase {
 
-    private static List<String> STRING_METHODS = Arrays.asList("matches", "replaceAll", "replaceFirst", "split");
-
-    public Runtime13Creator(File rootFolder, String targetPackage, String infix) {
-        super(rootFolder, targetPackage, infix);
-    }
-
-    public static void main(String[] args) throws IOException {
-        new Runtime13Creator(new File(args[0]), "net/sf/retrotranslator/runtime13/", "v15/").execute();
-    }
-
-    protected boolean isRightField(String name) {
-        return true;
-    }
-
-    protected boolean isRightMethod(String name) {
-        if (isClass("java/lang/_String") && STRING_METHODS.contains(name)) {
-            return false;
+    public void testClassLiterals() {
+        Class[] collectionTypes = {Deque.class, Queue.class};
+        Class[] objectTypes = {Closeable.class, Flushable.class, Appendable.class, Iterable.class,
+                Readable.class, Thread.UncaughtExceptionHandler.class, AnnotatedElement.class,
+                GenericDeclaration.class, Type.class, MatchResult.class};
+        for (Class type : collectionTypes) {
+            assertTrue(type.isInterface());
+            assertNotSame(Collection.class, type);
+            assertTrue(Collection.class.isAssignableFrom(type));
         }
-        if (isClass("java/lang/_Character") && (name.equals("getDirectionality") || name.equals("isMirrored"))) {
-            return false;
+        for (Class type : objectTypes) {
+            assertTrue(type.isInterface());
         }
-        if (isClass("java/io/_PrintStream") && name.equals("createInstanceBuilder")) {
-            return false;
-        }
-        if (isClass("java/lang/_Thread$AdvancedThreadBuilder") && name.equals("argument4")) {
-            return false;
-        }
-        return true;
-    }
-
-    protected boolean isRightInnerClass(String innerName) {
-        return !isClass("java/io/_PrintStream") || !innerName.equals("PrintStreamBuilder");
     }
 
 }

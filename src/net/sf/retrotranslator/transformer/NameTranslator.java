@@ -98,8 +98,16 @@ class NameTranslator {
         return object instanceof Type ? type((Type) object) : object;
     }
 
-    protected final String typeNameOrTypeDescriptor(String s) {
+    protected final String typeNameOrDescriptor(String s) {
         return s != null && s.startsWith("[") ? typeDescriptor(s) : typeName(s);
+    }
+
+    protected Object classLiteralTypeOrValue(Object object) {
+        return typeOrValue(object);
+    }
+
+    protected String classLiteralNameOrDescriptor(String s) {
+        return typeNameOrDescriptor(s);
     }
 
     protected final String typeSignature(String s) {
@@ -127,7 +135,7 @@ class NameTranslator {
         }
 
         public void visitClassType(String name) {
-            super.visitClassType(typeNameOrTypeDescriptor(name));
+            super.visitClassType(typeNameOrDescriptor(name));
         }
 
         public void visitInnerClassType(String name) {

@@ -1,6 +1,6 @@
 <project name="retrotranslator" default="build" basedir=".">
 
-    <property name="version" value="1.2.6"/>
+    <property name="version" value="1.2.7"/>
 
     <property file="build.properties"/>
 
@@ -229,6 +229,10 @@
         <mkdir dir="build/test-duplicates"/>
         <move todir="build/test-duplicates">
             <fileset dir="build/test-classes15" includes="**/DuplicateMethodsTestCase*"/>
+        </move>
+        <mkdir dir="build/test-classlit"/>
+        <move todir="build/test-classlit">
+            <fileset dir="build/test-classes15" includes="**/ClassLiteralsJava6TestCase*"/>
         </move>
         <mkdir dir="build/test-smart"/>
         <copy todir="build/test-smart">
@@ -536,18 +540,9 @@
         <retrotranslator destdir="build/test-retainapi" retainapi="true">
             <dirset dir="build" includes="test-classes15"/>
         </retrotranslator>
-        <antcall target="subtest-retainapi">
-            <param name="java_home" value="${java14_home}"/>
-        </antcall>
-        <antcall target="subtest-retainapi">
-            <param name="java_home" value="${java15_home}"/>
-        </antcall>
-    </target>
-
-    <target name="subtest-retainapi">
-        <echo message="Running classes in build/test-retainapi on ${java_home}"/>
+        <echo message="Running classes in build/test-retainapi on ${java14_home}"/>
         <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
-               jvm="${java_home}/bin/java" failureproperty="test.failed">
+               jvm="${java14_home}/bin/java" failureproperty="test.failed">
             <jvmarg value="-Xfuture"/>
             <sysproperty key="net.sf.retrotranslator.tests.retain-api" value="true"/>
             <classpath location="lib/junit.jar"/>
@@ -563,18 +558,9 @@
         <retrotranslator destdir="build/test-support" support="StringBuffer.trimToSize;ThreadLocal.remove">
             <fileset dir="build/test-classes15" includes="**/SupportAPITestCase.class"/>
         </retrotranslator>
-        <antcall target="subtest-support">
-            <param name="java_home" value="${java14_home}"/>
-        </antcall>
-        <antcall target="subtest-support">
-            <param name="java_home" value="${java15_home}"/>
-        </antcall>
-    </target>
-
-    <target name="subtest-support">
-        <echo message="Running classes in build/test-support on ${java_home}"/>
+        <echo message="Running classes in build/test-support on ${java14_home}"/>
         <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
-               jvm="${java_home}/bin/java" failureproperty="test.failed">
+               jvm="${java14_home}/bin/java" failureproperty="test.failed">
             <jvmarg value="-Xfuture"/>
             <sysproperty key="net.sf.retrotranslator.tests.support" value="true"/>
             <classpath refid="classpath"/>
@@ -617,6 +603,38 @@
             </classpath>
             <formatter type="brief" usefile="false"/>
             <test name="net.sf.retrotranslator.transformer.SmartReplacementVisitorTestCase"/>
+        </junit>
+        <fail if="test.failed"/>
+    </target>
+
+    <target name="test-classlit" depends="compile-tests">
+        <retrotranslator srcdir="build/test-classlit" keepclasslit="true" verify="true">
+            <classpath>
+                <path path="${java14_rt_jar}"/>
+                <path refid="classpath"/>
+                <pathelement location="build/retrotranslator-runtime-${version}.jar"/>
+            </classpath>
+        </retrotranslator>
+        <antcall target="subtest-classlit">
+            <param name="java_home" value="${java14_home}"/>
+        </antcall>
+        <antcall target="subtest-classlit">
+            <param name="java_home" value="${java15_home}"/>
+        </antcall>
+    </target>
+
+    <target name="subtest-classlit">
+        <echo message="Running classes in build/test-classlit on ${java_home}"/>
+        <junit printsummary="withOutAndErr" fork="yes" forkmode="once"
+               jvm="${java_home}/bin/java" failureproperty="test.failed">
+            <jvmarg value="-Xfuture"/>
+            <classpath>
+                <path refid="classpath"/>
+                <pathelement location="build/test-classlit"/>
+                <pathelement location="build/retrotranslator-runtime-${version}.jar"/>
+            </classpath>
+            <formatter type="brief" usefile="false"/>
+            <test name="net.sf.retrotranslator.tests.ClassLiteralsJava6TestCase"/>
         </junit>
         <fail if="test.failed"/>
     </target>
@@ -727,7 +745,7 @@
 
     <target name="test" depends="test-java14, test-java13, test-java12, test-java11, test-jit,
     test-embedded, test-safe, test-retainapi, test-support, test-smart, test-custom, test-duplicates,
-    test-incompatible, test-reflection, test-sync"/>
+    test-incompatible, test-reflection, test-sync, test-classlit"/>
 
     <target name="dist-bin" depends="test">
         <mkdir dir="dist"/>

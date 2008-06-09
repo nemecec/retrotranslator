@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
+ *
  * Copyright (c) 2005 - 2008 Taras Puchko
  * All rights reserved.
  *
@@ -32,6 +32,8 @@
 package net.sf.retrotranslator.runtime.java.lang;
 
 import java.util.*;
+import net.sf.retrotranslator.registry.Advanced;
+import net.sf.retrotranslator.runtime.java.util.regex._Pattern;
 
 /**
  * @author Taras Puchko
@@ -115,6 +117,31 @@ public class _String {
      */
     public static boolean isEmpty(String s) {
         return s.length() == 0;
+    }
+
+    @Advanced("String.matches")
+    public static boolean matches(String s, String regex) {
+        return _Pattern.matches(regex, s);
+    }
+
+    @Advanced("String.replaceAll")
+    public static String replaceAll(String s, String regex, String replacement) {
+        return _Pattern.compile(regex).matcher(s).replaceAll(replacement);
+    }
+
+    @Advanced("String.replaceFirst")
+    public static String replaceFirst(String s, String regex, String replacement) {
+        return _Pattern.compile(regex).matcher(s).replaceFirst(replacement);
+    }
+
+    @Advanced("String.split")
+    public static String[] split(String s, String regex, int limit) {
+        return _Pattern.compile(regex).split(s, limit);
+    }
+
+    @Advanced("String.split")
+    public static String[] split(String s, String regex) {
+        return split(s, regex, 0);
     }
 
 }

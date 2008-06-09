@@ -50,9 +50,6 @@ public class SupportAPITestCase extends TestCase {
         if (!Boolean.getBoolean("net.sf.retrotranslator.tests.support")) {
             return;
         }
-        if (!System.getProperty("java.version").startsWith("1.4")) {
-            return;
-        }
         try {
             new BigDecimal(10).setScale(-1);
             fail();
