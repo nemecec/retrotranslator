@@ -115,10 +115,12 @@ public abstract class TestCaseBase extends TestCase {
 
     protected void gc(Callable<Boolean> predicate) throws Exception {
         System.gc();
+        long maxSize = Runtime.getRuntime().totalMemory() / 8000000;
         try {
             List<long[]> list = new ArrayList<long[]>();
-            while (predicate.call() && list.size() < Integer.MAX_VALUE) {
+            while (predicate.call() && list.size() <= maxSize) {
                 list.add(new long[1000000]);
+                System.gc();
             }
         } catch (OutOfMemoryError e) {
             // ok
