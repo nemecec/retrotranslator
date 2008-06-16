@@ -42,9 +42,9 @@
     Retrotranslator is a tool that makes Java applications compatible with Java 1.4, Java 1.3 and other environments.
     It supports all Java 5.0 language features and a significant part of the Java 5.0 API on both J2SE 1.4 and J2SE 1.3.
     In other Java environments only the Java 5.0 features that don't depend on the new API are supported.
-    Retrotranslator is a Java bytecode transformer based on the <a href="http://asm.objectweb.org/">ASM</a> bytecode 
-    manipulation framework and the <a href="http://backport-jsr166.sourceforge.net/">backport</a> of the Java 5.0
-    concurrency utilities.
+    Retrotranslator employs the <a href="http://asm.objectweb.org/">ASM</a> bytecode manipulation framework to transform
+    compiled Java classes and the <a href="http://backport-jsr166.sourceforge.net/">backport</a> of the Java 5.0
+    concurrency utilities to emulate the Java 5.0 API.
 </p>
 <h4><a name="features">What Java 5.0 features are supported?</a></h4>
 <ul>
@@ -74,7 +74,8 @@
         Go to the unzipped directory and execute:<br>
         <code>java -jar retrotranslator-transformer-<i>n.n.n</i>.jar -srcdir myclasses</code><br>
         Use appropriate options to verify the result and for troubleshooting, e.g. -<a href="#option_verify">verify</a>,
-        -<a href="#option_advanced">advanced</a>, and -<a href="#option_smart">smart</a>. 
+        -<a href="#option_classpath">classpath</a>, -<a href="#option_advanced">advanced</a>,
+        and -<a href="#option_smart">smart</a>. 
     </li>
     <li>
         If you use the Java 5.0 API put <code>retrotranslator-runtime-<i>n.n.n</i>.jar</code> and
@@ -147,8 +148,9 @@
 </tr>
 <tr>
     <td nowrap><a name="option_verify"><code>-verify</code></a></td>
-    <td>Asks the translator to examine translated bytecode for references to classes, methods, or fields
-        that cannot be found in the <a href="#option_classpath">classpath</a>.
+    <td>Asks the translator to examine translated bytecode for references to classes, methods, or fields that cannot be
+        found in the <a href="#option_classpath">classpath</a>. Every use of Java 5.0 API will result in a warning 
+        message if the <a href="#option_classpath">classpath</a> contains jar files from JRE 1.4.
     </td>
     <td><code>false</code></td>
 </tr>
@@ -314,8 +316,8 @@
     &lt;/retrotranslator&gt;
 </pre>
 <p>
-    For <a href="http://maven.apache.org/">Maven</a> there is a
-    <a href="http://mojo.codehaus.org/retrotranslator-maven-plugin/">Retrotranslator plugin</a>
+    As for <a href="http://maven.apache.org/">Maven</a>,
+    there is a <a href="http://mojo.codehaus.org/retrotranslator-maven-plugin/">Retrotranslator plugin</a>
     from the <a href="http://mojo.codehaus.org/">Mojo Project</a>.
 </p>
 <h4><a name="idea">How to use Retrotranslator from IntelliJ IDEA?</a></h4>
@@ -1007,7 +1009,7 @@
 </tr>
 <tr>
     <td><code>Pattern</code></td>
-    <td><code>LITERAL,<br>quote(String)</code></td>
+    <td><code>LITERAL<sup><a href="#3">3</a></sup>,<br>quote(String)</code></td>
     <td>Enable features "<code>Pattern.compile</code>" and "<code>Pattern.matches</code>" to support
         Java&nbsp;5.0 features in regular expressions when calling these methods<sup><a href="#3">3</a></sup>.
     </td>
@@ -1039,7 +1041,9 @@
     <a href="http://retrotranslator.cvs.sourceforge.net/retrotranslator/Retrotranslator/src/net/sf/retrotranslator/registry/backport14.properties?view=markup">default</a>
     backports for the 1.4 target have been packaged into the <code>retrotranslator-runtime-<i>n.n.n</i>.jar</code> and
     <code>backport-util-concurrent-<i>n.n</i>.jar</code> files, and to complement or override them additional backport
-    names may be specified via the <a href="#option_backport">backport</a> option. The backport names may have five
+    names may be specified via the <a href="#option_backport">backport</a> option or a
+    <a href="http://retrotranslator.cvs.sourceforge.net/retrotranslator/Retrotranslator/src/net/sf/retrotranslator/registry/backport14.properties?view=markup">properties</a>
+    file. The backport names may have five
     different forms, the first one declares a universal backport package and the others allow reusing existing backports.
 </p>
 <table border="1" cellspacing="0" cellpadding="5">
@@ -1115,13 +1119,16 @@
 
 <h4><a name="limitations">What are the limitations?</a></h4>
 <ul>
+    <li>The Java 5.0 memory model is not fully supported even with the <a href="#option_syncvolatile">syncvolatile</a>
+        and <a href="#option_syncfinal">syncfinal</a> options if the fields are being accessed via reflection.</li>
     <li>Only the classes, methods, and fields listed <a href="#supported">above</a> should work
         and the other features, like formatted input, are not supported.
     </li>
+    <li>The Java 1.4 compilers and applications performing bean introspection
+        may fail to work correctly with covariant return types.</li>
     <li>The backported implementation of the Java 5.0 API is not interoperable with the original implementation.</li>
     <li>Reflection-based tools may be unable to discover the backported implementation of the Java 5.0 API.</li>
     <li>The Java 5.0 reflection methods may return incomplete information for dynamically generated classes.</li>
-    <li>The Java 1.4 reflection methods and JDK tools may fail to work correctly with covariant return types.</li>
     <li>The constants inlined by a compiler and access modifiers are ignored during the verification.</li>
 </ul>
 <h4><a name="alternative">Alternative tools</a></h4>
