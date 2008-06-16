@@ -96,6 +96,9 @@ public class Timer_TestCase extends TestCaseBase {
         MyTimerTask task = new MyTimerTask();
         timer.schedule(task, 200, 200);
         Thread.sleep(500);
+        while (task.count < 2) {
+            Thread.sleep(100);
+        }
         assertEquals(2, task.count);
         timer.cancel();
         Thread.sleep(500);
@@ -237,12 +240,12 @@ public class Timer_TestCase extends TestCaseBase {
         Timer timer = new Timer();
         MyTimerTask task = new MyTimerTask();
         timer.schedule(new HalfSecondTimerTask(), 0);
-        timer.schedule(task, 200, 200);
-        Thread.sleep(400);
+        timer.schedule(task, 400, 400);
+        Thread.sleep(300);
         assertEquals(0, task.count);
-        Thread.sleep(200);
+        Thread.sleep(400);
         assertEquals(1, task.count);
-        Thread.sleep(200);
+        Thread.sleep(400);
         assertEquals(2, task.count);
         assertTrue(task.cancel());
     }
