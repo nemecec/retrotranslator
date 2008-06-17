@@ -89,14 +89,14 @@ class ClassTransformer implements BytecodeTransformer {
         if (target.isBefore(ClassVersion.VERSION_13)) {
             visitor = new InheritedConstantVisitor(new SynchronizedBlockVisitor(visitor), locator);
         }
+        if (target.isBefore(ClassVersion.VERSION_15) && (syncvolatile || syncfinal)) {
+            visitor = new MemoryModelVisitor(visitor, locator.getEnvironment(), syncvolatile, syncfinal);
+        }
         if (target.isBefore(ClassVersion.VERSION_14)) {
             visitor = new InnerClassVisitor(visitor);
         }
         if (target.isBefore(ClassVersion.VERSION_15)) {
             visitor = new ObjectMethodsVisitor(new ClassLiteralVisitor(visitor), locator);
-            if (syncvolatile || syncfinal) {
-                visitor = new MemoryModelVisitor(visitor, locator.getEnvironment(), syncvolatile, syncfinal);
-            }
         }
         if (!factory.isRetainapi()) {
             visitor = new SpecificReplacementVisitor(visitor, target, locator, factory.getMode());
