@@ -121,6 +121,7 @@ public abstract class TestCaseBase extends TestCase {
             while (predicate.call() && list.size() <= maxSize) {
                 list.add(new long[1000000]);
                 System.gc();
+                Thread.sleep(100);
             }
         } catch (OutOfMemoryError e) {
             // ok

@@ -48,4 +48,29 @@ public class _IntegerTestCase extends TestCase {
         assertEquals(0, Integer.signum(0));
         assertEquals(-1, Integer.signum(-345));
     }
+
+    public void testHighestOneBit() throws Exception {
+        assertEquals(0, Integer.highestOneBit(0));
+        assertEquals(1, Integer.highestOneBit(1));
+        assertEquals(2, Integer.highestOneBit(2));
+        assertEquals(2, Integer.highestOneBit(3));
+        assertEquals(0x80000000, Integer.highestOneBit(-1));
+        assertEquals(0x80000000, Integer.highestOneBit(-2));
+        assertEquals(0x80000000, Integer.highestOneBit(-3));
+        assertEquals(0x08000000, Integer.highestOneBit(0x0FFFFFFF));
+        assertEquals(0x08000000, Integer.highestOneBit(0x0F0F0F04));
+    }
+
+    public void testLowestOneBit() throws Exception {
+        assertEquals(0, Integer.lowestOneBit(0));
+        assertEquals(1, Integer.lowestOneBit(1));
+        assertEquals(2, Integer.lowestOneBit(2));
+        assertEquals(1, Integer.lowestOneBit(3));
+        assertEquals(1, Integer.lowestOneBit(-1));
+        assertEquals(2, Integer.lowestOneBit(-2));
+        assertEquals(1, Integer.lowestOneBit(-3));
+        assertEquals(1, Integer.lowestOneBit(0x0FFFFFFF));
+        assertEquals(4, Integer.lowestOneBit(0x0F0F0F04));
+    }
+
 }

@@ -1,7 +1,7 @@
 /***
  * Retrotranslator: a Java bytecode transformer that translates Java classes
  * compiled with JDK 5.0 into classes that can be run on JVM 1.4.
- * 
+ *
  * Copyright (c) 2005 - 2008 Taras Puchko
  * All rights reserved.
  *
@@ -49,4 +49,19 @@ public class _Integer {
     public static int signum(int i) {
         return -i >>> 31 | i >> 31;
     }
+
+    public static int highestOneBit(int i) {
+        // copy leftmost one-bit to the right
+        i |= i >> 1;
+        i |= i >> 2;
+        i |= i >> 4;
+        i |= i >> 8;
+        i |= i >> 16;
+        return i ^ i >>> 1;
+    }
+
+    public static int lowestOneBit(int i) {
+        return i & -i;
+    }
+
 }

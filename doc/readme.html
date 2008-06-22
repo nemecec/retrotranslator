@@ -78,8 +78,9 @@
         and -<a href="#option_smart">smart</a>. 
     </li>
     <li>
-        If you use the Java 5.0 API put <code>retrotranslator-runtime-<i>n.n.n</i>.jar</code> and
-        <code>backport-util-concurrent-<i>n.n</i>.jar</code> into the classpath of your application.
+        Put <code>retrotranslator-runtime-<i>n.n.n</i>.jar</code> and
+        <code>backport-util-concurrent-<i>n.n</i>.jar</code> into the
+        classpath of your application if you use the Java 5.0 API.
     </li>
     <li>
         Run or debug the application as usual on Java 1.4.
@@ -98,23 +99,23 @@
 </tr>
 <tr>
     <td nowrap><code>-srcdir &lt;path&gt;</code></td>
-    <td>The directory with the files to process (may be specified several times).</td>
+    <td>The directory with the files to process (can be specified several times).</td>
     <td>-</td>
 </tr>
 <tr>
     <td nowrap><code>-srcjar &lt;file&gt;</code></td>
-    <td>The jar file with the files to process (may be specified several times).</td>
+    <td>The jar file with the files to process (can be specified several times).</td>
     <td>-</td>
 </tr>
 <tr>
     <td nowrap><code>-destdir &lt;path&gt;</code></td>
     <td>The directory to place processed files.</td>
-    <td>The source directory.</td>
+    <td nowrap>The source.</td>
 </tr>
 <tr>
     <td nowrap><code>-destjar &lt;file&gt;</code></td>
     <td>The jar file to place processed files.</td>
-    <td>The source jar file.</td>
+    <td>The source.</td>
 </tr>
 <tr>
     <td nowrap><code>-srcmask &lt;mask&gt;</code></td>
@@ -126,8 +127,8 @@
 <tr>
     <td nowrap><a name="option_target"><code>-target &lt;version&gt;</code></a></td>
     <td>The version of the JVM where the translated application should be able to run (1.1, 1.2, 1.3, 1.4, or 1.5).
-        The Java 5.0 API is supported only for the 1.4 and 1.3 targets, but the user-defined
-        <a href="#option_backport">backport</a> classes may be used for other targets as well.
+        The Java 5.0 API is supported only for the 1.4 and 1.3 targets, but user-defined
+        <a href="#option_backport">backport</a> classes can be used for other targets as well.
     </td>
     <td><code>1.4</code></td>
 </tr>
@@ -142,7 +143,7 @@
         For the 1.3 target the files are: <code>rt.jar</code> from Sun JRE 1.3, 
         <code>retrotranslator-runtime13-<i>n.n.n</i>.jar</code> and
         <code>backport-util-concurrent-java12-<i>n.n</i>.jar</code>.
-        This option may be omitted if the current Java environment matches the target one.
+        This option can be omitted if the current Java environment matches the target one.
     </td>
     <td>The current classpath.</td>
 </tr>
@@ -172,7 +173,7 @@
     <td nowrap><a name="option_smart"><code>-smart</code></a></td>
     <td>Makes all backport classes inheritable provided that the <a href="#option_classpath">classpath</a>
         correctly reflects the target environment.
-        For example, the backport of the <code>Writer.append(String)</code> method may be used
+        For example, the backport of the <code>Writer.append(String)</code> method can be used
         to translate the following expression: <code>new&nbsp;FileWriter("file.tmp").append("Hello")</code>.
     </td>
     <td><code>false</code></td>
@@ -180,14 +181,14 @@
 <tr>
     <td nowrap><a name="option_syncvolatile"><code>-syncvolatile</code></a></td>
     <td>Makes access to volatile fields of Java 5.0 classes compliant with Java 5.0 memory model
-        at the cost of decreased performance.
+        at the cost of decreased performance. Highly recommended to use.
     </td>
     <td><code>false</code></td>
 </tr>
 <tr>
     <td nowrap><a name="option_syncfinal"><code>-syncfinal</code></a></td>
     <td>Makes access to final instance fields of Java 5.0 classes compliant with Java 5.0 memory model
-        at the cost of decreased performance.
+        at the cost of decreased performance. Not recommended to use.
     </td>
     <td><code>false</code></td>
 </tr>
@@ -273,7 +274,7 @@
     The source directories specified with <code>srcdir</code>, <code>dirset</code>,
     and the <code>dir</code> attribute of <code>fileset</code> should contain the root package of the classes.
     In case of warnings the build fails unless the value of the <code>failonwarning</code> attribute is set to
-    <code>false</code>. The following script may be used to build one jar compatible with Java 1.4 and
+    <code>false</code>. The following script can be used to build one jar compatible with Java 1.4 and
     another one compatible with Java 1.3.
 </p>
 <pre>
@@ -316,9 +317,9 @@
     &lt;/retrotranslator&gt;
 </pre>
 <p>
-    As for <a href="http://maven.apache.org/">Maven</a>,
-    there is a <a href="http://mojo.codehaus.org/retrotranslator-maven-plugin/">Retrotranslator plugin</a>
-    from the <a href="http://mojo.codehaus.org/">Mojo Project</a>.
+    <a href="http://maven.apache.org/">Maven</a> users can use the
+    <a href="http://mojo.codehaus.org/retrotranslator-maven-plugin/">Retrotranslator plugin</a> from the
+    <a href="http://mojo.codehaus.org/">Mojo Project</a>.
 </p>
 <h4><a name="idea">How to use Retrotranslator from IntelliJ IDEA?</a></h4>
 
@@ -331,8 +332,8 @@
 
 <p>
     If you have a <code>myapplication5.jar</code> file built with Java 5.0 you can use the following command to produce
-    <code>myapplication4.jar</code>. It will be compatible with Java 1.4 and independent of Retrotranslator because
-    backport classes are added to the translated application with a different package name:
+    <code>myapplication4.jar</code>. The jar file will be compatible with Java 1.4 and independent of Retrotranslator
+    because backport classes are added to the translated application with a different package name.
 </p>
 
 <p>
@@ -374,15 +375,15 @@
 <p>
   If you're using the <a href="http://code.google.com/android/intro/installing.html#installingplugin">ADT plugin</a>
   in the <a href="http://www.eclipse.org">Eclipse IDE</a> you cannot run Retrotranslator on your code, but the
-  dependencies of your application may be translated manually before adding them to the Eclipse project.
+  dependencies of your application can be translated manually before adding them to the Eclipse project.
 </p>
 <p>
 <code>java -jar retrotranslator-transformer-n.n.n.jar -srcjar mylibrary.jar -destjar mylibrary-android.jar
     -target 1.5 -reflection safe -stripannot -classpath retrotranslator-android-n.n.n.jar</code>
 </p>
 <p>
-    If any part of your application declares or analyzes annotations you may extract it into a separate library
-    that can be processed with Retrotranslator and added to the main project. Note that you also have to add the
+    If any part of your application declares or analyzes annotations you can extract it into a separate library
+    that should be processed with Retrotranslator and added to the main project. Note that you also have to add the
     <code>retrotranslator-android-n.n.n.jar</code> to the project since the translated libraries depend on it. 
 </p>
 <h4><a name="jit">How to use Just-in-Time Retrotranslator?</a></h4>
@@ -502,9 +503,9 @@
     <td>
         Enable feature "<code>Class.forName</code>" to use backported classes as a fallback when calling this
         method<sup><a href="#3">3</a></sup>.<br>
-        Enable features "<code>Class.getMethod</code>" and "<code>Class.getDeclaredMethod</code>" to use backported
-        static methods as a fallback when calling these methods and for more uniform support of generics and covariant
-        return types on different platforms<sup><a href="#3">3</a></sup>.
+        Enable features "<code>Class.getMethod</code>" and "<code>Class.getDeclaredMethod</code>" to use most of
+        backported static methods as a fallback when calling these methods and for more uniform support of generics
+        and covariant return types on different platforms<sup><a href="#3">3</a></sup>.
     </td>
 </tr>
 <tr>
@@ -607,7 +608,7 @@
 <tr>
     <td><code>StringBuilder</code></td>
     <td>*</td>
-    <td><code>StringBuilder</code> is replaced with <code>StringBuffer</code>.</td>
+    <td><code>StringBuilder</code> is being replaced with <code>StringBuffer</code>.</td>
 </tr>
 <tr>
     <td><code>SuppressWarnings</code></td>
@@ -629,10 +630,10 @@
     <td><code>Thread</code></td>
     <td>* (8 new methods)</td>
     <td>
-        The <code>Thread.getId()</code> method does not reflect the order in which threads are created.<br>
+        The <code>Thread.getId()</code> method does not reflect the order in which threads have been created.<br>
         The <code>Thread.getStackTrace()</code> and <code>Thread.getAllStackTraces()</code>
         methods return non-empty stack trace only for the current thread.<br>
-        Enable feature "<code>Thread.getState</code>" to support this method, but it may be able to detect only
+        Enable feature "<code>Thread.getState</code>" to support this method, but it will detect only
         <code>NEW</code>, <code>RUNNABLE</code> and <code>TERMINATED</code> states.<sup><a href="#3">3</a></sup><br>
         Enable features "<code>Thread.setUncaughtExceptionHandler</code>" and
         "<code>Thread.setDefaultUncaughtExceptionHandler</code>" to support exception handlers for threads
@@ -673,7 +674,7 @@
         <code>initCause(Throwable)<sup><a href="#6">6</a></sup></code>
     </td>
     <td>The additional constructors and methods are available for all Java 1.3 exception classes
-        if the <code><a href="#option_smart">smart</a></code> option is used.
+        if the <code><a href="#option_smart">smart</a></code> option has been used.
     </td>
 </tr>
 <tr>
@@ -1024,7 +1025,7 @@
 <p>
     <a name="1"><sup>1</sup></a> Supported via the
     <a href="http://backport-jsr166.sourceforge.net/"> Backport of JSR 166</a>.<br>
-    <a name="2"><sup>2</sup></a> In most cases this type is replaced with its base type.<br>
+    <a name="2"><sup>2</sup></a> In most cases this type is being replaced with its base type.<br>
     <a name="3"><sup>3</sup></a> Supported only when the corresponding feature is enabled via the
     <code><a href="#option_support">support</a></code> or
     <code><a href="#option_advanced">advanced</a></code> options.<br>
@@ -1041,9 +1042,9 @@
     <a href="http://retrotranslator.cvs.sourceforge.net/retrotranslator/Retrotranslator/src/net/sf/retrotranslator/registry/backport14.properties?view=markup">default</a>
     backports for the 1.4 target have been packaged into the <code>retrotranslator-runtime-<i>n.n.n</i>.jar</code> and
     <code>backport-util-concurrent-<i>n.n</i>.jar</code> files, and to complement or override them additional backport
-    names may be specified via the <a href="#option_backport">backport</a> option or a
+    names can be specified via the <a href="#option_backport">backport</a> option or a
     <a href="http://retrotranslator.cvs.sourceforge.net/retrotranslator/Retrotranslator/src/net/sf/retrotranslator/registry/backport14.properties?view=markup">properties</a>
-    file. The backport names may have five
+    file. The backport names can have five
     different forms, the first one declares a universal backport package and the others allow reusing existing backports.
 </p>
 <table border="1" cellspacing="0" cellpadding="5">
@@ -1105,16 +1106,17 @@
     <code>createInstanceBuilder</code> method that accepts constructor's arguments an returns an object with public
     <code>argument1</code>...<code>argumentN</code> methods and an optional public void <code>initialize</code> method.
     All the <code>argumentX</code> methods don't have any parameters and provide arguments for a constructor that exists
-    on the target platform. The <code>initialize</code> method has a single parameter for the created instance and may be
-    used for postprocessing. There is also another flexible but not supported in certain cases approach used by
+    on the target platform. The <code>initialize</code> method has a single parameter for the created instance and can be
+    used for postprocessing. And the most flexible but unsupported in certain cases way has been used by
     <a href="http://retrotranslator.cvs.sourceforge.net/retrotranslator/Retrotranslator/src/net/sf/retrotranslator/runtime/java/lang/_StackTraceElement.java?view=markup">
         <code>net.sf.retrotranslator.runtime.java.lang.<b>_</b>StackTraceElement</code></a>.
+</p>
+<p>
     If backported methods require access to non-public methods or fields of the instance, they can do it with reflection
     when the security manager allows such access. The backports of public instance fields are not supported, but private
     instance fields can be emulated using a weak identity map, see
     <a href="http://retrotranslator.cvs.sourceforge.net/retrotranslator/Retrotranslator/src/net/sf/retrotranslator/runtime/java/lang/_Thread.java?view=markup">
     <code>net.sf.retrotranslator.runtime.java.lang.<b>_</b>Thread</code></a> for an example. 
-
 </p>
 
 <h4><a name="limitations">What are the limitations?</a></h4>

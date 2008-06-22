@@ -48,4 +48,29 @@ public class _LongTestCase extends TestCase {
         assertEquals(0, Long.signum(0));
         assertEquals(-1, Long.signum(-345));
     }
+
+    public void testHighestOneBit() throws Exception {
+        assertEquals(0, Long.highestOneBit(0));
+        assertEquals(1, Long.highestOneBit(1));
+        assertEquals(2, Long.highestOneBit(2));
+        assertEquals(2, Long.highestOneBit(3));
+        assertEquals(0x8000000000000000L, Long.highestOneBit(-1));
+        assertEquals(0x8000000000000000L, Long.highestOneBit(-2));
+        assertEquals(0x8000000000000000L, Long.highestOneBit(-3));
+        assertEquals(0x0800000000000000L, Long.highestOneBit(0x0FFFFFFFFFFFFFFFL));
+        assertEquals(0x0800000000000000L, Long.highestOneBit(0x0F0F0F0404040404L));
+    }
+
+    public void testLowestOneBit() throws Exception {
+        assertEquals(0, Long.lowestOneBit(0));
+        assertEquals(1, Long.lowestOneBit(1));
+        assertEquals(2, Long.lowestOneBit(2));
+        assertEquals(1, Long.lowestOneBit(3));
+        assertEquals(1, Long.lowestOneBit(-1));
+        assertEquals(2, Long.lowestOneBit(-2));
+        assertEquals(1, Long.lowestOneBit(-3));
+        assertEquals(1, Long.lowestOneBit(0x0FFFFFFFFFFFFFFFL));
+        assertEquals(4, Long.lowestOneBit(0x0F0F0F0404040404L));
+    }
+
 }

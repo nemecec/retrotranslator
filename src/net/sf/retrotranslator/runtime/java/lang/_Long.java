@@ -50,4 +50,19 @@ public class _Long {
         return (int) (-i >>> 63 | i >> 63);
     }
 
+    public static long highestOneBit(long i) {
+        // copy leftmost one-bit to the right
+        i |= i >> 1;
+        i |= i >> 2;
+        i |= i >> 4;
+        i |= i >> 8;
+        i |= i >> 16;
+        i |= i >> 32;
+        return i ^ i >>> 1;
+    }
+
+    public static long lowestOneBit(long i) {
+        return i & -i;
+    }
+
 }

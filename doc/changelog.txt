@@ -1,10 +1,13 @@
 Retrotranslator Changelog
 =================================
 
+1.2.7 (2008-06-22)
+---------------------------------
   - Added limited support for using backports via reflection.
   - Added support for Java 5.0 features in regular expressions.
   - Added support for java.math.BigDecimal.stripTrailingZeros().
   - Added options -syncvolatile and -syncfinal to emulate Java 5.0 memory model.
+  - Added support for methods highestOneBit and lowestOneBit of java.lang.Integer and java.lang.Long.
   - Added option -keepclasslit to prevent replacement of certain types with their base types in class literals.
   - Added a feature to identify the current JVM as Java 5.0 when using the java.lang.System.getProperty method.
   - Fixed a bug: cannot read annotations when using "-reflection safe".
