@@ -1,6 +1,6 @@
 <project name="retrotranslator" default="build" basedir=".">
 
-    <property name="version" value="1.2.7"/>
+    <property name="version" value="1.2.8"/>
 
     <property file="build.properties"/>
 
@@ -38,7 +38,6 @@
         <mkdir dir="build/classes14"/>
         <copy todir="build/classes14">
             <fileset dir="build/classes15">
-                <include name="net/sf/retrotranslator/registry/*14.properties"/>
                 <include name="net/sf/retrotranslator/runtime/**"/>
                 <include name="net/sf/retrotranslator/transformer/**"/>
                 <exclude name="**/ClassFileTransformer.class"/>
@@ -46,6 +45,12 @@
                 <exclude name="**/*Creator*.class"/>
             </fileset>
         </copy>
+        <java classname="net.sf.retrotranslator.registry.AdvancedPostProcessor"
+              classpathref="classpath" classpath="build/classes15" failonerror="true"
+              jvm="${java15_home}/bin/java" fork="true">
+            <arg value="build/classes14"/>
+            <arg value="build/classes15/net/sf/retrotranslator/registry/advanced14.properties"/>
+        </java>
         <java classname="net.sf.retrotranslator.transformer.Retrotranslator"
               classpathref="classpath" classpath="build/classes15" failonerror="true"
               jvm="${java15_home}/bin/java" fork="true">
@@ -55,15 +60,11 @@
             <arg value="net.sf.retrotranslator.transformer.ClassFileTransformer:sun.misc.ClassFileTransformer;
             net.sf.retrotranslator.transformer.ClassPreProcessor:com.bea.jvm.ClassPreProcessor"/>
         </java>
-        <java classname="net.sf.retrotranslator.registry.AdvancedPostProcessor"
-              classpathref="classpath" classpath="build/classes15" failonerror="true"
-              jvm="${java15_home}/bin/java" fork="true">
-            <arg value="build/classes14"/>
-            <arg value="build/classes14/net/sf/retrotranslator/registry/advanced14.properties"/>
-        </java>
         <jar destfile="build/retrotranslator-runtime-${version}.jar">
+            <fileset dir="build/classes15">
+                <include name="net/sf/retrotranslator/registry/*14.properties"/>
+            </fileset>
             <fileset dir="build/classes14">
-                <include name="net/sf/retrotranslator/registry/**"/>
                 <include name="net/sf/retrotranslator/runtime/**"/>
             </fileset>
             <fileset dir="build/pom">
@@ -110,7 +111,6 @@
         <mkdir dir="build/classes13"/>
         <copy todir="build/classes13">
             <fileset dir="build/classes15">
-                <include name="net/sf/retrotranslator/registry/*13.properties"/>
                 <include name="net/sf/retrotranslator/runtime13/**"/>
                 <exclude name="net/sf/retrotranslator/runtime13/v15/javax/**"/>
                 <exclude name="net/sf/retrotranslator/runtime13/v15/java/nio/**"/>
@@ -125,6 +125,12 @@
                 <exclude name="**/*PrintStreamBuilder.class"/>
             </fileset>
         </copy>
+        <java classname="net.sf.retrotranslator.registry.AdvancedPostProcessor"
+              classpathref="classpath" classpath="build/classes15" failonerror="true"
+              jvm="${java15_home}/bin/java" fork="true">
+            <arg value="build/classes13"/>
+            <arg value="build/classes15/net/sf/retrotranslator/registry/advanced13.properties"/>
+        </java>
         <retrotranslator target="1.3" classpath="build/classes15">
             <fileset dir="build/classes13">
                 <include name="**/_Appendable.class"/>
@@ -139,13 +145,10 @@
             <classpath refid="classpath13"/>
             <classpath path="build/classes15"/>
         </retrotranslator>
-        <java classname="net.sf.retrotranslator.registry.AdvancedPostProcessor"
-              classpathref="classpath" classpath="build/classes15" failonerror="true"
-              jvm="${java15_home}/bin/java" fork="true">
-            <arg value="build/classes13"/>
-            <arg value="build/classes13/net/sf/retrotranslator/registry/advanced13.properties"/>
-        </java>
         <jar destfile="build/retrotranslator-runtime13-${version}.jar">
+            <fileset dir="build/classes15">
+                <include name="net/sf/retrotranslator/registry/*13.properties"/>
+            </fileset>
             <fileset dir="build/classes13"/>
             <fileset dir="build/pom">
                 <include name="**/retrotranslator-runtime13/**"/>

@@ -166,7 +166,7 @@ public class AdvancedPostProcessor {
         }
         FileOutputStream outputStream = new FileOutputStream(file);
         try {
-            outputStream.write(classWriter.toByteArray(true));
+            outputStream.write(classWriter.toByteArray());
         } finally {
             outputStream.close();
         }
