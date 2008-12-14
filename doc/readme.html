@@ -27,7 +27,6 @@
     <li><a href="#ant">How to use Retrotranslator from Apache Ant or Maven?</a></li>
     <li><a href="#idea">How to use Retrotranslator from IntelliJ IDEA?</a></li>
     <li><a href="#jarfile">How to produce a jar file compatible with Java 1.4?</a></li>
-    <li><a href="#android">How to use annotations and generics at runtime on Android?</a></li>
     <li><a href="#jit">How to use Just-in-Time Retrotranslator?</a></li>
     <li><a href="#supported">What API is supported on Java 1.4 and Java 1.3?</a></li>
     <li><a href="#extension">How to write an extension?</a></li>
@@ -346,49 +345,9 @@
     <a href="#option_verify">verify</a>, and <a href="#option_smart">smart</a> options.
     In case of verification failure try the <a href="#option_support">support</a> option.
 </p>
-<h4><a name="android">How to use annotations and generics at runtime on Android?</a></h4>
-
-<p>
-    The <a href="http://code.google.com/android/">Android</a> SDK m5-rc15
-    <a href="http://code.google.com/p/android/issues/detail?id=29">does not support</a> generics and annotations
-    at runtime. This issue can be fixed if both classes that read generics or annotations and classes containing them
-    are processed with Retrotranslator. When using <a href="http://ant.apache.org/">Apache Ant</a> add a target like
-    the following one to the <code>build.xml</code> file created by the 
-    <a href="http://code.google.com/android/reference/othertools.html#activitycreator"><code>activityCreator</code></a>
-    script and make the <code>dex</code> target depend on it.
-</p>
-<pre>
-    &lt;target name="translate" depends="compile"&gt;
-        &lt;taskdef name="retrotranslator" classname="net.sf.retrotranslator.transformer.RetrotranslatorTask"&gt;
-            &lt;classpath&gt;
-                &lt;fileset dir="../Retrotranslator-n.n.n-bin"&gt;
-                  &lt;include name="retrotranslator-transformer-n.n.n.jar"/&gt;
-                  &lt;include name="retrotranslator-android-n.n.n.jar"/&gt;
-                  &lt;include name="retrotranslator-runtime-n.n.n.jar"/&gt;
-                  &lt;include name="backport-util-concurrent-n.n.jar"/&gt;
-                &lt;/fileset&gt;
-            &lt;/classpath&gt;
-        &lt;/taskdef&gt;
-        &lt;retrotranslator srcdir="${outdir-classes}" target="1.5" reflection="safe" stripannot="true" embed="."/&gt;
-    &lt;/target&gt;
-</pre>
-<p>
-  If you're using the <a href="http://code.google.com/android/intro/installing.html#installingplugin">ADT plugin</a>
-  in the <a href="http://www.eclipse.org">Eclipse IDE</a> you cannot run Retrotranslator on your code, but the
-  dependencies of your application can be translated manually before adding them to the Eclipse project.
-</p>
-<p>
-<code>java -jar retrotranslator-transformer-n.n.n.jar -srcjar mylibrary.jar -destjar mylibrary-android.jar
-    -target 1.5 -reflection safe -stripannot -classpath retrotranslator-android-n.n.n.jar</code>
-</p>
-<p>
-    If any part of your application declares or analyzes annotations you can extract it into a separate library
-    that should be processed with Retrotranslator and added to the main project. Note that you also have to add the
-    <code>retrotranslator-android-n.n.n.jar</code> to the project since the translated libraries depend on it. 
-</p>
 <h4><a name="jit">How to use Just-in-Time Retrotranslator?</a></h4>
 <p>
-    In order to run a Java 5.0 application on Java 1.4 start it with JIT Retrotranslator:
+    In order to run a Java 5.0 application on Java 1.4 start it with JIT Retrotranslator using one of the following commands:
 </p>
 <ul>
     <li>
@@ -397,7 +356,7 @@
             &lt;options&gt; -jar &lt;jarfile&gt; [&lt;args...&gt;]</code>
     </li>
     <li>
-        <code>java -cp retrotranslator-transformer-<i>n.n.n</i>.jar:&lt;classpath&gt;
+        <code>java -cp &lt;classpath including Retrotranslator&gt;
             net.sf.retrotranslator.transformer.JITRetrotranslator
             &lt;options&gt; &lt;class&gt; [&lt;args...&gt;]</code>
     </li>

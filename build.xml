@@ -162,48 +162,7 @@
         </jar>
     </target>
 
-    <target name="compile-android" depends="compile14">
-        <java classname="net.sf.retrotranslator.transformer.AndroidCreator"
-              classpathref="classpath" classpath="build/classes15" failonerror="true"
-              jvm="${java15_home}/bin/java" fork="true">
-            <arg value="build/classes15"/>
-        </java>
-        <mkdir dir="build/classes-android"/>
-        <copy todir="build/classes-android">
-            <fileset dir="build/classes15">
-                <include name="net/sf/retrotranslator/registry/*15.properties"/>
-                <include name="net/sf/retrotranslator/android/asm/**"/>
-                <include name="net/sf/retrotranslator/android/extra/**"/>
-                <include name="net/sf/retrotranslator/android/impl/**"/>
-                <include name="net/sf/retrotranslator/android/main/java/lang/_Class*"/>
-                <include name="net/sf/retrotranslator/android/main/java/lang/_Package*"/>
-                <include name="net/sf/retrotranslator/android/main/java/lang/reflect/_AccessibleObject*"/>
-                <include name="net/sf/retrotranslator/android/main/java/lang/reflect/_AnnotatedElement*"/>
-                <include name="net/sf/retrotranslator/android/main/java/lang/reflect/_Constructor*"/>
-                <include name="net/sf/retrotranslator/android/main/java/lang/reflect/_Field*"/>
-                <include name="net/sf/retrotranslator/android/main/java/lang/reflect/_GenericDeclaration*"/>
-                <include name="net/sf/retrotranslator/android/main/java/lang/reflect/_Member*"/>
-                <include name="net/sf/retrotranslator/android/main/java/lang/reflect/_Method*"/>
-            </fileset>
-        </copy>
-        <retrotranslator srcdir="build/classes-android" target="1.5"
-                backport="net.sf.retrotranslator.android.main.java.lang.reflect.AnnotatedElement_:java.lang.reflect.AnnotatedElement;
-                net.sf.retrotranslator.android.main.java.lang.reflect.GenericDeclaration_:java.lang.reflect.GenericDeclaration"/>
-        <jar destfile="build/retrotranslator-android-${version}.jar">
-            <fileset dir="build/classes-android"/>
-            <fileset dir="build/pom">
-                <include name="**/retrotranslator-android/**"/>
-            </fileset>
-            <zipfileset file="doc/LICENSE.txt" fullpath="RETROTRANSLATOR-LICENSE.txt"/>
-            <fileset file="doc/ASM-LICENSE.txt"/>
-            <manifest>
-                <attribute name="Implementation-Title" value="Retrotranslator Runtime for Android"/>
-                <attribute name="Implementation-Version" value="${version}"/>
-            </manifest>
-        </jar>
-    </target>
-
-    <target name="compile" depends="compile13, compile-android">
+    <target name="compile" depends="compile13">
         <retrotranslator verify="true" classpath="${java14_rt_jar}" classpathref="classpath">
             <fileset dir="build/classes14" excludes="**/*JITRetrotranslator* **/RetrotranslatorTask*"/>
         </retrotranslator>
@@ -777,7 +736,6 @@
             <zipfileset prefix="${bin.name}" dir="build">
                 <include name="retrotranslator-runtime-${version}.jar"/>
                 <include name="retrotranslator-runtime13-${version}.jar"/>
-                <include name="retrotranslator-android-${version}.jar"/>
                 <include name="retrotranslator-transformer-${version}.jar"/>
             </zipfileset>
             <zipfileset prefix="${bin.name}" dir="lib">
@@ -810,10 +768,6 @@
             <fileset file="${pom.dir}/retrotranslator-runtime/pom.xml"/>
             <fileset file="build/retrotranslator-runtime-${version}.jar"/>
         </jar>
-        <jar destfile="dist/maven/retrotranslator-android-${version}-bundle.jar">
-            <fileset file="${pom.dir}/retrotranslator-android/pom.xml"/>
-            <fileset file="build/retrotranslator-android-${version}.jar"/>
-        </jar>
         <jar destfile="dist/maven/retrotranslator-runtime13-${version}-bundle.jar">
             <fileset file="${pom.dir}/retrotranslator-runtime13/pom.xml"/>
             <fileset file="build/retrotranslator-runtime13-${version}.jar"/>
@@ -828,24 +782,19 @@
             description="Installs the compile units into the current Maven 2 repository">
         <property name="maven.dir" value="${user.home}/.m2/repository/net/sf/retrotranslator"/>
         <property name="runtime.dir" value="${maven.dir}/retrotranslator-runtime/${version}"/>
-        <property name="android.dir" value="${maven.dir}/retrotranslator-android/${version}"/>
         <property name="runtime13.dir" value="${maven.dir}/retrotranslator-runtime13/${version}"/>
         <property name="transformer.dir" value="${maven.dir}/retrotranslator-transformer/${version}"/>
 
         <mkdir dir="${runtime.dir}"/>
-        <mkdir dir="${android.dir}"/>
         <mkdir dir="${runtime13.dir}"/>
         <mkdir dir="${transformer.dir}"/>
 
         <copy todir="${runtime.dir}" file="build/retrotranslator-runtime-${version}.jar"/>
-        <copy todir="${android.dir}" file="build/retrotranslator-android-${version}.jar"/>
         <copy todir="${runtime13.dir}" file="build/retrotranslator-runtime13-${version}.jar"/>
         <copy todir="${transformer.dir}" file="build/retrotranslator-transformer-${version}.jar"/>
 
         <copy tofile="${runtime.dir}/retrotranslator-runtime-${version}.pom"
               file="${pom.dir}/retrotranslator-runtime/pom.xml"/>
-        <copy tofile="${android.dir}/retrotranslator-android-${version}.pom"
-              file="${pom.dir}/retrotranslator-android/pom.xml"/>
         <copy tofile="${runtime13.dir}/retrotranslator-runtime13-${version}.pom"
               file="${pom.dir}/retrotranslator-runtime13/pom.xml"/>
         <copy tofile="${transformer.dir}/retrotranslator-transformer-${version}.pom"

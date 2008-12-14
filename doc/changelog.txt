@@ -1,6 +1,11 @@
 Retrotranslator Changelog
 =================================
 
+1.2.8 (2008-12-14)
+---------------------------------
+  - Dropped the support of the Android platform.
+  - Smaller jars when using embedding since the runtime library doesn't use its advanced features internally.
+
 1.2.7 (2008-06-22)
 ---------------------------------
   - Added limited support for using backports via reflection.
