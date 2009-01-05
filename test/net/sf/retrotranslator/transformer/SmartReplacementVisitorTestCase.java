@@ -31,10 +31,11 @@
  */
 package net.sf.retrotranslator.transformer;
 
-import net.sf.retrotranslator.transformer.smart.*;
-import net.sf.retrotranslator.tests.TestCaseBase;
-import java.math.*;
+import java.lang.reflect.*;
+import java.math.BigDecimal;
 import java.security.cert.CertificateEncodingException;
+import net.sf.retrotranslator.tests.TestCaseBase;
+import net.sf.retrotranslator.transformer.smart.*;
 
 /**
  * @author Taras Puchko
@@ -120,5 +121,27 @@ public class SmartReplacementVisitorTestCase extends TestCaseBase {
         }
     }
 
+    public void testInterface() {
+        BackportedInterface backportedInterface = getProxy(BackportedInterface.class);
+        EmptyDerivedInterface emptyDerivedInterface = getProxy(EmptyDerivedInterface.class);
+        FullDerivedInterface fullDerivedInterface = getProxy(FullDerivedInterface.class);
+        if (isSmart()) {
+            assertEquals("backported", backportedInterface.hello());
+            assertEquals("backported", emptyDerivedInterface.hello());
+            assertEquals("handler", fullDerivedInterface.hello());
+        } else {
+            assertEquals("handler", backportedInterface.hello());
+            assertEquals("handler", emptyDerivedInterface.hello());
+            assertEquals("handler", fullDerivedInterface.hello());
+        }
+    }
 
+    private static <T> T getProxy(Class<T> type) {
+        return type.cast(Proxy.newProxyInstance(type.getClassLoader(),
+                new Class[]{type}, new InvocationHandler() {
+            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                return "handler";
+            }
+        }));
+    }
 }

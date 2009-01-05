@@ -44,10 +44,10 @@ class SmartReplacementVisitor extends EmptyVisitor {
     private final NameTranslator translator;
     private boolean enabled;
     private Set<String> constructorDescriptors = new HashSet<String>();
-    private Map<MemberKey, MemberReplacement> fieldReplacements;
-    private Map<MemberKey, MemberReplacement> methodReplacements;
-    private Map<String, MemberReplacement> converterReplacements;
-    private Map<String, ConstructorReplacement> constructorReplacements;
+    private Map<MemberKey, MemberReplacement> fieldReplacements = new HashMap<MemberKey, MemberReplacement>();
+    private Map<MemberKey, MemberReplacement> methodReplacements = new HashMap<MemberKey, MemberReplacement>();
+    private Map<String, MemberReplacement> converterReplacements = new HashMap<String, MemberReplacement>();
+    private Map<String, ConstructorReplacement> constructorReplacements = new HashMap<String, ConstructorReplacement>();
 
     public SmartReplacementVisitor(ReplacementLocator locator) {
         this.locator = locator;
@@ -86,19 +86,26 @@ class SmartReplacementVisitor extends EmptyVisitor {
     }
 
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-        if ((access & Opcodes.ACC_INTERFACE) != 0 || superName == null) {
-            return;
+        if (superName != null) {
+            saveInheritedMembers(superName);
         }
-        superName = locator.getUniqueTypeName(superName);
-        ClassReplacement replacement = locator.getReplacement(superName);
+        if (interfaces != null) {
+            for (String interfaceName : interfaces) {
+                saveInheritedMembers(interfaceName);
+            }
+        }
+    }
+
+    private void saveInheritedMembers(String className) {
+        ClassReplacement replacement = locator.getReplacement(locator.getUniqueTypeName(className));
         if (replacement == null) {
             return;
         }
         enabled = true;
-        fieldReplacements = wrap(replacement.getFieldReplacements());
-        methodReplacements = wrap(replacement.getMethodReplacements());
-        converterReplacements = wrap(replacement.getConverterReplacements());
-        constructorReplacements = wrap(replacement.getConstructorReplacements());
+        copyIfAbsent(replacement.getFieldReplacements(), fieldReplacements);
+        copyIfAbsent(replacement.getMethodReplacements(), methodReplacements);
+        copyIfAbsent(replacement.getConverterReplacements(), converterReplacements);
+        copyIfAbsent(replacement.getConstructorReplacements(), constructorReplacements);
     }
 
     public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
@@ -130,10 +137,6 @@ class SmartReplacementVisitor extends EmptyVisitor {
                 destination.put(entry.getKey(), entry.getValue());
             }
         }
-    }
-
-    private static <K, V> Map<K, V> wrap(Map<K, V> map) {
-        return new HashMap<K, V>(map);
     }
 
 }

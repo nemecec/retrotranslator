@@ -1,6 +1,8 @@
 Retrotranslator Changelog
 =================================
 
+  - Backports for interfaces can be inherited when using the smart option.
+
 1.2.8 (2008-12-14)
 ---------------------------------
   - Dropped the support of the Android platform.
