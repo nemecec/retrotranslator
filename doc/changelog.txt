@@ -2,6 +2,7 @@ Retrotranslator Changelog
 =================================
 
   - Backports for interfaces can be inherited when using the smart option.
+  - Regular expressions can contain quoted strings that end with a back slash.
 
 1.2.8 (2008-12-14)
 ---------------------------------

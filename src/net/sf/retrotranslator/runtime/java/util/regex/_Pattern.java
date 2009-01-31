@@ -31,7 +31,7 @@
  */
 package net.sf.retrotranslator.runtime.java.util.regex;
 
-import java.util.regex.Pattern;
+import java.util.regex.*;
 import net.sf.retrotranslator.registry.Advanced;
 import net.sf.retrotranslator.runtime.java.lang._String;
 
@@ -42,6 +42,8 @@ public class _Pattern {
 
     public static final int LITERAL = 0x10;
 
+    private static final Pattern QUOTE_PATTERN = Pattern.compile("(\\\\+)Q(.*?)(\\\\*)\\\\E");
+    
     private static final String[][] REPLACEMENTS = {
             {"\\p{javaDefined}", "\\P{Cn}"},
             {"\\p{javaDigit}", "\\p{Nd}"},
@@ -85,18 +87,32 @@ public class _Pattern {
         for (String[] replacement : REPLACEMENTS) {
             regex = _String.replace(regex, replacement[0], replacement[1]);
         }
-        return regex;
+        return fixQuote(regex);
     }
 
-    public static String quote(String s) {
-        StringBuilder builder = new StringBuilder(s.length() + 4).append("\\Q");
+    private static String fixQuote(String regex) {
+        if (regex.indexOf("\\\\E") < 0) {
+            return regex;
+        }
+        Matcher matcher = QUOTE_PATTERN.matcher(regex);
+        StringBuffer buffer = new StringBuffer();
+        while (matcher.find()) {
+            boolean escaped = matcher.group(1).length() % 2 == 1;
+            String replacement = escaped ? "$1Q$2\\\\E$3$3" : "$1Q$2$3\\\\E";
+            matcher.appendReplacement(buffer, replacement);
+        }
+        return matcher.appendTail(buffer).toString();
+    }
+
+    public static String quote(String regex) {
+        StringBuilder builder = new StringBuilder(regex.length() + 4).append("\\Q");
         int lastIndex = 0;
         int nextIndex;
-        while ((nextIndex = s.indexOf("\\E", lastIndex)) >= 0) {
-            builder.append(s.substring(lastIndex, nextIndex)).append("\\E\\\\E\\Q");
+        while ((nextIndex = regex.indexOf("\\E", lastIndex)) >= 0) {
+            builder.append(regex.substring(lastIndex, nextIndex)).append("\\E\\\\E\\Q");
             lastIndex = nextIndex + 2;
         }
-        return builder.append(s.substring(lastIndex)).append("\\E").toString();
+        return fixQuote(builder.append(regex.substring(lastIndex)).append("\\E").toString());
     }
 
 }

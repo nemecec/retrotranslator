@@ -32,7 +32,7 @@
 package net.sf.retrotranslator.runtime.java.util.regex;
 
 import java.util.regex.Pattern;
-import java.lang.reflect.Field;
+import java.lang.reflect.*;
 import net.sf.retrotranslator.tests.TestCaseBase;
 
 /**
@@ -40,11 +40,13 @@ import net.sf.retrotranslator.tests.TestCaseBase;
  */
 public class _PatternTestCase extends TestCaseBase {
 
-    public void testQuote() {
+    public void testQuote() throws Exception {
         assertEquals("\\Qabc\\E", Pattern.quote("abc"));
         assertEquals("\\Qa\\Qbc\\E", Pattern.quote("a\\Qbc"));
         assertEquals("\\Qa\\E\\\\E\\Qbc\\E", Pattern.quote("a\\Ebc"));
         assertEquals("\\Q\\Qa\\E\\\\E\\Qb\\Qc\\E\\\\E\\Q\\E", Pattern.quote("\\Qa\\Eb\\Qc\\E"));
+        Method method = Pattern.class.getMethod("matches", String.class, CharSequence.class);
+        assertTrue((Boolean) method.invoke(null, Pattern.quote("\\"), "\\"));
     }
 
     public void testCompile() throws Exception {
@@ -64,6 +66,18 @@ public class _PatternTestCase extends TestCaseBase {
         for (String[] replacement : (String[][]) field.get(null)) {
             assertEquals(replacement[0], count(replacement[0]), count(replacement[1]));
         }
+    }
+
+    public void testMatchesQuoted() throws Exception {
+        assertTrue(Pattern.matches("a", "a"));
+        assertTrue(Pattern.matches("\\Q\\E", ""));
+        assertTrue(Pattern.matches("\\\\Q\\\\E", "\\Q\\E"));
+        assertTrue(Pattern.matches("\\\\\\Q\\\\E", "\\\\"));
+        assertTrue(Pattern.matches("\\\\\\\\Q\\\\E", "\\\\Q\\E"));
+        assertTrue(Pattern.matches("\\\\E", "\\E"));
+        assertTrue(Pattern.matches("\\Qa\\E", "a"));
+        assertTrue(Pattern.matches("\\Qa\\\\E", "a\\"));
+        assertTrue(Pattern.matches("a\\Qb\\\\Ec\\\\Ed\\Q\\\\\\Ee", "ab\\c\\Ed\\\\e"));
     }
 
     private static int count(String regex) {
