@@ -115,6 +115,7 @@
                 <exclude name="net/sf/retrotranslator/runtime13/v15/javax/**"/>
                 <exclude name="net/sf/retrotranslator/runtime13/v15/java/nio/**"/>
                 <exclude name="net/sf/retrotranslator/runtime13/v15/java/util/regex/**"/>
+                <exclude name="**/_Socket*.class"/>
                 <exclude name="**/_URL.class"/>
                 <exclude name="**/Proxy_*.class"/>
                 <exclude name="**/ProxySelector_.class"/>
@@ -269,6 +270,7 @@
                 <exclude name="**/_ReadableTestCase*"/>
                 <exclude name="**/ProxySelector_TestCase*"/>
                 <exclude name="**/Proxy_TestCase*"/>
+                <exclude name="**/_SocketTestCase*"/>
                 <exclude name="**/_URLTestCase*"/>
                 <exclude name="**/ReflectionAntLauncher*"/>
             </fileset>

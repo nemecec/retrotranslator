@@ -3,6 +3,7 @@ Retrotranslator Changelog
 
   - Backports for interfaces can be inherited when using the smart option.
   - Regular expressions can contain quoted strings that end with a back slash.
+  - Added support for java.net.Socket(java.net.Proxy), but the proxy is ignored.
 
 1.2.8 (2008-12-14)
 ---------------------------------
