@@ -78,24 +78,39 @@ public class ClassDescriptor extends GenericDeclarationDescriptor {
     public static ClassDescriptor getInstance(Class target) {
         Map<Class, ClassDescriptor> map = getMap();
         ClassDescriptor descriptor = map.get(target);
-        if (descriptor != null) return descriptor;
-        descriptor = new ClassDescriptor(target, getBytecode(target));
+        if (descriptor != null) {
+            return descriptor;
+        }
+        byte[] bytecode = RuntimeTools.getBytecode(target);
+        if (bytecode != null) {
+            descriptor = new ClassDescriptor(target, bytecode);
+        }
+        if (descriptor == null || descriptor.isMetadataPresent()) {
+            String s = getEncodedMetadata(target);
+            if (s != null) {
+                descriptor = new ClassDescriptor(target, decode(s));
+            }
+        }
+        if (descriptor == null) {
+            descriptor = new ClassDescriptor(target, null);
+        }
         map.put(target, descriptor);
         return descriptor;
     }
 
-    private static byte[] getBytecode(Class target) {
-        byte[] bytecode = RuntimeTools.getBytecode(target);
-        if (bytecode != null) {
-            return bytecode;
+    public static void setEncodedMetadata(Class target, String metadata) {
+        if (metadataTable != null) {
+            metadataTable.putIfAbsent(target, metadata);
         }
+    }
+
+    private static String getEncodedMetadata(Class target) {
         try {
             Class.forName(target.getName(), true, target.getClassLoader());
         } catch (ClassNotFoundException e) {
             // ignore
         }
-        String s = metadataTable.lookup(target);
-        return s != null ? decode(s) : null;
+        return metadataTable.lookup(target);
     }
 
     private static byte[] decode(String s) {
@@ -106,10 +121,13 @@ public class ClassDescriptor extends GenericDeclarationDescriptor {
         return bytecode;
     }
 
-    public static void setEncodedMetadata(Class aClass, String metadata) {
-        if (metadataTable != null) {
-            metadataTable.putIfAbsent(aClass, metadata);
+    private boolean isMetadataPresent() {
+        for (MethodDescriptor descriptor : methodDescriptors.values()) {
+            if (descriptor.isMetadataPresent()) {
+                return true;
+            }
         }
+        return false;
     }
 
     private static synchronized Map<Class, ClassDescriptor> getMap() {

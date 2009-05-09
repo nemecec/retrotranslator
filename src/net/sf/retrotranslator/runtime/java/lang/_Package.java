@@ -62,15 +62,15 @@ public class _Package {
     }
 
     private static ClassDescriptor createPackageInfo(Class loader, Package aPackage) {
-        byte[] bytecode = getBytecode(loader, aPackage);
-        if (bytecode != null) {
-            return new ClassDescriptor(loader, bytecode);
-        }
         for (String simpleName : new String[]{"package$info", "package-info"}) {
             Class infoClass = getClass(loader, aPackage, simpleName);
             if (infoClass != null) {
                 return ClassDescriptor.getInstance(infoClass);
             }
+        }
+        byte[] bytecode = getBytecode(loader, aPackage);
+        if (bytecode != null) {
+            return new ClassDescriptor(loader, bytecode);
         }
         return null;
     }
@@ -78,7 +78,7 @@ public class _Package {
     private static Class getClass(Class loader, Package aPackage, String simpleName) {
         try {
             return Class.forName(aPackage.getName() + "." + simpleName, true, loader.getClassLoader());
-        } catch (Exception e) {
+        } catch (Throwable e) {
             return null;
         }
     }
@@ -101,7 +101,9 @@ public class _Package {
             for (Class contextClass : new ExecutionContext().getClassContext()) {
                 try {
                     ClassDescriptor packageInfo = createPackageInfo(contextClass, aPackage);
-                    if (packageInfo != null) return packageInfo;
+                    if (packageInfo != null) {
+                        return packageInfo;
+                    }
                 } catch (Throwable e) {
                     //continue;
                 }

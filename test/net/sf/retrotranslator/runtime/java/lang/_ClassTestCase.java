@@ -201,12 +201,9 @@ public class _ClassTestCase extends TestCaseBase {
     }
 
     private void assertNotInitialized() throws Exception {
-        InputStream stream = getClass().getResourceAsStream(getClass().getSimpleName() + ".class");
-        if (stream == null) {
-            return;
+        if (!Boolean.getBoolean("net.sf.retrotranslator.tests.safe")) {
+            assertFalse(initialized);
         }
-        stream.close();
-        assertFalse(initialized);
     }
 
     public void testGetAnnotations() throws Exception {

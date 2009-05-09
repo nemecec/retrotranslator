@@ -120,7 +120,7 @@ public class Timer_TestCase extends TestCaseBase {
     public void testSchedule_Once_Delay_1() throws Exception {
         Timer timer = new Timer();
         MyTimerTask task = new MyTimerTask();
-        timer.schedule(task, 200);
+        timer.schedule(task, 300);
         Thread.sleep(100);
         assertEquals(0, task.count);
         Thread.sleep(300);
@@ -326,8 +326,8 @@ public class Timer_TestCase extends TestCaseBase {
         assertEquals(0, task.count);
         Thread.sleep(200);
         assertEquals(1, task.count);
-        Thread.sleep(200);
-        assertEquals(2, task.count);
+        Thread.sleep(400);
+        assertTrue(task.count > 1);
         assertTrue(task.cancel());
     }
 
@@ -496,7 +496,7 @@ public class Timer_TestCase extends TestCaseBase {
         Thread.sleep(250);
         assertEquals(2, task.count);
         Thread.sleep(250);
-        assertEquals(3, task.count);
+        assertTrue(task.count >= 3);
         assertTrue(task.cancel());
     }
 

@@ -1,6 +1,7 @@
 Retrotranslator Changelog
 =================================
 
+  - Metadata embedded with the reflection option take the highest precedence.
   - Backports for interfaces can be inherited when using the smart option.
   - Regular expressions can contain quoted strings that end with a back slash.
   - Added support for java.net.Socket(java.net.Proxy), but the proxy is ignored.
@@ -69,7 +70,7 @@ Retrotranslator Changelog
   - Support for java.lang.Short.reverseBytes(short).
   - Support for java.lang.StackTraceElement(String, String, String, int).
   - Support for the append methods of java.io.StringWriter and java.io.CharArrayWriter.
-  - Support for java.math.BigDecimal(char[]) and java.math.BigDecimal(char[], int, int). 
+  - Support for java.math.BigDecimal(char[]) and java.math.BigDecimal(char[], int, int).
   - Limited support for java.lang.StringBuffer.trimToSize().
   - Limited support for java.lang.Thread.UncaughtExceptionHandler.
   - Limited support for java.nio.charset.Charset.defaultCharset().
@@ -126,7 +127,7 @@ Retrotranslator Changelog
 1.0.8 (2006-08-20)
 ---------------------------------
   - Supported: all constructors of java.io.PrintWriter.
-  - Supported: java.rmi.server.RemoteObjectInvocationHandler. 
+  - Supported: java.rmi.server.RemoteObjectInvocationHandler.
   - Supported: IllegalArgumentException(String, Throwable), IllegalArgumentException(Throwable).
   - Supported: java.util.concurrent.locks.Condition.awaitNanos(long) but with very little accuracy guarantees.
   - Supported in BigDecimal: divideAndRemainder(BigDecimal), divideToIntegralValue(BigDecimal), remainder(BigDecimal).

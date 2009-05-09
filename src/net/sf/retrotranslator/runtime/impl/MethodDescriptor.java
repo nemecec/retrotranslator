@@ -42,6 +42,8 @@ import net.sf.retrotranslator.runtime.asm.signature.*;
  */
 public class MethodDescriptor extends GenericDeclarationDescriptor {
 
+    public static final String SET_ENCODED_METADATA = "setEncodedMetadata";
+
     private String name;
     private String desc;
     private ClassDescriptor classDescriptor;
@@ -53,6 +55,7 @@ public class MethodDescriptor extends GenericDeclarationDescriptor {
     private LazyList<TypeDescriptor,Type> genericParameterTypes;
     private LazyList<TypeDescriptor,Type> genericExceptionTypes;
     private LazyList<List<AnnotationValue>, Annotation[]> parameterAnnotations;
+    private boolean metadataPresent;
 
     public MethodDescriptor(ClassDescriptor classDescriptor, int access, final String name, final String desc, String signature) {
         this.classDescriptor = classDescriptor;
@@ -67,6 +70,10 @@ public class MethodDescriptor extends GenericDeclarationDescriptor {
             this.method = createMethod();
         }
         parameterAnnotations = createParameterAnnotations();
+    }
+
+    public boolean isMetadataPresent() {
+        return metadataPresent;
     }
 
     private LazyValue<String, Class> createReturnType() {
@@ -195,6 +202,12 @@ public class MethodDescriptor extends GenericDeclarationDescriptor {
 
     protected Annotation[] createAnnotations(Annotation[] declaredAnnotations) {
         return declaredAnnotations;
+    }
+
+    public void visitMethodInsn(int opcode, String owner, String name, String desc) {
+        if (name.equals(SET_ENCODED_METADATA) && this.name.equals(RuntimeTools.STATIC_NAME)) {
+            metadataPresent = true;
+        }
     }
 
     public AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {

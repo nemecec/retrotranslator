@@ -34,6 +34,7 @@ package net.sf.retrotranslator.transformer;
 import net.sf.retrotranslator.runtime.asm.*;
 import static net.sf.retrotranslator.runtime.asm.Opcodes.*;
 import net.sf.retrotranslator.runtime.impl.RuntimeTools;
+import net.sf.retrotranslator.runtime.impl.MethodDescriptor;
 
 /**
  * @author Taras Puchko
@@ -41,8 +42,9 @@ import net.sf.retrotranslator.runtime.impl.RuntimeTools;
 class ReflectionInitVisitor extends ClassAdapter {
 
     private static final String CLASS_NAME = Type.getInternalName(Class.class);
-    private static final MemberKey SET_ENCODED_METADATA_KEY = new MemberKey(
-            true, "setEncodedMetadata", TransformerTools.descriptor(void.class, Class.class, String.class));
+    private static final MemberKey SET_ENCODED_METADATA_KEY = new MemberKey(true,
+            MethodDescriptor.SET_ENCODED_METADATA,
+            TransformerTools.descriptor(void.class, Class.class, String.class));
 
     private final EmbeddingConverter converter;
     private final byte[] metadata;
