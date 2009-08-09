@@ -114,7 +114,7 @@ public class Timer_TestCase extends TestCaseBase {
         firstTask.cancel();
         secondTask.cancel();
         thirdTask.cancel();
-        assertEquals(3, timer.purge(), 1);
+        assertTrue(timer.purge() > 0);
     }
 
     public void testSchedule_Once_Delay_1() throws Exception {

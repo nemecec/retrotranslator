@@ -86,11 +86,11 @@ public class SynchronizedBlockVisitor extends ClassAdapter {
             blocks.add(new TryCatchBlock(start, end, handler, type));
         }
 
-        public void visitEnd() {
+        public void visitMaxs(int maxStack, int maxLocals) {
             for (TryCatchBlock block : blocks) {
                 mv.visitTryCatchBlock(block.start, block.end, block.handler, block.type);
             }
-            mv.visitEnd();
+            super.visitMaxs(maxStack, maxLocals);
         }
 
         protected void flush() {

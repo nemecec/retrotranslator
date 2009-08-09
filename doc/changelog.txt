@@ -1,6 +1,9 @@
 Retrotranslator Changelog
 =================================
 
+1.2.9 (2009-08-09)
+---------------------------------
+  - Fixed a bug: VerifyError: Stack size too large when translating to 1.2 or 1.1.
   - Metadata embedded with the reflection option take the highest precedence.
   - Backports for interfaces can be inherited when using the smart option.
   - Regular expressions can contain quoted strings that end with a back slash.

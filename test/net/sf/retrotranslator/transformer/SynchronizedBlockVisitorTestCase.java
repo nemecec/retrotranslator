@@ -96,4 +96,12 @@ public class SynchronizedBlockVisitorTestCase extends TestCase {
         assertEquals(4, counter);
     }
 
+    public void testStack() {
+        try {
+            System.currentTimeMillis();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }
