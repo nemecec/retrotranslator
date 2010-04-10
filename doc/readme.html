@@ -373,6 +373,10 @@
 </p>
 
 <h4><a name="supported">What API is supported on Java 1.4 and Java 1.3?</a></h4>
+<p>
+    An asterisk designates all API members introduced in Java 5.0.
+    Most classes and methods added in Java 1.4 and in Java 6.0 cannot be used on earlier VMs.
+</p>
 <table border="1" cellspacing="0" cellpadding="5">
 <tr>
     <th>Package</th>
@@ -551,7 +555,8 @@
     </code></td>
     <td>Enable features "<code>String.matches</code>", "<code>String.replaceAll</code>",
         "<code>String.replaceFirst</code>" and "<code>String.split</code>" to support
-        Java&nbsp;5.0 features in regular expressions when calling these methods<sup><a href="#3">3</a></sup>.
+        Java&nbsp;5.0 features in regular expressions when calling these methods on Java 1.4<sup><a href="#3">3</a></sup>
+        (they are unavailable on Java 1.3).
     </td>
 </tr>
 <tr>
