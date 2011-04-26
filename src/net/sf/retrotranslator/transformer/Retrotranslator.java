@@ -192,31 +192,7 @@ public class Retrotranslator {
     public boolean run() {
         if (src.isEmpty()) throw new IllegalArgumentException("No files to translate.");
         SystemLogger systemLogger = new SystemLogger(getMessageLogger(), verbose);
-        TargetEnvironment environment = createEnvironment(null, systemLogger);
-        EmbeddingConverter converter = null;
-        if (embed != null) {
-            if (lazy) {
-                throw new IllegalArgumentException("Embedding cannot be lazy.");
-            }
-            converter = new EmbeddingConverter(target, embed, environment, systemLogger);
-        }
-        OperationMode mode = new OperationMode(advanced, support, smart, target);
-        ReplacementLocatorFactory factory = new ReplacementLocatorFactory(mode, retainapi, backport, environment);
-        ClassTransformer classTransformer = new ClassTransformer(lazy, stripsign, stripannot,
-                retainflags, syncvolatile, syncfinal, keepclasslit, reflectionMode, systemLogger, converter, factory);
-        TextFileTransformer fileTransformer = new TextFileTransformer(factory, converter);
-        FileTranslator translator = new FileTranslator(
-                classTransformer, fileTransformer, converter, systemLogger, sourceMask, uptodatecheck, mode);
-        boolean modified = false;
-        for (FileContainer container : src) {
-            modified |= translator.transform(container, dest != null ? dest : container);
-        }
-        if (converter != null && dest != null) {
-            converter.embed(dest, classTransformer);
-        }
-        if (dest != null) {
-            dest.flush(systemLogger);
-        }
+        boolean modified = transform(systemLogger);
         if (!verify) {
             return systemLogger.isReliable();
         }
@@ -226,6 +202,43 @@ public class Retrotranslator {
         }
         verify(systemLogger);
         return systemLogger.isReliable();
+    }
+
+    private boolean transform(SystemLogger systemLogger) {
+        TargetEnvironment environment = createEnvironment(null, systemLogger);
+        try {
+            EmbeddingConverter converter = getConverter(environment, systemLogger);
+            OperationMode mode = new OperationMode(advanced, support, smart, target);
+            ReplacementLocatorFactory factory = new ReplacementLocatorFactory(mode, retainapi, backport, environment);
+            ClassTransformer classTransformer = new ClassTransformer(lazy, stripsign, stripannot, retainflags,
+                    syncvolatile, syncfinal, keepclasslit, reflectionMode, systemLogger, converter, factory);
+            TextFileTransformer fileTransformer = new TextFileTransformer(factory, converter);
+            FileTranslator translator = new FileTranslator(
+                    classTransformer, fileTransformer, converter, systemLogger, sourceMask, uptodatecheck, mode);
+            boolean modified = false;
+            for (FileContainer container : src) {
+                modified |= translator.transform(container, dest != null ? dest : container);
+            }
+            if (converter != null && dest != null) {
+                converter.embed(dest, classTransformer);
+            }
+            if (dest != null) {
+                dest.flush(systemLogger);
+            }
+            return modified;
+        } finally {
+            environment.close();
+        }
+    }
+
+    private EmbeddingConverter getConverter(TargetEnvironment environment, SystemLogger systemLogger) {
+        if (embed == null) {
+            return null;
+        }
+        if (lazy) {
+            throw new IllegalArgumentException("Embedding cannot be lazy.");
+        }
+        return new EmbeddingConverter(target, embed, environment, systemLogger);
     }
 
     private TargetEnvironment createEnvironment(FileContainer destination, SystemLogger logger) {
