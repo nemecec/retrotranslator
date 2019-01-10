@@ -42,7 +42,7 @@ Retrotranslator is a tool that makes Java applications compatible with Java 1.4,
 
 #### <a name="commandline">How to use Retrotranslator from the command line?</a>
 
-1.  [Download](http://sourceforge.net/project/showfiles.php?group_id=153566) and unzip the binary distribution file `Retrotranslator-_n.n.n_-bin.zip`, where _n.n.n_ is the latest Retrotranslator release number.
+1.  Download ([old releases on SourceForge](http://sourceforge.net/project/showfiles.php?group_id=153566)) and unzip the binary distribution file `Retrotranslator-_n.n.n_-bin.zip`, where _n.n.n_ is the latest Retrotranslator release number.
 2.  Compile your classes with Java 5.0 or Java 6 and put them into some directory, e.g. `myclasses`.
 3.  Go to the unzipped directory and execute:  
     `java -jar retrotranslator-transformer-_n.n.n_.jar -srcdir myclasses`  
@@ -2442,16 +2442,6 @@ If backported methods require access to non-public methods or fields of the inst
 *   [Retroweaver](http://retroweaver.sourceforge.net/)
 *   [Declawer](http://tinyurl.com/r8xba)
 *   [JBossRetro](http://wiki.jboss.org/wiki/Wiki.jsp?page=JBossRetro)
-
-#### <a name="contact">Contact</a>
-
-*   [Project summary](http://sourceforge.net/projects/retrotranslator)
-*   [Latest documentation](http://retrotranslator.sourceforge.net/)
-*   [Open discussion](http://sourceforge.net/forum/forum.php?forum_id=513539)
-*   [Help](http://sourceforge.net/forum/forum.php?forum_id=513540)
-*   [Bugs](http://sourceforge.net/tracker/?group_id=153566&atid=788279)
-*   [Feature requests](http://sourceforge.net/tracker/?group_id=153566&atid=788282)
-*   [Author](http://sourceforge.net/users/tarasp/)
 
 #### <a name="license">License</a>
 
